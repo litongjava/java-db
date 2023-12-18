@@ -1,4 +1,4 @@
-package com.litongjava.jfinal.plugin.ehcache;
+package com.litongjava.jfinal.plugin.cache;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -19,6 +19,6 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
-public @interface EcacheCacheName {
+public @interface CacheName {
   String value();
 }

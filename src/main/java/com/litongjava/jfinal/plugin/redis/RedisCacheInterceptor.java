@@ -1,4 +1,4 @@
-package com.litongjava.jfinal.plugin.ehcache;
+package com.litongjava.jfinal.plugin.redis;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
@@ -7,13 +7,20 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.litongjava.jfinal.aop.Interceptor;
 import com.litongjava.jfinal.aop.Invocation;
 import com.litongjava.jfinal.plugin.cache.CacheName;
+import com.litongjava.jfinal.plugin.redis.serializer.ISerializer;
+
+import redis.clients.jedis.Jedis;
 
 /**
  * CacheInterceptor.
  */
-public class EcacheCacheInterceptor implements Interceptor {
+public class RedisCacheInterceptor implements Interceptor {
 
   private static ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<String, ReentrantLock>(512);
+
+  protected Cache getCache() {
+    return Redis.use();
+  }
 
   private ReentrantLock getLock(String key) {
     ReentrantLock lock = lockMap.get(key);
@@ -27,25 +34,53 @@ public class EcacheCacheInterceptor implements Interceptor {
   }
 
   final public void intercept(Invocation inv) {
+    Cache cache = getCache();
+    Jedis jedis = cache.getThreadLocalJedis();
+
+    if (jedis != null) {
+      putIfNotExists(inv, cache, jedis);
+    }
+
+    try {
+      jedis = cache.jedisPool.getResource();
+      cache.setThreadLocalJedis(jedis);
+      putIfNotExists(inv, cache, jedis);
+    } finally {
+      cache.removeThreadLocalJedis();
+      jedis.close();
+    }
+
+  }
+
+  private void putIfNotExists(Invocation inv, Cache cache, Jedis jedis) {
     Object target = inv.getTarget();
     String cacheName = buildCacheName(inv, target);
     String cacheKey = buildCacheKey(inv);
-    Object cacheData = CacheKit.get(cacheName, cacheKey);
+    String redisKey = cacheName + "_" + cacheKey;
+    String cacheData = jedis.get(redisKey);
+
+    
     if (cacheData == null) {
+      IKeyNamingPolicy keyNamingPolicy = cache.getKeyNamingPolicy();
+      ISerializer serializer = cache.getSerializer();
       Lock lock = getLock(cacheName);
       lock.lock(); // prevent cache snowslide
       try {
-        cacheData = CacheKit.get(cacheName, cacheKey);
+        cacheData = jedis.get(redisKey);
         if (cacheData == null) {
           Object returnValue = inv.invoke();
-          cacheMethodReturnValue(cacheName, cacheKey, returnValue);
+          cache.call(j -> {
+            String keyStr = keyNamingPolicy.getKeyName(redisKey);
+            byte[] keyToBytes = serializer.keyToBytes(keyStr);
+            byte[] valueToBytes = serializer.valueToBytes(returnValue);
+            return j.set(keyToBytes, valueToBytes);
+          });
           return;
         }
       } finally {
         lock.unlock();
       }
     }
-
     // useCacheDataAndReturn(cacheData, target);
     inv.setReturnValue(cacheData);
   }
@@ -76,7 +111,4 @@ public class EcacheCacheInterceptor implements Interceptor {
     return sb.toString();
   }
 
-  protected void cacheMethodReturnValue(String cacheName, String cacheKey, Object returnValue) {
-    CacheKit.put(cacheName, cacheKey, returnValue);
-  }
 }
