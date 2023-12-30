@@ -3,14 +3,17 @@ package com.litongjava.jfinal.plugin.redis.serializer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
-import com.jfinal.kit.LogKit;
+
+import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * FstSerializer.
  */
+@Slf4j
 public class FstSerializer implements ISerializer {
 
   public static final ISerializer me = new FstSerializer();
@@ -46,7 +49,7 @@ public class FstSerializer implements ISerializer {
         try {
           fstOut.close();
         } catch (IOException e) {
-          LogKit.error(e.getMessage(), e);
+          log.error(e.getMessage(), e);
         }
     }
   }
@@ -66,7 +69,7 @@ public class FstSerializer implements ISerializer {
         try {
           fstInput.close();
         } catch (IOException e) {
-          LogKit.error(e.getMessage(), e);
+          log.error(e.getMessage(), e);
         }
     }
   }

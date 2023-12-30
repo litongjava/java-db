@@ -10,10 +10,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 
-import com.jfinal.kit.Func.F00;
-import com.jfinal.kit.Func.F10;
-import com.jfinal.kit.Func.F11;
 import com.jfinal.kit.StrKit;
+import com.litongjava.jfinal.plugin.kit.Func.F00;
+import com.litongjava.jfinal.plugin.kit.Func.F10;
+import com.litongjava.jfinal.plugin.kit.Func.F11;
 import com.litongjava.jfinal.plugin.redis.serializer.ISerializer;
 
 import redis.clients.jedis.Jedis;

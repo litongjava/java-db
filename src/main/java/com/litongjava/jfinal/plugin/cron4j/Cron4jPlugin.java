@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.jfinal.kit.Prop;
 import com.jfinal.kit.StrKit;
-import com.jfinal.plugin.IPlugin;
+import com.litongjava.jfinal.plugin.IPlugin;
 
 import it.sauronsoftware.cron4j.ProcessTask;
 import it.sauronsoftware.cron4j.Scheduler;

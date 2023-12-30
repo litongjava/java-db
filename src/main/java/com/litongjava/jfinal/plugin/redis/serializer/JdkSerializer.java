@@ -4,12 +4,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import com.jfinal.kit.LogKit;
+
+import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * JdkSerializer.
  */
+@Slf4j
 public class JdkSerializer implements ISerializer {
 
   public static final ISerializer me = new JdkSerializer();
@@ -45,7 +47,7 @@ public class JdkSerializer implements ISerializer {
         try {
           objectOut.close();
         } catch (Exception e) {
-          LogKit.error(e.getMessage(), e);
+          log.error(e.getMessage(), e);
         }
     }
   }
@@ -66,7 +68,7 @@ public class JdkSerializer implements ISerializer {
         try {
           objectInput.close();
         } catch (Exception e) {
-          LogKit.error(e.getMessage(), e);
+          log.error(e.getMessage(), e);
         }
     }
   }
