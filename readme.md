@@ -1,10 +1,10 @@
 #jfinal-plugins
 ## JFinal Plugins简介
 JFinal自带了一些实用的插件，这些插件默认是整合在JFinal包中的。我从中提取了一些插件，并将它们组织成了一个独立的项目，名为jfinal-plugins。你可以利用jfinal-plugins来连接ehcache，redis以及数据库。
-开源地址:
+开源地址
 https://github.com/litongjava/jfinal-plugins
 
-## 使用jfinal-plugins连接数库
+##使用jfinal-plugins连接数库
 1. 使用jfinal-plugins连接数据库
 首先，我们创建一个表：
 
@@ -160,9 +160,27 @@ public class EcacheDemo {
 
 ## 使用jfinal-plugins连接Redis
 
-这段代码演示了如何使用jfinal-plugins连接Redis并进行操作。以下是每部分的详细解释：
+添加依赖
+```
+    <dependency>
+      <groupId>com.litongjava</groupId>
+      <artifactId>jfinal-aop</artifactId>
+      <version>1.1.7</version>
+    </dependency>
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>3.6.3</version>
+    </dependency>
+    <dependency>
+      <groupId>de.ruedigermoeller</groupId>
+      <artifactId>fst</artifactId>
+      <version>2.57</version> <!-- 注意：更高版本不支持 jdk 8 -->
+    </dependency>
+```
 
-首先，我们创建了一个名为`UserService`的类，该类有一个名为`getUser`的方法并添加了RedisCacheInterceptor注解，该方法在被调用时会打印出输入的用户名，并返回这个用户名：
+编写代码
+创建了一个名为`UserService`的类，该类有一个名为`getUser`的方法并添加了RedisCacheInterceptor注解，该方法在被调用时会打印出输入的用户名，并返回这个用户名：
 
 ```java
 package com.litongjava.jfinal.plugins.redis;
