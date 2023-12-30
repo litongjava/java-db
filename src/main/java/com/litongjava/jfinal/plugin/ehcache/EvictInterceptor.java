@@ -2,7 +2,7 @@ package com.litongjava.jfinal.plugin.ehcache;
 
 import com.litongjava.jfinal.aop.Interceptor;
 import com.litongjava.jfinal.aop.Invocation;
-import com.litongjava.jfinal.plugin.cache.CacheName;
+import com.litongjava.jfinal.plugin.cache.Cacheable;
 
 /**
  * EvictInterceptor.
@@ -27,12 +27,12 @@ public class EvictInterceptor implements Interceptor {
    * 获取 @CacheName 注解配置的 cacheName，注解可配置在方法和类之上
    */
   protected String getCacheName(Invocation inv) {
-    CacheName cacheName = inv.getMethod().getAnnotation(CacheName.class);
+    Cacheable cacheName = inv.getMethod().getAnnotation(Cacheable.class);
     if (cacheName != null) {
       return cacheName.value();
     }
 
-    cacheName = inv.getTarget().getClass().getAnnotation(CacheName.class);
+    cacheName = inv.getTarget().getClass().getAnnotation(Cacheable.class);
     if (cacheName == null) {
       throw new RuntimeException("EvictInterceptor need CacheName annotation in controller.");
     }

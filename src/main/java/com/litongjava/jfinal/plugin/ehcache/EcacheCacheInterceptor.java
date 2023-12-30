@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.litongjava.jfinal.aop.Interceptor;
 import com.litongjava.jfinal.aop.Invocation;
-import com.litongjava.jfinal.plugin.cache.CacheName;
+import com.litongjava.jfinal.plugin.cache.CacheableModel;
 
 /**
  * CacheInterceptor.
@@ -28,8 +28,9 @@ public class EcacheCacheInterceptor implements Interceptor {
 
   final public void intercept(Invocation inv) {
     Object target = inv.getTarget();
-    String cacheName = buildCacheName(inv, target);
-    String cacheKey = buildCacheKey(inv);
+    CacheableModel cacheableModel = CacheableModel.buildCacheModel(inv, target);
+    String cacheName = cacheableModel.getName();
+    String cacheKey = cacheableModel.getKey();
     Object cacheData = CacheKit.get(cacheName, cacheKey);
     if (cacheData == null) {
       Lock lock = getLock(cacheName);
@@ -48,32 +49,6 @@ public class EcacheCacheInterceptor implements Interceptor {
 
     // useCacheDataAndReturn(cacheData, target);
     inv.setReturnValue(cacheData);
-  }
-
-  // TODO 考虑与 EvictInterceptor 一样强制使用 @CacheName
-  protected String buildCacheName(Invocation inv, Object target) {
-    CacheName cacheName = inv.getMethod().getAnnotation(CacheName.class);
-    if (cacheName != null) {
-      return cacheName.value();
-    }
-
-    cacheName = target.getClass().getAnnotation(CacheName.class);
-    return (cacheName != null) ? cacheName.value() : inv.getMethodName();
-  }
-
-  /**
-   * 返回方法名_参数的hashCode值
-   * @param inv
-   * @return
-   */
-  protected String buildCacheKey(Invocation inv) {
-    StringBuilder sb = new StringBuilder(inv.getMethodName());
-    Object[] args = inv.getArgs();
-    for (Object object : args) {
-      sb.append("_").append(object.hashCode());
-
-    }
-    return sb.toString();
   }
 
   protected void cacheMethodReturnValue(String cacheName, String cacheKey, Object returnValue) {

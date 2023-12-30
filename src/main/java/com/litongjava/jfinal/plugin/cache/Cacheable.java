@@ -19,6 +19,13 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
-public @interface CacheName {
-  String value();
+public @interface Cacheable {
+  // 缓存的名称,如果不指定默认使用类名或者方法名
+  String name() default "";
+
+  // 缓存的key,如果不指定使用方法名+
+  String value() default "";;
+
+  // 生存时间,默认是1h
+  long ttl() default 3600;
 }
