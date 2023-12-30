@@ -115,6 +115,11 @@ public class MysqlTestMain {
   <artifactId>ehcache-core</artifactId>
   <version>2.6.11</version>
 </dependency>
+<dependency>
+  <groupId>com.litongjava</groupId>
+  <artifactId>jfinal-aop</artifactId>
+  <version>1.1.7</version>
+</dependency>
 ```
 
 然后，我们创建了一个名为`UserService`的类，该类有一个名为`getUser`的方法，该方法在被调用时会打印出输入的用户名，并返回这个用户名：
@@ -162,21 +167,26 @@ public class EcacheDemo {
 
 添加依赖
 ```
-    <dependency>
-      <groupId>com.litongjava</groupId>
-      <artifactId>jfinal-aop</artifactId>
-      <version>1.1.7</version>
-    </dependency>
-    <dependency>
-      <groupId>redis.clients</groupId>
-      <artifactId>jedis</artifactId>
-      <version>3.6.3</version>
-    </dependency>
-    <dependency>
-      <groupId>de.ruedigermoeller</groupId>
-      <artifactId>fst</artifactId>
-      <version>2.57</version> <!-- 注意：更高版本不支持 jdk 8 -->
-    </dependency>
+<dependency>
+  <groupId>com.litongjava</groupId>
+  <artifactId>jfinal-plugins</artifactId>
+  <version>1.0.1</version>
+</dependency>
+<dependency>
+  <groupId>com.litongjava</groupId>
+  <artifactId>jfinal-aop</artifactId>
+  <version>1.1.7</version>
+</dependency>
+<dependency>
+  <groupId>redis.clients</groupId>
+  <artifactId>jedis</artifactId>
+  <version>3.6.3</version>
+</dependency>
+<dependency>
+  <groupId>de.ruedigermoeller</groupId>
+  <artifactId>fst</artifactId>
+  <version>2.57</version> <!-- 注意：更高版本不支持 jdk 8 -->
+</dependency>
 ```
 
 编写代码
