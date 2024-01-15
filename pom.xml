@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.litongjava</groupId>
   <artifactId>jfinal-plugins</artifactId>
-  <version>1.0.4</version>
+  <version>1.0.6</version>
   <packaging>jar</packaging>
   <name>JFinal Plugins</name>
   <description>JFinal Plugins</description>
@@ -48,9 +48,15 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>cn.dev33</groupId>
+      <artifactId>sa-token-core</artifactId>
+      <version>1.37.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>com.litongjava</groupId>
       <artifactId>jfinal-aop</artifactId>
-      <version>1.1.9</version>
+      <version>1.2.0</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -140,6 +146,16 @@
     </repository>
   </distributionManagement>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/java</directory>
+        <includes>
+          <!-- **/* 前缀用法，可以匹配所有路径 -->
+          <include>**/*.jf</include>
+        </includes>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
     <plugins>
       <!-- Source -->
       <plugin>
