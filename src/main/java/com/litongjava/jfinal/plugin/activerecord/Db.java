@@ -727,6 +727,18 @@ public class Db {
    * @param clazz
    * @param pageNumber
    * @param pageSize
+   * @param sqlPara
+   * @return
+   */
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, SqlPara sqlPara) {
+    return MAIN.paginate(clazz, pageNumber, pageSize, sqlPara);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param pageNumber
+   * @param pageSize
    * @param isGroupBySql
    * @param sqlPara
    * @return
@@ -741,11 +753,28 @@ public class Db {
    * @param clazz
    * @param pageNumber
    * @param pageSize
-   * @param sqlPara
+   * @param select
+   * @param sqlExceptSelect
    * @return
    */
-  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, SqlPara sqlPara) {
-    return MAIN.paginate(clazz, pageNumber, pageSize, sqlPara);
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, String select,
+      String sqlExceptSelect) {
+    return MAIN.paginate(clazz, pageNumber, pageSize, select, sqlExceptSelect);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param select
+   * @param sqlExceptSelect
+   * @return
+   */
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select,
+      String sqlExceptSelect) {
+    return MAIN.paginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
   }
 
   /**
@@ -780,17 +809,288 @@ public class Db {
   }
 
   /**
-   * @param <T>
-   * @param clazz
+   * @param pageNumber
+   * @param pageSize
+   * @param totalRowSql
+   * @param findSql
+   * @param paras
+   * @return
+   */
+  public static <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, String totalRowSql,
+      String findSql, Object... paras) {
+    return MAIN.paginateByFullSql(clazz, pageNumber, pageSize, totalRowSql, findSql, paras);
+  }
+
+  /**
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param totalRowSql
+   * @param findSql
+   * @param paras
+   * @return
+   */
+  public static <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql,
+      String totalRowSql, String findSql, Object... paras) {
+    return MAIN.paginateByFullSql(clazz, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+  }
+
+  /**
+   * @param cacheName
+   * @param key
+   * @param pageNumber
+   * @param pageSize
+   * @param sqlPara
+   * @return
+   */
+  public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize,
+      SqlPara sqlPara) {
+    return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, sqlPara);
+  }
+
+  /**
+   * @param cacheName
+   * @param key
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param sqlPara
+   * @return
+   */
+  public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, SqlPara sqlPara) {
+    return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, sqlPara);
+  }
+
+  /**
+   * Paginate by cache.
+   * @param cacheName
+   * @param key
+   * @param pageNumber
+   * @param pageSize
+   * @param select
+   * @param sqlExceptSelect
+   * @param paras
+   * @return
+   */
+  public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
+      String sqlExceptSelect, Object... paras) {
+    return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect, paras);
+  }
+
+  /**
+   * @param cacheName
+   * @param key
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param select
+   * @param sqlExceptSelect
+   * @param paras
+   * @return
+   */
+  public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+    return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
+  }
+
+  /**
+   * @param cacheName
+   * @param key
    * @param pageNumber
    * @param pageSize
    * @param select
    * @param sqlExceptSelect
    * @return
    */
-  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, String select,
+  public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
       String sqlExceptSelect) {
-    return MAIN.paginate(clazz, pageNumber, pageSize, select, sqlExceptSelect);
+    return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
+  }
+
+  /**
+   * @param cacheName
+   * @param key
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param select
+   * @param sqlExceptSelect
+   * @return
+   */
+  public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, String select, String sqlExceptSelect) {
+    return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
+  }
+
+  /**
+   * @param pageNumber
+   * @param pageSize
+   * @param totalRowSql
+   * @param findSql
+   * @param paras
+   * @return
+   */
+  public static Page<Record> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize,
+      String totalRowSql, String findSql, Object... paras) {
+    return MAIN.paginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, totalRowSql, findSql, paras);
+  }
+
+  /**
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param totalRowSql
+   * @param findSql
+   * @param paras
+   * @return
+   */
+  public static Page<Record> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+    return MAIN.paginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql,
+        paras);
+  }
+
+  /**
+   * 
+   * @param <T>
+   * @param clazz
+   * @param cacheName
+   * @param key
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param select
+   * @param sqlExceptSelect
+   * @return
+   */
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, String select, String sqlExceptSelect) {
+    return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
+  }
+
+  /**
+   * 
+   * @param <T>
+   * @param clazz
+   * @param cacheName
+   * @param key
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param sqlPara
+   * @return
+   */
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, SqlPara sqlPara) {
+    return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, sqlPara);
+  }
+
+  /**
+   * 
+   * @param <T>
+   * @param clazz
+   * @param cacheName
+   * @param key
+   * @param pageNumber
+   * @param pageSize
+   * @param sqlPara
+   * @return
+   */
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      SqlPara sqlPara) {
+    return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, sqlPara);
+  }
+
+  /**
+   * 
+   * @param <T>
+   * @param clazz
+   * @param cacheName
+   * @param key
+   * @param pageNumber
+   * @param pageSize
+   * @param select
+   * @param sqlExceptSelect
+   * @return
+   */
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      String select, String sqlExceptSelect) {
+    return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
+  }
+
+  /**
+   * 
+   * @param <T>
+   * @param clazz
+   * @param cacheName
+   * @param key
+   * @param pageNumber
+   * @param pageSize
+   * @param select
+   * @param sqlExceptSelect
+   * @param paras
+   * @return
+   */
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      String select, String sqlExceptSelect, Object... paras) {
+    return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, select, sqlExceptSelect, paras);
+  }
+
+  /**
+   * 
+   * @param <T>
+   * @param clazz
+   * @param cacheName
+   * @param key
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param select
+   * @param sqlExceptSelect
+   * @param paras
+   * @return
+   */
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+    return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect,
+        paras);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param cacheName
+   * @param cacheKey
+   * @param pageNumber
+   * @param pageSize
+   * @param totalRowSql
+   * @param findSql
+   * @param paras
+   * @return
+   */
+  public static <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object cacheKey, int pageNumber,
+      int pageSize, String totalRowSql, String findSql, Object... paras) {
+    return MAIN.paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, totalRowSql, findSql, paras);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param cacheName
+   * @param cacheKey
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param totalRowSql
+   * @param findSql
+   * @param paras
+   * @return
+   */
+  public static <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object cacheKey, int pageNumber,
+      int pageSize, boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+    return MAIN.paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, isGroupBySql, totalRowSql,
+        findSql, paras);
   }
 
   // =================================================save================================================
@@ -974,40 +1274,6 @@ public class Db {
 
   public static <T> T findFirstByCache(Class<T> clazz, String cacheName, Object key, String sql) {
     return MAIN.findFirstByCache(clazz, cacheName, key, sql);
-  }
-
-  /**
-   * Paginate by cache.
-   * @see #paginate(int, int, String, String, Object...)
-   * @return Page
-   */
-  public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
-      String sqlExceptSelect, Object... paras) {
-    return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect, paras);
-  }
-
-  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, String cacheKey, int i, int j,
-      String select, String sqlExceptSelect, boolean b) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize,
-      boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
-    return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
-  }
-
-  /**
-   * @see #paginateByCache(String, Object, int, int, String, String, Object...)
-   */
-  public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
-      String sqlExceptSelect) {
-    return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
-  }
-
-  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
-      String select, String sqlExceptSelect) {
-    return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
   }
 
   /**

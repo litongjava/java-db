@@ -1,8 +1,6 @@
 package com.litongjava.jfinal.plugin.activerecord;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -467,20 +465,6 @@ public class Record implements IRow<Record>, Serializable {
   * @return The converted Java Bean object.
   */
   public <T> T toBean(Class<T> beanClass) {
-    try {
-      T bean = beanClass.getDeclaredConstructor().newInstance();
-      Field[] fields = beanClass.getDeclaredFields();
-      for (Field field : fields) {
-        field.setAccessible(true);
-        String fieldName = field.getName();
-        Object fieldValue = this.get(fieldName);
-        if (fieldValue != null) {
-          field.set(bean, fieldValue);
-        }
-      }
-      return bean;
-    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-      throw new RuntimeException("Error converting Record to Bean", e);
-    }
+    return DbKit.getConfig().getRecordConvert().toJavaBean(this, beanClass);
   }
 }
