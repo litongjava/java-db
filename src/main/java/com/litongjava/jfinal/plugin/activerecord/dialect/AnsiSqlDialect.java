@@ -392,4 +392,9 @@ public class AnsiSqlDialect extends Dialect {
   public String forDbFindColumnsById(String tableName, String columns, String[] pKeys) {
     return DialectUtils.forDbFindColumnsById(tableName, columns, pKeys);
   }
+
+  @Override
+  public String forDbFindColumns(String tableName, String columns) {
+    return DialectUtils.forDbFindColumns(tableName, columns);
+  }
 }

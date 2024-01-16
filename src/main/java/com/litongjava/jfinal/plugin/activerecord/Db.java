@@ -237,13 +237,22 @@ public class Db {
   public static Number queryNumber(String sql) {
     return MAIN.queryNumber(sql);
   }
-  // 26 queryXxx method under -----------------------------------------------
 
+  // ===================================================update==================================
   /**
    * Execute sql update
    */
   static int update(Config config, Connection conn, String sql, Object... paras) throws SQLException {
     return MAIN.update(config, conn, sql, paras);
+  }
+
+  /**
+   * 
+   * @param sqlPara
+   * @return
+   */
+  public static int update(SqlPara sqlPara) {
+    return MAIN.update(sqlPara);
   }
 
   /**
@@ -266,17 +275,36 @@ public class Db {
     return MAIN.update(sql);
   }
 
+  /**
+   * 
+   * @param config
+   * @param conn
+   * @param sql
+   * @param paras
+   * @return
+   * @throws SQLException
+   */
   static List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
     return MAIN.find(config, conn, sql, paras);
   }
 
   /**
-   * @see #find(String, String, Object...)
+   * 
+   * @param sql
+   * @param paras
+   * @return
    */
   public static List<Record> find(String sql, Object... paras) {
     return MAIN.find(sql, paras);
   }
 
+  /**
+   * @param <T>
+   * @param clazz
+   * @param sql
+   * @param paras
+   * @return
+   */
   public static <T> List<T> find(Class<T> clazz, String sql, Object... paras) {
     return MAIN.find(clazz, sql, paras);
   }
@@ -289,16 +317,54 @@ public class Db {
     return MAIN.find(sql);
   }
 
+  /**
+   * @param <T>
+   * @param clazz
+   * @param sql
+   * @return
+   */
   public static <T> List<T> find(Class<T> clazz, String sql) {
     return MAIN.find(clazz, sql);
   }
 
+  /**
+   * @param tableName
+   * @return
+   */
   public static List<Record> findAll(String tableName) {
     return MAIN.findAll(tableName);
   }
 
+  /**
+   * 
+   * @param tableName
+   * @param columns
+   * @return
+   */
+  public static List<Record> findColumnsAll(String tableName, String columns) {
+    return MAIN.findColumnsAll(tableName, columns);
+  }
+
+  /**
+   * 
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @return
+   */
   public static <T> List<T> findAll(Class<T> clazz, String tableName) {
     return MAIN.findAll(clazz, tableName);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @param columns
+   * @return
+   */
+  public static <T> List<T> findColumnsAll(Class<T> clazz, String tableName, String columns) {
+    return MAIN.findColumnsAll(clazz, tableName, columns);
   }
 
   /**
@@ -311,6 +377,13 @@ public class Db {
     return MAIN.findFirst(sql, paras);
   }
 
+  /**
+   * @param <T>
+   * @param clazz
+   * @param sql
+   * @param paras
+   * @return
+   */
   public static <T> T findFirst(Class<T> clazz, String sql, Object... paras) {
     return MAIN.findFirst(clazz, sql, paras);
   }
@@ -323,6 +396,12 @@ public class Db {
     return MAIN.findFirst(sql);
   }
 
+  /**
+   * @param <T>
+   * @param clazz
+   * @param sql
+   * @return
+   */
   public static <T> T findFirst(Class<T> clazz, String sql) {
     return MAIN.findFirst(clazz, sql);
   }
@@ -340,22 +419,57 @@ public class Db {
     return MAIN.findById(tableName, idValue);
   }
 
+  /**
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @param idValue
+   * @return
+   */
   public static <T> T findById(Class<T> clazz, String tableName, Object idValue) {
     return MAIN.findById(clazz, tableName, idValue);
   }
 
+  /**
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @param columns
+   * @param idValue
+   * @return
+   */
   public static <T> T findColumnsById(Class<T> clazz, String tableName, String columns, Object idValue) {
     return MAIN.findColumnsById(clazz, tableName, columns, idValue);
   }
 
+  /**
+   * @param tableName
+   * @param columns
+   * @param idValue
+   * @return
+   */
   public static Record findColumnsById(String tableName, String columns, int idValue) {
     return MAIN.findColumnsById(tableName, columns, idValue);
   }
 
+  /**
+   * @param tableName
+   * @param primaryKey
+   * @param idValue
+   * @return
+   */
   public static Record findById(String tableName, String primaryKey, Object idValue) {
     return MAIN.findById(tableName, primaryKey, idValue);
   }
 
+  /**
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @param primaryKey
+   * @param idValue
+   * @return
+   */
   public static <T> T findById(Class<T> clazz, String tableName, String primaryKey, Object idValue) {
     return MAIN.findById(clazz, tableName, primaryKey, idValue);
   }
@@ -380,6 +494,32 @@ public class Db {
   }
 
   /**
+   * @param tableName
+   * @param columns
+   * @param primaryKey
+   * @param idValues
+   * @return
+   */
+  public static Record findColumnsByIds(String tableName, String columns, String primaryKey, Object... idValues) {
+    return MAIN.findColumnsByIds(tableName, columns, primaryKey, idValues);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @param columns
+   * @param primaryKey
+   * @param idValues
+   * @return
+   */
+  public static <T> T findColumnsByIds(Class<T> clazz, String tableName, String columns, String primaryKey,
+      Object... idValues) {
+    return MAIN.findColumnsByIds(clazz, tableName, columns, primaryKey, idValues);
+  }
+  // =======================================dlete
+
+  /**
    * Delete record by id with default primary key.
    * <pre>
    * Example:
@@ -393,6 +533,12 @@ public class Db {
     return MAIN.deleteById(tableName, idValue);
   }
 
+  /**
+   * @param tableName
+   * @param primaryKey
+   * @param idValue
+   * @return
+   */
   public static boolean deleteById(String tableName, String primaryKey, Object idValue) {
     return MAIN.deleteById(tableName, primaryKey, idValue);
   }
@@ -458,9 +604,67 @@ public class Db {
     return MAIN.delete(sql);
   }
 
+  // ===========================================paginate
+  /**
+   * @param config
+   * @param conn
+   * @param pageNumber
+   * @param pageSize
+   * @param select
+   * @param sqlExceptSelect
+   * @param paras
+   * @return
+   * @throws SQLException
+   */
   static Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select,
       String sqlExceptSelect, Object... paras) throws SQLException {
     return MAIN.paginate(config, conn, pageNumber, pageSize, select, sqlExceptSelect, paras);
+  }
+
+  /**
+   * 
+   * @param pageNumber
+   * @param pageSize
+   * @param sqlPara
+   * @return
+   */
+  public static Page<Record> paginate(int pageNumber, int pageSize, SqlPara sqlPara) {
+    return MAIN.paginate(pageNumber, pageSize, sqlPara);
+  }
+
+  /**
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param sqlPara
+   * @return
+   */
+  public static Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql, SqlPara sqlPara) {
+    return MAIN.paginate(pageNumber, pageSize, isGroupBySql, sqlPara);
+  }
+
+  /**
+   * @param pageNumber
+   * @param pageSize
+   * @param select
+   * @param sqlExceptSelect
+   * @return
+   */
+  public static Page<Record> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect) {
+    return MAIN.paginate(pageNumber, pageSize, select, sqlExceptSelect);
+  }
+
+  /**
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param select
+   * @param sqlExceptSelect
+   * @return
+   */
+  public static Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select,
+      String sqlExceptSelect) {
+    return MAIN.paginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
   }
 
   /**
@@ -477,28 +681,128 @@ public class Db {
     return MAIN.paginate(pageNumber, pageSize, select, sqlExceptSelect, paras);
   }
 
+  /**
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param select
+   * @param sqlExceptSelect
+   * @param paras
+   * @return
+   */
   public static Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select,
       String sqlExceptSelect, Object... paras) {
     return MAIN.paginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
   /**
-   * @see #paginate(String, int, int, String, String, Object...)
+   * @param pageNumber
+   * @param pageSize
+   * @param totalRowSql
+   * @param findSql
+   * @param paras
+   * @return
    */
-  public static Page<Record> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect) {
-    return MAIN.paginate(pageNumber, pageSize, select, sqlExceptSelect);
-  }
-
   public static Page<Record> paginateByFullSql(int pageNumber, int pageSize, String totalRowSql, String findSql,
       Object... paras) {
     return MAIN.paginateByFullSql(pageNumber, pageSize, totalRowSql, findSql, paras);
   }
 
+  /**
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param totalRowSql
+   * @param findSql
+   * @param paras
+   * @return
+   */
   public static Page<Record> paginateByFullSql(int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql,
       String findSql, Object... paras) {
     return MAIN.paginateByFullSql(pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
+  /**
+   * @param <T>
+   * @param clazz
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param sqlPara
+   * @return
+   */
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql,
+      SqlPara sqlPara) {
+    return MAIN.paginate(clazz, pageNumber, pageSize, isGroupBySql, sqlPara);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param pageNumber
+   * @param pageSize
+   * @param sqlPara
+   * @return
+   */
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, SqlPara sqlPara) {
+    return MAIN.paginate(clazz, pageNumber, pageSize, sqlPara);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param pageNumber
+   * @param pageSize
+   * @param select
+   * @param sqlExceptSelect
+   * @param paras
+   * @return
+   */
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, String select,
+      String sqlExceptSelect, Object... paras) {
+    return MAIN.paginate(clazz, pageNumber, pageSize, select, sqlExceptSelect, paras);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param pageNumber
+   * @param pageSize
+   * @param isGroupBySql
+   * @param select
+   * @param sqlExceptSelect
+   * @param paras
+   * @return
+   */
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select,
+      String sqlExceptSelect, Object... paras) {
+    return MAIN.paginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param pageNumber
+   * @param pageSize
+   * @param select
+   * @param sqlExceptSelect
+   * @return
+   */
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, String select,
+      String sqlExceptSelect) {
+    return MAIN.paginate(clazz, pageNumber, pageSize, select, sqlExceptSelect);
+  }
+
+  // =================================================save================================================
+  /**
+   * @param config
+   * @param conn
+   * @param tableName
+   * @param primaryKey
+   * @param record
+   * @return
+   * @throws SQLException
+   */
   static boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record)
       throws SQLException {
     return MAIN.save(config, conn, tableName, primaryKey, record);
@@ -682,6 +986,12 @@ public class Db {
     return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect, paras);
   }
 
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, String cacheKey, int i, int j,
+      String select, String sqlExceptSelect, boolean b) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
   public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize,
       boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
@@ -693,6 +1003,11 @@ public class Db {
   public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
       String sqlExceptSelect) {
     return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
+  }
+
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      String select, String sqlExceptSelect) {
+    return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
   }
 
   /**
@@ -785,32 +1100,43 @@ public class Db {
     return MAIN.getSqlParaByString(content, paras);
   }
 
+  // ======================================find start========================================
+  /**
+   * @param sqlPara
+   * @return
+   */
   public static List<Record> find(SqlPara sqlPara) {
     return MAIN.find(sqlPara);
   }
 
+  /**
+   * @param <T>
+   * @param clazz
+   * @param sqlPara
+   * @return
+   */
   public static <T> List<T> find(Class<T> clazz, SqlPara sqlPara) {
     return MAIN.find(clazz, sqlPara);
   }
 
+  /**
+   * 
+   * @param sqlPara
+   * @return
+   */
   public static Record findFirst(SqlPara sqlPara) {
     return MAIN.findFirst(sqlPara);
   }
 
+  /**
+   * 
+   * @param <T>
+   * @param clazz
+   * @param sqlPara
+   * @return
+   */
   public static <T> T findFirst(Class<T> clazz, SqlPara sqlPara) {
     return MAIN.findFirst(clazz, sqlPara);
-  }
-
-  public static int update(SqlPara sqlPara) {
-    return MAIN.update(sqlPara);
-  }
-
-  public static Page<Record> paginate(int pageNumber, int pageSize, SqlPara sqlPara) {
-    return MAIN.paginate(pageNumber, pageSize, sqlPara);
-  }
-
-  public static Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql, SqlPara sqlPara) {
-    return MAIN.paginate(pageNumber, pageSize, isGroupBySql, sqlPara);
   }
 
   // ---------
@@ -886,5 +1212,4 @@ public class Db {
   public static DbTemplate templateByString(String content, Object... paras) {
     return MAIN.templateByString(content, paras);
   }
-
 }

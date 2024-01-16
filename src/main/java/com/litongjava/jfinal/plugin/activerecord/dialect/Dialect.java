@@ -50,7 +50,8 @@ public abstract class Dialect {
   public abstract String forDbFindById(String tableName, String[] pKeys);
 
   public abstract String forDbFindColumnsById(String tableName, String columns, String[] pKeys);
-
+  public abstract String forDbFindColumns(String tableName, String columns);
+ 
   public abstract String forDbDeleteById(String tableName, String[] pKeys);
 
   public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql,
@@ -215,7 +216,7 @@ public abstract class Dialect {
     return false;
   }
 
-  public Page<Record> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql,
+  public <T> Page<T> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql,
       String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
     throw new RuntimeException("You should implements this method in " + getClass().getName());
   }
@@ -334,5 +335,7 @@ public abstract class Dialect {
   public String forPaginateTotalRow(String select, String sqlExceptSelect, Object ext) {
     return "select count(*) " + replaceOrderBy(sqlExceptSelect);
   }
+
+ 
 
 }
