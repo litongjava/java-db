@@ -8,10 +8,10 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import com.jfinal.kit.StrKit;
+import com.litongjava.jfinal.plugin.activerecord.bean.DefaultRecordConvert;
+import com.litongjava.jfinal.plugin.activerecord.bean.RecordConvert;
 import com.litongjava.jfinal.plugin.activerecord.cache.EhCache;
 import com.litongjava.jfinal.plugin.activerecord.cache.ICache;
-import com.litongjava.jfinal.plugin.activerecord.convert.DefaultRecordConvert;
-import com.litongjava.jfinal.plugin.activerecord.convert.RecordConvert;
 import com.litongjava.jfinal.plugin.activerecord.dialect.Dialect;
 import com.litongjava.jfinal.plugin.activerecord.dialect.MysqlDialect;
 import com.litongjava.jfinal.plugin.activerecord.sql.SqlKit;

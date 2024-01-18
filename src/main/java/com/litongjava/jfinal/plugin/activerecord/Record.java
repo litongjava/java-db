@@ -472,4 +472,12 @@ public class Record implements IRow<Record>, Serializable {
   public Kv toKv() {
     return Kv.create().set(columns);
   }
+  
+  /**将
+   * @param bean
+   * @return
+   */
+  public static Record fromBean(Object bean) {
+    return DbKit.getConfig().getRecordConvert().fromJavaBean(bean);
+  }
 }

@@ -1,4 +1,4 @@
-package com.litongjava.jfinal.plugin.activerecord.convert;
+package com.litongjava.jfinal.plugin.activerecord.bean;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -24,6 +24,11 @@ public class DefaultRecordConvert implements RecordConvert {
     } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
       throw new RuntimeException("Error converting Record to Bean", e);
     }
+  }
+
+  @Override
+  public Record fromJavaBean(Object bean) {
+    return null;
   }
 
 }
