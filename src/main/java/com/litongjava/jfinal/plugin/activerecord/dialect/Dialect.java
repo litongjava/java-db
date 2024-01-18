@@ -20,6 +20,7 @@ import com.litongjava.jfinal.plugin.activerecord.RecordBuilder;
 import com.litongjava.jfinal.plugin.activerecord.Table;
 import com.litongjava.jfinal.plugin.activerecord.builder.KeepByteAndShortModelBuilder;
 import com.litongjava.jfinal.plugin.activerecord.builder.KeepByteAndShortRecordBuilder;
+import com.litongjava.jfinal.plugin.json.Json;
 
 /**
  * Dialect.

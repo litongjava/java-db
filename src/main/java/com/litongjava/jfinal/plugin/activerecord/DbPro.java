@@ -1852,4 +1852,27 @@ public class DbPro {
     return new DbTemplate(true, this, content, paras);
   }
 
+  public boolean exists(String sql, Object[] paras) {
+    Long size = Db.queryLong(sql, paras);
+    if (size > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean exists(String tableName, String fields, Object... paras) {
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append("select count(1) from `").append(tableName).append("`");
+    String[] split = fields.split(",");
+    if (split.length > 0) {
+      stringBuffer.append(" where ");
+      for (String string : split) {
+        stringBuffer.append(string.trim()).append(" = ?");
+      }
+    }
+
+    return this.exists(stringBuffer.toString(), paras);
+  }
+
 }

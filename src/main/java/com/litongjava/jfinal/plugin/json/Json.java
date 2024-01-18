@@ -21,12 +21,12 @@ public abstract class Json {
 	 */
 	protected String datePattern = null;
 	
-	static void setDefaultJsonFactory(IJsonFactory defaultJsonFactory) {
+	public static void setDefaultJsonFactory(IJsonFactory defaultJsonFactory) {
 		Objects.requireNonNull(defaultJsonFactory, "defaultJsonFactory can not be null");
 		Json.defaultJsonFactory = defaultJsonFactory;
 	}
 	
-	static void setDefaultDatePattern(String defaultDatePattern) {
+	public static void setDefaultDatePattern(String defaultDatePattern) {
 		Json.defaultDatePattern = defaultDatePattern;
 	}
 	

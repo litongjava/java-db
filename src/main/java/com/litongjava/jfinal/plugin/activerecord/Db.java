@@ -275,6 +275,7 @@ public class Db {
     return MAIN.update(sql);
   }
 
+  // =====================================================find start===========================================
   /**
    * 
    * @param config
@@ -286,6 +287,24 @@ public class Db {
    */
   static List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
     return MAIN.find(config, conn, sql, paras);
+  }
+
+  /**
+   * @param sql the sql statement
+   * @return
+   */
+  public static List<Record> find(String sql) {
+    return MAIN.find(sql);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param sql
+   * @return
+   */
+  public static <T> List<T> find(Class<T> clazz, String sql) {
+    return MAIN.find(clazz, sql);
   }
 
   /**
@@ -310,39 +329,11 @@ public class Db {
   }
 
   /**
-   * @see #find(String, String, Object...)
-   * @param sql the sql statement
-   */
-  public static List<Record> find(String sql) {
-    return MAIN.find(sql);
-  }
-
-  /**
-   * @param <T>
-   * @param clazz
-   * @param sql
-   * @return
-   */
-  public static <T> List<T> find(Class<T> clazz, String sql) {
-    return MAIN.find(clazz, sql);
-  }
-
-  /**
    * @param tableName
    * @return
    */
   public static List<Record> findAll(String tableName) {
     return MAIN.findAll(tableName);
-  }
-
-  /**
-   * 
-   * @param tableName
-   * @param columns
-   * @return
-   */
-  public static List<Record> findColumnsAll(String tableName, String columns) {
-    return MAIN.findColumnsAll(tableName, columns);
   }
 
   /**
@@ -354,6 +345,16 @@ public class Db {
    */
   public static <T> List<T> findAll(Class<T> clazz, String tableName) {
     return MAIN.findAll(clazz, tableName);
+  }
+
+  /**
+   * 
+   * @param tableName
+   * @param columns
+   * @return
+   */
+  public static List<Record> findColumnsAll(String tableName, String columns) {
+    return MAIN.findColumnsAll(tableName, columns);
   }
 
   /**
@@ -1477,5 +1478,24 @@ public class Db {
    */
   public static DbTemplate templateByString(String content, Object... paras) {
     return MAIN.templateByString(content, paras);
+  }
+
+  /**
+   * @param sql
+   * @param username
+   * @return
+   */
+  public static boolean exists(String sql, Object... paras) {
+    return MAIN.exists(sql, paras);
+  }
+
+  /**
+   * @param tableName
+   * @param fields
+   * @param paras
+   * @return
+   */
+  public static boolean exists(String tableName, String fields, Object... paras) {
+    return MAIN.exists(tableName, fields, paras);
   }
 }

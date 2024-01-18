@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.jfinal.kit.Kv;
 import com.jfinal.kit.TypeKit;
 
 /**
@@ -466,5 +467,9 @@ public class Record implements IRow<Record>, Serializable {
   */
   public <T> T toBean(Class<T> beanClass) {
     return DbKit.getConfig().getRecordConvert().toJavaBean(this, beanClass);
+  }
+
+  public Kv toKv() {
+    return Kv.create().set(columns);
   }
 }
