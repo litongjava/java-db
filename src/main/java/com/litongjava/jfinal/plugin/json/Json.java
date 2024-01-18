@@ -7,7 +7,8 @@ import java.util.Objects;
  */
 public abstract class Json {
 	
-	private static IJsonFactory defaultJsonFactory = new JFinalJsonFactory();
+	//private static IJsonFactory defaultJsonFactory = new JFinalJsonFactory();
+  private static IJsonFactory defaultJsonFactory = new MixedJsonFactory();
 	
 	/**
 	 * 当对象级的 datePattern 为 null 时使用 defaultDatePattern

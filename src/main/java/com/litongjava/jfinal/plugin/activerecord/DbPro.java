@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import com.jfinal.kit.StrKit;
 import com.jfinal.kit.TimeKit;
 import com.litongjava.jfinal.plugin.activerecord.cache.ICache;
+import com.litongjava.jfinal.plugin.json.Json;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -908,6 +909,21 @@ public class DbPro {
     return save(tableName, config.dialect.getDefaultPrimaryKey(), record);
   }
 
+  /**
+   * @param tableName
+   * @param record
+   * @param jsonFields
+   * @return
+   */
+  public boolean save(String tableName, Record record, String[] jsonFields) {
+    if (jsonFields != null) {
+      for (String f : jsonFields) {
+        record.set(f, Json.getJson().toJson(record.get(f)));
+      }
+    }
+    return save(tableName, config.dialect.getDefaultPrimaryKey(), record);
+  }
+
   protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record)
       throws SQLException {
     if (record.modifyFlag == null || record.modifyFlag.isEmpty()) {
@@ -952,6 +968,7 @@ public class DbPro {
    * @param true if update succeed otherwise false
    */
   public boolean update(String tableName, String primaryKey, Record record) {
+
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -961,6 +978,22 @@ public class DbPro {
     } finally {
       config.close(conn);
     }
+  }
+
+  /**
+   * @param tableName
+   * @param primaryKey
+   * @param record
+   * @param jsonFields
+   * @return
+   */
+  public boolean update(String tableName, String primaryKey, Record record, String[] jsonFields) {
+    if (jsonFields != null) {
+      for (String f : jsonFields) {
+        record.set(f, Json.getJson().toJson(record.get(f)));
+      }
+    }
+    return this.update(tableName, primaryKey, record);
   }
 
   /**

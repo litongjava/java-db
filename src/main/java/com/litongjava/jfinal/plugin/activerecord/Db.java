@@ -1131,7 +1131,27 @@ public class Db {
   public static boolean save(String tableName, Record record) {
     return MAIN.save(tableName, record);
   }
+  
+  
+  /**
+   * @param tableName
+   * @param record
+   * @param jsonFields
+   * @return
+   */
+  public static boolean save(String tableName, Record record,String[] jsonFields) {
+    return MAIN.save(tableName, record,jsonFields);
+  }
 
+  /**
+   * @param config
+   * @param conn
+   * @param tableName
+   * @param primaryKey
+   * @param record
+   * @return
+   * @throws SQLException
+   */
   static boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record)
       throws SQLException {
     return MAIN.update(config, conn, tableName, primaryKey, record);
@@ -1150,6 +1170,17 @@ public class Db {
    */
   public static boolean update(String tableName, String primaryKey, Record record) {
     return MAIN.update(tableName, primaryKey, record);
+  }
+  
+  /**
+   * 
+   * @param tableName
+   * @param primaryKey
+   * @param record
+   * @return
+   */
+  public static boolean update(String tableName, String primaryKey, Record record,String[] jsonFields) {
+    return MAIN.update(tableName, primaryKey, record,jsonFields);
   }
 
   /**
