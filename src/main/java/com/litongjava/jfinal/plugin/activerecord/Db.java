@@ -1342,6 +1342,11 @@ public class Db {
   public static int[] batchSave(String tableName, List<? extends Record> recordList, int batchSize) {
     return MAIN.batchSave(tableName, recordList, batchSize);
   }
+  
+
+  public static int[] batchDelete(String tableName, List<? extends Record> recordList, int batchSize) {
+    return MAIN.batchDelete(tableName, recordList, batchSize);    
+  }
 
   /**
   * @see DbPro#batchUpdate(List, int)
@@ -1529,4 +1534,5 @@ public class Db {
   public static boolean exists(String tableName, String fields, Object... paras) {
     return MAIN.exists(tableName, fields, paras);
   }
+
 }

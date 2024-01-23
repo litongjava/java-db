@@ -264,4 +264,9 @@ public class H2Dialect extends Dialect {
   public String forDbFindColumns(String tableName, String columns) {
     return DialectUtils.forDbFindColumns(tableName, columns);
   }
+  
+  @Override
+  public void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+    DialectUtils.forDbDelete(tableName,pKeys,record,sql,paras);
+  }
 }

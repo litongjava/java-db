@@ -1444,13 +1444,19 @@ public class DbPro {
 
   protected int[] batch(Config config, Connection conn, String sql, String columns, List list, int batchSize)
       throws SQLException {
-    if (list == null || list.size() == 0)
+    if (list == null || list.size() == 0) {
       return new int[0];
+    }
+      
     Object element = list.get(0);
-    if (!(element instanceof Record) && !(element instanceof Model))
+    if (!(element instanceof Record) && !(element instanceof Model)) {
       throw new IllegalArgumentException("The element in list must be Model or Record.");
-    if (batchSize < 1)
+    }
+      
+    if (batchSize < 1) {
       throw new IllegalArgumentException("The batchSize must more than 0.");
+    }
+      
     boolean isModel = element instanceof Model;
 
     String[] columnArray = columns.split(",");
@@ -1642,9 +1648,10 @@ public class DbPro {
    * @param tableName the table name
    */
   public int[] batchSave(String tableName, List<? extends Record> recordList, int batchSize) {
-    if (recordList == null || recordList.size() == 0)
+    if (recordList == null || recordList.size() == 0) {
       return new int[0];
-
+    }
+      
     Record record = recordList.get(0);
     Map<String, Object> cols = record.getColumns();
     int index = 0;
@@ -1668,6 +1675,39 @@ public class DbPro {
     StringBuilder sql = new StringBuilder();
     List<Object> parasNoUse = new ArrayList<Object>();
     config.dialect.forDbSave(tableName, pKeysNoUse, record, sql, parasNoUse);
+    return batch(sql.toString(), columns.toString(), recordList, batchSize);
+  }
+  
+  public int[] batchDelete(String tableName, List<? extends Record> recordList, int batchSize) {
+    if (recordList == null || recordList.size() == 0) {
+      return new int[0];
+    }
+      
+
+    Record record = recordList.get(0);
+    Map<String, Object> cols = record.getColumns();
+    int index = 0;
+    StringBuilder columns = new StringBuilder();
+    // the same as the iterator in Dialect.forDbSave() to ensure the order of the columns
+    for (Entry<String, Object> e : cols.entrySet()) {
+      if (config.dialect.isOracle()) { // 支持 oracle 自增主键
+        Object value = e.getValue();
+        if (value instanceof String && ((String) value).endsWith(".nextval")) {
+          continue;
+        }
+      }
+
+      if (index++ > 0) {
+        columns.append(',');
+      }
+      columns.append(e.getKey());
+    }
+
+    String[] pKeysNoUse = new String[0];
+    StringBuilder sql = new StringBuilder();
+    List<Object> parasNoUse = new ArrayList<Object>();
+    config.dialect.forDbDelete(tableName, pKeysNoUse, record, sql, parasNoUse);
+    
     return batch(sql.toString(), columns.toString(), recordList, batchSize);
   }
 
@@ -1907,5 +1947,4 @@ public class DbPro {
 
     return this.exists(stringBuffer.toString(), paras);
   }
-
 }

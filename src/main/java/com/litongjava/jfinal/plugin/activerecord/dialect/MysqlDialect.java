@@ -87,7 +87,7 @@ public class MysqlDialect extends Dialect {
 
   public String forDbFindById(String tableName, String[] pKeys) {
     tableName = tableName.trim();
-    trimPrimaryKeys(pKeys);
+    DialectUtils.trimPrimaryKeys(pKeys);
 
     StringBuilder sql = new StringBuilder("select * from `").append(tableName).append("` where ");
     for (int i = 0; i < pKeys.length; i++) {
@@ -101,7 +101,7 @@ public class MysqlDialect extends Dialect {
 
   public String forDbDeleteById(String tableName, String[] pKeys) {
     tableName = tableName.trim();
-    trimPrimaryKeys(pKeys);
+    DialectUtils.trimPrimaryKeys(pKeys);
 
     StringBuilder sql = new StringBuilder("delete from `").append(tableName).append("` where ");
     for (int i = 0; i < pKeys.length; i++) {
@@ -118,7 +118,7 @@ public class MysqlDialect extends Dialect {
    */
   public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
-    trimPrimaryKeys(pKeys); // important
+    DialectUtils.trimPrimaryKeys(pKeys); // important
 
     sql.append("insert into `");
     sql.append(tableName).append("`(");
@@ -136,11 +136,17 @@ public class MysqlDialect extends Dialect {
     }
     sql.append(temp.toString()).append(')');
   }
+  
+
+  @Override
+  public void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+    DialectUtils.forDbDelete(tableName,pKeys,record,sql,paras);
+  }
 
   public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
       List<Object> paras) {
     tableName = tableName.trim();
-    trimPrimaryKeys(pKeys);
+    DialectUtils.trimPrimaryKeys(pKeys);
 
     // Record 新增支持 modifyFlag
     Set<String> modifyFlag = CPI.getModifyFlag(record);
@@ -181,4 +187,5 @@ public class MysqlDialect extends Dialect {
   public String forDbFindColumns(String tableName, String columns) {
     return DialectUtils.forDbFindColumns(tableName, columns);
   }
+
 }
