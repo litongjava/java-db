@@ -388,7 +388,7 @@ public class DbPro {
   }
 
   /**
-   * @see #find(String, String, Object...)
+   * @see #findWithPrimaryKey(String, String, Object...)
    */
   public List<Record> find(String sql, Object... paras) {
     Connection conn = null;
@@ -415,7 +415,7 @@ public class DbPro {
   }
 
   /**
-   * @see #find(String, String, Object...)
+   * @see #findWithPrimaryKey(String, String, Object...)
    * @param sql the sql statement
    */
   public List<Record> find(String sql) {
@@ -511,12 +511,12 @@ public class DbPro {
    * @param idValues the id value of the record, it can be composite id values
    */
   public Record findByIds(String tableName, String primaryKey, Object... idValues) {
-    List<Record> result = find(tableName, primaryKey, idValues);
+    List<Record> result = findWithPrimaryKey(tableName, primaryKey, idValues);
     return result.size() > 0 ? result.get(0) : null;
   }
 
   public <T> T findByIds(Class<T> clazz, String tableName, String primaryKey, Object... idValues) {
-    List<Record> result = find(tableName, primaryKey, idValues);
+    List<Record> result = findWithPrimaryKey(tableName, primaryKey, idValues);
     List<T> collect = result.stream().map((e) -> e.toBean(clazz)).collect(Collectors.toList());
     return result.size() > 0 ? collect.get(0) : null;
   }
@@ -533,7 +533,7 @@ public class DbPro {
     return result.size() > 0 ? collect.get(0) : null;
   }
 
-  public List<Record> find(String tableName, String primaryKey, Object... idValues) {
+  public List<Record> findWithPrimaryKey(String tableName, String primaryKey, Object... idValues) {
     String[] pKeys = primaryKey.split(",");
     if (pKeys.length != idValues.length)
       throw new IllegalArgumentException("primary key number must equals id value number");
