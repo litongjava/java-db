@@ -26,7 +26,7 @@ import com.litongjava.jfinal.plugin.activerecord.cache.ICache;
  * Model.
  * <p>
  * A clever person solves a problem.
- * A wise person avoids it.
+ * A wise person avoids it
  * A stupid person makes it.
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -102,6 +102,10 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
 	 * You must use set method to change attribute that update method can handle it.
 	 */
 	protected Map<String, Object> _getAttrs() {
+		return attrs;
+	}
+
+	public Map<String, Object> getAttrs() {
 		return attrs;
 	}
 
