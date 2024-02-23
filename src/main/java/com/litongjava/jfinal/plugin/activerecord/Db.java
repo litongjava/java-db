@@ -582,6 +582,10 @@ public class Db {
    * </pre>
    * @see #delete(String, String, Record)
    */
+  public static boolean deleteByIds(String tableName, Record record) {
+    return MAIN.deleteByIds(tableName, record);
+  }
+  
   public static boolean delete(String tableName, Record record) {
     return MAIN.delete(tableName, record);
   }

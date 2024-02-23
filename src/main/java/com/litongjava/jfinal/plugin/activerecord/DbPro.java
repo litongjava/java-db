@@ -641,10 +641,57 @@ public class DbPro {
    * </pre>
    * @see #delete(String, String, Record)
    */
-  public boolean delete(String tableName, Record record) {
+  public boolean deleteByIds(String tableName, Record record) {
     String defaultPrimaryKey = config.dialect.getDefaultPrimaryKey();
     Object t = record.get(defaultPrimaryKey); // 引入中间变量避免 JDK 8 传参有误
     return deleteByIds(tableName, defaultPrimaryKey, t);
+  }
+
+  /**
+   * <pre>
+   * Example:
+   * String noteId="0000000";
+   * Record removeRecordFilter = new Record();
+   * removeRecordFilter.set("note_id", noteId);
+   * Db.delete(ENoteTableNames.ENOTE_NOTE_TAG, removeRecordFilter);
+   * </pre>
+   */
+  public boolean delete(String tableName, Record record) {
+    // 判断record是否为空或没有字段
+    if (record == null) {
+      return false;
+    }
+
+    Map<String, Object> columns = record.getColumns();
+    if (columns.size() < 1) {
+      return false;
+    }
+
+    StringBuilder sql = new StringBuilder("DELETE FROM ");
+    sql.append(tableName);
+    sql.append(" WHERE ");
+
+    List<Object> paras = new ArrayList<>();
+    boolean isFirst = true;
+
+    // 遍历record中的所有字段，构建SQL语句和参数列表
+    for (Map.Entry<String, Object> entry : columns.entrySet()) {
+      if (!isFirst) {
+        sql.append(" AND ");
+      } else {
+        isFirst = false;
+      }
+
+      sql.append(entry.getKey());
+      sql.append(" = ?");
+      paras.add(entry.getValue());
+    }
+
+    // 调用下面的delete方法执行SQL
+    int result = delete(sql.toString(), paras.toArray());
+
+    // 如果受影响的行数大于0，则返回true，表示删除成功
+    return result > 0;
   }
 
   /**
@@ -1447,16 +1494,16 @@ public class DbPro {
     if (list == null || list.size() == 0) {
       return new int[0];
     }
-      
+
     Object element = list.get(0);
     if (!(element instanceof Record) && !(element instanceof Model)) {
       throw new IllegalArgumentException("The element in list must be Model or Record.");
     }
-      
+
     if (batchSize < 1) {
       throw new IllegalArgumentException("The batchSize must more than 0.");
     }
-      
+
     boolean isModel = element instanceof Model;
 
     String[] columnArray = columns.split(",");
@@ -1651,7 +1698,7 @@ public class DbPro {
     if (recordList == null || recordList.size() == 0) {
       return new int[0];
     }
-      
+
     Record record = recordList.get(0);
     Map<String, Object> cols = record.getColumns();
     int index = 0;
@@ -1677,12 +1724,11 @@ public class DbPro {
     config.dialect.forDbSave(tableName, pKeysNoUse, record, sql, parasNoUse);
     return batch(sql.toString(), columns.toString(), recordList, batchSize);
   }
-  
+
   public int[] batchDelete(String tableName, List<? extends Record> recordList, int batchSize) {
     if (recordList == null || recordList.size() == 0) {
       return new int[0];
     }
-      
 
     Record record = recordList.get(0);
     Map<String, Object> cols = record.getColumns();
@@ -1707,7 +1753,7 @@ public class DbPro {
     StringBuilder sql = new StringBuilder();
     List<Object> parasNoUse = new ArrayList<Object>();
     config.dialect.forDbDelete(tableName, pKeysNoUse, record, sql, parasNoUse);
-    
+
     return batch(sql.toString(), columns.toString(), recordList, batchSize);
   }
 
