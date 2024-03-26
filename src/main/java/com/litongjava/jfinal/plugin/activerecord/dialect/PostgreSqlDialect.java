@@ -15,6 +15,7 @@ import com.litongjava.jfinal.plugin.activerecord.Record;
 import com.litongjava.jfinal.plugin.activerecord.Table;
 import com.litongjava.jfinal.plugin.activerecord.builder.TimestampProcessedModelBuilder;
 import com.litongjava.jfinal.plugin.activerecord.builder.TimestampProcessedRecordBuilder;
+import org.postgresql.util.PGobject;
 
 /**
  * PostgreSqlDialect.
@@ -68,7 +69,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
-      List<Object> paras) {
+                             List<Object> paras) {
     sql.append("update \"").append(table.getName()).append("\" set ");
     String[] pKeys = table.getPrimaryKey();
     for (Entry<String, Object> e : attrs.entrySet()) {
@@ -169,7 +170,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras) {
+                          List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -211,10 +212,31 @@ public class PostgreSqlDialect extends Dialect {
     fillStatementHandleDateType(pst, paras);
   }
 
+  protected void fillStatementHandleDateType(PreparedStatement pst, List<Object> paras) throws SQLException {
+    for (int i = 0, size = paras.size(); i < size; i++) {
+      Object value = paras.get(i);
+      if (value instanceof java.util.Date) {
+        if (value instanceof java.sql.Date) {
+          pst.setDate(i + 1, (java.sql.Date) value);
+        } else if (value instanceof java.sql.Timestamp) {
+          pst.setTimestamp(i + 1, (java.sql.Timestamp) value);
+        } else {
+          // Oracle、SqlServer 中的 TIMESTAMP、DATE 支持 new Date() 给值
+          java.util.Date d = (java.util.Date) value;
+          pst.setTimestamp(i + 1, new java.sql.Timestamp(d.getTime()));
+        }
+      } else if (value instanceof PGobject) {
+        pst.setObject(i + 1, value);
+      } else {
+        pst.setObject(i + 1, value);
+      }
+    }
+  }
+
   /**
    * 解决 PostgreSql 获取自增主键时 rs.getObject(1) 总是返回第一个字段的值，而非返回了 id 值
    * issue: https://www.oschina.net/question/2312705_2243354
-   * 
+   * <p>
    * 相对于 Dialect 中的默认实现，仅将 rs.getXxx(1) 改成了 rs.getXxx(pKey)
    */
   public void getModelGeneratedKey(Model<?> model, PreparedStatement pst, Table table) throws SQLException {
@@ -244,7 +266,7 @@ public class PostgreSqlDialect extends Dialect {
   /**
    * 解决 PostgreSql 获取自增主键时 rs.getObject(1) 总是返回第一个字段的值，而非返回了 id 值
    * issue: https://www.oschina.net/question/2312705_2243354
-   * 
+   * <p>
    * 相对于 Dialect 中的默认实现，仅将 rs.getXxx(1) 改成了 rs.getXxx(pKey)
    */
   public void getRecordGeneratedKey(PreparedStatement pst, Record record, String[] pKeys) throws SQLException {
@@ -263,14 +285,14 @@ public class PostgreSqlDialect extends Dialect {
   public String forDbFindColumnsById(String tableName, String columns, String[] pKeys) {
     return DialectUtils.forDbFindColumnsById(tableName, columns, pKeys);
   }
-  
+
   @Override
   public String forDbFindColumns(String tableName, String columns) {
     return DialectUtils.forDbFindColumns(tableName, columns);
   }
-  
+
   @Override
   public void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
-    DialectUtils.forDbDelete(tableName,pKeys,record,sql,paras);
+    DialectUtils.forDbDelete(tableName, pKeys, record, sql, paras);
   }
 }

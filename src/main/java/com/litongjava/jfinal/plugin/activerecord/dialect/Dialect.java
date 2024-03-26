@@ -44,23 +44,25 @@ public abstract class Dialect {
   public abstract void forModelSave(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras);
 
   public abstract void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
-      List<Object> paras);
+                                      List<Object> paras);
 
   // Methods for DbPro. Do not delete the String[] pKeys parameter, the element of pKeys needs to trim()
   public abstract String forDbFindById(String tableName, String[] pKeys);
 
   public abstract String forDbFindColumnsById(String tableName, String columns, String[] pKeys);
+
   public abstract String forDbFindColumns(String tableName, String columns);
- 
+
   public abstract String forDbDeleteById(String tableName, String[] pKeys);
 
   public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql,
-      List<Object> paras);
+                                 List<Object> paras);
+
   public abstract void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql,
-      List<Object> paras);
+                                   List<Object> paras);
 
   public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras);
+                                   List<Object> paras);
 
   public String forFindAll(String tableName) {
     return "select * from " + tableName;
@@ -95,7 +97,7 @@ public abstract class Dialect {
 
   /**
    * 指示 MetaBuilder 生成的 ColumnMeta.javaType 是否保持住 Byte、Short 类型
-   * 进而 BaseModelBuilder 生成针对 Byte、Short 类型的获取方法： 
+   * 进而 BaseModelBuilder 生成针对 Byte、Short 类型的获取方法：
    * getByte(String)、getShort(String)
    */
   public boolean isKeepByteAndShort() {
@@ -104,10 +106,10 @@ public abstract class Dialect {
 
   /**
    * 配置自定义 ModelBuilder
-   * 
+   * <p>
    * 通过继承扩展 ModelBuilder 可以对 JDBC 到 java 数据类型进行定制化转换
    * 不同数据库从 JDBC 到 java 数据类型的映射关系有所不同
-   * 
+   * <p>
    * 此外，还可以通过改变 ModelBuilder.buildLabelNamesAndTypes()
    * 方法逻辑，实现下划线字段名转驼峰变量名的功能
    */
@@ -118,10 +120,10 @@ public abstract class Dialect {
 
   /**
    * 配置自定义 RecordBuilder
-   * 
+   * <p>
    * 通过继承扩展 RecordBuilder 可以对 JDBC 到 java 数据类型进行定制化转换
    * 不同数据库从 JDBC 到 java 数据类型的映射关系有所不同
-   * 
+   * <p>
    * 此外，还可以通过改变 RecordBuilder.buildLabelNamesAndTypes()
    * 方法逻辑，实现下划线字段名转驼峰变量名的功能
    */
@@ -132,13 +134,13 @@ public abstract class Dialect {
 
   @SuppressWarnings("rawtypes")
   public <T> List<T> buildModelList(ResultSet rs, Class<? extends Model> modelClass)
-      throws SQLException, ReflectiveOperationException {
+    throws SQLException, ReflectiveOperationException {
     return modelBuilder.build(rs, modelClass);
   }
 
   @SuppressWarnings("rawtypes")
   public <T> void eachModel(ResultSet rs, Class<? extends Model> modelClass, Function<T, Boolean> func)
-      throws SQLException, ReflectiveOperationException {
+    throws SQLException, ReflectiveOperationException {
     modelBuilder.build(rs, modelClass, func);
   }
 
@@ -181,7 +183,7 @@ public abstract class Dialect {
   /**
    * mysql 数据库的  bigint unsigned 对应的 java 类型为 BigInteger
    * 但是 rs.getObject(1) 返回值为 Long 型，造成 model.save() 以后
-   * model.getId() 时的类型转换异常 
+   * model.getId() 时的类型转换异常
    */
   protected void processGeneratedBigIntegerKey(Model<?> model, String pKey, Object v) {
     if (v instanceof BigInteger) {
@@ -219,7 +221,7 @@ public abstract class Dialect {
   }
 
   public <T> Page<T> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql,
-      String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
+                                        String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
     throw new RuntimeException("You should implements this method in " + getClass().getName());
   }
 
@@ -229,7 +231,7 @@ public abstract class Dialect {
 
   @SuppressWarnings("rawtypes")
   public Page takeOverModelPaginate(Connection conn, Class<? extends Model> modelClass, int pageNumber, int pageSize,
-      Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws Exception {
+                                    Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws Exception {
     throw new RuntimeException("You should implements this method in " + getClass().getName());
   }
 
@@ -261,8 +263,8 @@ public abstract class Dialect {
   protected static class Holder {
     // "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*";
     private static final Pattern ORDER_BY_PATTERN = Pattern.compile(
-        "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*",
-        Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+      "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*",
+      Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
   }
 
   public String replaceOrderBy(String sql) {
@@ -315,9 +317,10 @@ public abstract class Dialect {
 
   /**
    * 为分页方法生成查询 totalRow 值的 sql
-   * @param select sql 语句的 select 部分
+   *
+   * @param select          sql 语句的 select 部分
    * @param sqlExceptSelect sql 语句除了 select 以外的部分
-   * @param ext 扩展参数，在 Model 调用时传入 Model 对象，在 DbPro 调用时传入 null
+   * @param ext             扩展参数，在 Model 调用时传入 Model 对象，在 DbPro 调用时传入 null
    */
   public String forPaginateTotalRow(String select, String sqlExceptSelect, Object ext) {
     return "select count(*) " + replaceOrderBy(sqlExceptSelect);

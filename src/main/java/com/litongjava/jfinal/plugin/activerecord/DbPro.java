@@ -1661,8 +1661,10 @@ public class DbPro {
    * Ensure all the models can use the same sql as the first model.
    */
   public int[] batchSave(List<? extends Model> modelList, int batchSize) {
-    if (modelList == null || modelList.size() == 0)
+    if (modelList == null || modelList.size() == 0) {
       return new int[0];
+    }
+      
 
     Model model = modelList.get(0);
     Map<String, Object> attrs = model._getAttrs();
