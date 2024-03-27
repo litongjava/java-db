@@ -58,7 +58,7 @@ public class TdEngineDialect extends Dialect {
   }
 
   public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
-      List<Object> paras) {
+                             List<Object> paras) {
     sql.append("update `").append(table.getName()).append("` set ");
     String[] pKeys = table.getPrimaryKey();
     for (Entry<String, Object> e : attrs.entrySet()) {
@@ -145,7 +145,7 @@ public class TdEngineDialect extends Dialect {
   }
 
   public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras) {
+                          List<Object> paras) {
     tableName = tableName.trim();
     DialectUtils.trimPrimaryKeys(pKeys);
 
@@ -198,6 +198,8 @@ public class TdEngineDialect extends Dialect {
       } else if (object instanceof java.sql.Timestamp) {
         long time = ((java.sql.Timestamp) object).getTime();
         pst.setLong(i + 1, time);
+        //parse row block info error:unsupported data type 9
+        //pst.setTimestamp(i + 1, ((java.sql.Timestamp) object));
       } else if (object instanceof java.util.Date) {
         long time = ((java.util.Date) object).getTime();
         pst.setLong(i + 1, time);
