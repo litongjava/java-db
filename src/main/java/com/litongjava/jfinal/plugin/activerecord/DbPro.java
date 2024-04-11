@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import com.jfinal.kit.StrKit;
 import com.jfinal.kit.TimeKit;
 import com.litongjava.jfinal.plugin.activerecord.cache.ICache;
-import com.litongjava.jfinal.plugin.json.Json;
+import com.litongjava.tio.utils.json.Json;
 
 import lombok.extern.slf4j.Slf4j;
 
