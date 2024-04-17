@@ -148,6 +148,10 @@ public abstract class Dialect {
     return recordBuilder.build(config, rs);
   }
 
+  public List<Record> buildRecordListWithJsonFields(Config config, ResultSet rs, String[] jsonFields) throws SQLException {
+    return recordBuilder.buildJsonFields(config, rs,jsonFields);
+  }
+
   public void eachRecord(Config config, ResultSet rs, Function<Record, Boolean> func) throws SQLException {
     recordBuilder.build(config, rs, func);
   }
