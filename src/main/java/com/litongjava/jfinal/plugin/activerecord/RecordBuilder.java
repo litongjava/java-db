@@ -1,6 +1,5 @@
 package com.litongjava.jfinal.plugin.activerecord;
 
-import com.litongjava.tio.utils.json.Json;
 import com.litongjava.tio.utils.json.JsonUtils;
 import org.postgresql.util.PGobject;
 
@@ -70,11 +69,11 @@ public class RecordBuilder {
       record.setColumnsMap(config.containerFactory.getColumnsMap());
       Map<String, Object> columns = record.getColumns();
       for (int i = 1; i <= columnCount; i++) {
-        Object value = getFieldValueWithJsonField(rs, types, i);
+        Object value = getFieldValue(rs, types, i);
         String labelName = labelNames[i];
 
         for (String jsonField : jsonFields) {
-          if (labelName.equals(jsonField)) {
+          if (labelName.equals(jsonField) && value != null) {
             if (value instanceof String) {
               String stringValue = (String) value;
               value = parseJsonField(stringValue);
@@ -103,30 +102,10 @@ public class RecordBuilder {
 
   private Object parseJsonField(String stringValue) {
     if (stringValue.startsWith("[") && stringValue.endsWith("]")) {
-     return JsonUtils.parseArray(stringValue);
+      return JsonUtils.parseArray(stringValue);
     } else {
       return JsonUtils.parseObject(stringValue);
     }
-  }
-
-  public Object getFieldValueWithJsonField(ResultSet rs, int[] types, int i) throws SQLException {
-    Object value;
-    if (types[i] == Types.ARRAY) {
-      value = rs.getArray(i);
-    } else if (types[i] < Types.BLOB) {
-      value = rs.getObject(i);
-    } else {
-      if (types[i] == Types.CLOB) {
-        value = ModelBuilder.me.handleClob(rs.getClob(i));
-      } else if (types[i] == Types.NCLOB) {
-        value = ModelBuilder.me.handleClob(rs.getNClob(i));
-      } else if (types[i] == Types.BLOB) {
-        value = ModelBuilder.me.handleBlob(rs.getBlob(i));
-      } else {
-        value = rs.getObject(i);
-      }
-    }
-    return value;
   }
 
   public Object getFieldValue(ResultSet rs, int[] types, int i) throws SQLException {
