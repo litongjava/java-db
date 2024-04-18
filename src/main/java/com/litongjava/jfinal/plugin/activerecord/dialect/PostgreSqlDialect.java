@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -228,7 +229,16 @@ public class PostgreSqlDialect extends Dialect {
       } else if (value instanceof PGobject) {
         pst.setObject(i + 1, value);
       } else {
-        pst.setObject(i + 1, value);
+        if (value instanceof String) {
+          String jsonValue = (String) value;
+          if (jsonValue.startsWith("{") || jsonValue.startsWith("[{")) {
+            pst.setObject(i + 1, value, Types.OTHER);
+          } else {
+            pst.setObject(i + 1, value);
+          }
+        } else {
+          pst.setObject(i + 1, value);
+        }
       }
     }
   }

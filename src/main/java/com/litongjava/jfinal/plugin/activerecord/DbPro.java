@@ -1052,7 +1052,12 @@ public class DbPro {
   public boolean save(String tableName, Record record, String[] jsonFields) {
     if (jsonFields != null) {
       for (String f : jsonFields) {
-        record.set(f, Json.getJson().toJson(record.get(f)));
+        Object object = record.get(f);
+        if (object != null) {
+          String value = Json.getJson().toJson(object);
+          record.set(f, value);
+        }
+
       }
     }
     return save(tableName, config.dialect.getDefaultPrimaryKey(), record);
