@@ -2,6 +2,7 @@ package com.litongjava.jfinal.plugin.activerecord;
 
 import com.litongjava.tio.utils.json.Json;
 import com.litongjava.tio.utils.json.JsonUtils;
+import org.postgresql.util.PGobject;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -76,18 +77,17 @@ public class RecordBuilder {
           if (labelName.equals(jsonField)) {
             if (value instanceof String) {
               String stringValue = (String) value;
-              if(stringValue.startsWith("[") && stringValue.endsWith("]")){
-                value = JsonUtils.parseArray(stringValue);
-              }else{
-                value = JsonUtils.parseObject(stringValue);
+              value = parseJsonField(stringValue);
+            } else if (value instanceof PGobject) {
+              PGobject pGobject = (PGobject) value;
+              if ("json".equals(pGobject.getType())) {
+                String stringValue = pGobject.getValue();
+                value = parseJsonField(stringValue);
               }
-
             }
           }
         }
         columns.put(labelName, value);
-
-
       }
 
       if (func == null) {
@@ -99,6 +99,14 @@ public class RecordBuilder {
       }
     }
     return result;
+  }
+
+  private Object parseJsonField(String stringValue) {
+    if (stringValue.startsWith("[") && stringValue.endsWith("]")) {
+     return JsonUtils.parseArray(stringValue);
+    } else {
+      return JsonUtils.parseObject(stringValue);
+    }
   }
 
   public Object getFieldValueWithJsonField(ResultSet rs, int[] types, int i) throws SQLException {

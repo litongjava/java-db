@@ -232,6 +232,7 @@ public class PostgreSqlDialect extends Dialect {
         if (value instanceof String) {
           String jsonValue = (String) value;
           if (jsonValue.startsWith("{") || jsonValue.startsWith("[{")) {
+            //add support for json
             pst.setObject(i + 1, value, Types.OTHER);
           } else {
             pst.setObject(i + 1, value);
