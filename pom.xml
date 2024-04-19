@@ -111,6 +111,13 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+      <version>3.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- jackson json 转换 -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
