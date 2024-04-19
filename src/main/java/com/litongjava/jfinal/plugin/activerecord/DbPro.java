@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  * DbPro. Professional database query and update tool.
  */
 @Slf4j
-@SuppressWarnings({"rawtypes", "unchecked"})
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class DbPro {
 
   protected final Config config;
@@ -366,8 +366,8 @@ public class DbPro {
     return update(sql, DbKit.NULL_PARA_ARRAY);
   }
 
-
-  protected List<Record> findJsonField(Config config, Connection conn, String sql, String[] jsonFields, Object... paras) throws SQLException {
+  protected List<Record> findJsonField(Config config, Connection conn, String sql, String[] jsonFields, Object... paras)
+      throws SQLException {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
       ResultSet rs = pst.executeQuery();
@@ -376,7 +376,6 @@ public class DbPro {
       return result;
     }
   }
-
 
   protected List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -389,7 +388,7 @@ public class DbPro {
   }
 
   protected <T> List<T> find(Class<T> clazz, Config config, Connection conn, String sql, Object... paras)
-    throws SQLException {
+      throws SQLException {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
       ResultSet rs = pst.executeQuery();
@@ -459,6 +458,10 @@ public class DbPro {
     return find(sql, DbKit.NULL_PARA_ARRAY);
   }
 
+  public List<Record> findWithJsonFields(String sql, String[] jsonFields) {
+    return findWithJsonField(sql, jsonFields, DbKit.NULL_PARA_ARRAY);
+  }
+
   public List<Record> findAll(String tableName) {
     String sql = config.dialect.forFindAll(tableName);
     return find(sql, DbKit.NULL_PARA_ARRAY);
@@ -492,7 +495,7 @@ public class DbPro {
   }
 
   public Record findFirstJsonField(String sql, String[] jsonFields, Object... paras) {
-    //List<Record> result = find(sql, jsonFields, paras);
+    // List<Record> result = find(sql, jsonFields, paras);
     List<Record> result = findJsonField(sql, jsonFields, paras);
     return result.size() > 0 ? result.get(0) : null;
   }
@@ -573,7 +576,7 @@ public class DbPro {
   }
 
   public <T> T findColumnsByIds(Class<T> clazz, String tableName, String columns, String primaryKey,
-                                Object... idValues) {
+      Object... idValues) {
     List<Record> result = findColumns(tableName, columns, primaryKey, idValues);
     List<T> collect = result.stream().map((e) -> e.toBean(clazz)).collect(Collectors.toList());
     return result.size() > 0 ? collect.get(0) : null;
@@ -595,7 +598,7 @@ public class DbPro {
   }
 
   public <T> T findColumnsById(Class<T> clazz, String tableName, String columns, String primaryKey,
-                               Object... idValues) {
+      Object... idValues) {
     List<Record> result = findColumns(tableName, columns, primaryKey, idValues);
     List<T> collect = result.stream().map((e) -> e.toBean(clazz)).collect(Collectors.toList());
     return result.size() > 0 ? collect.get(0) : null;
@@ -678,7 +681,7 @@ public class DbPro {
       idValue[i] = record.get(pKeys[i]);
       if (idValue[i] == null)
         throw new IllegalArgumentException(
-          "The value of primary key \"" + pKeys[i] + "\" can not be null in record object");
+            "The value of primary key \"" + pKeys[i] + "\" can not be null in record object");
     }
     return deleteByIds(tableName, primaryKey, idValue);
   }
@@ -765,7 +768,7 @@ public class DbPro {
   }
 
   private <T> Page<T> countPage(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql,
-                                String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
+      String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
     if (pageNumber < 1 || pageSize < 1) {
       throw new ActiveRecordException("pageNumber and pageSize must more than 0");
     }
@@ -816,27 +819,26 @@ public class DbPro {
   }
 
   public <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, String select, String sqlExceptSelect,
-                              Object[] paras) {
+      Object[] paras) {
     return doPaginate(clazz, pageNumber, pageSize, null, select, sqlExceptSelect, paras);
   }
-
 
   public Page<Record> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect) {
     return doPaginate(pageNumber, pageSize, null, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
   }
 
-  public Page<Record> paginateJsonFields(int pageNumber, int pageSize, String select,
-                                         String sqlExceptSelect, String[] jsonFields, Object... paras) {
+  public Page<Record> paginateJsonFields(int pageNumber, int pageSize, String select, String sqlExceptSelect,
+      String[] jsonFields, Object... paras) {
     return doPaginateJsonFields(pageNumber, pageSize, null, select, sqlExceptSelect, jsonFields, paras);
   }
 
-  public Page<Record> paginateJsonFields(int pageNumber, int pageSize, String select,
-                                         String sqlExceptSelect, String[] jsonFields) {
+  public Page<Record> paginateJsonFields(int pageNumber, int pageSize, String select, String sqlExceptSelect,
+      String[] jsonFields) {
     return doPaginateJsonFields(pageNumber, pageSize, null, select, sqlExceptSelect, jsonFields, DbKit.NULL_PARA_ARRAY);
   }
 
   public Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select,
-                               String sqlExceptSelect) {
+      String sqlExceptSelect) {
     return doPaginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
   }
 
@@ -845,29 +847,30 @@ public class DbPro {
   }
 
   public <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select,
-                              String sqlExceptSelect) {
+      String sqlExceptSelect) {
     return doPaginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
   }
 
   public Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select,
-                               String sqlExceptSelect, Object... paras) {
+      String sqlExceptSelect, Object... paras) {
     return doPaginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
   public <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select,
-                              String sqlExceptSelect, Object[] paras) {
+      String sqlExceptSelect, Object[] paras) {
     return doPaginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
   protected Page<Record> doPaginateJsonFields(int pageNumber, int pageSize, Boolean isGroupBySql, String select,
-                                              String sqlExceptSelect, String[] jsonFields, Object... paras) {
+      String sqlExceptSelect, String[] jsonFields, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
       String totalRowSql = config.dialect.forPaginateTotalRow(select, sqlExceptSelect, null);
       StringBuilder findSql = new StringBuilder();
       findSql.append(select).append(' ').append(sqlExceptSelect);
-      return doPaginateByFullSqlWithJsonFields(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, jsonFields, paras);
+      return doPaginateByFullSqlWithJsonFields(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql,
+          jsonFields, paras);
     } catch (Exception e) {
       throw new ActiveRecordException(e);
     } finally {
@@ -876,7 +879,7 @@ public class DbPro {
   }
 
   protected Page<Record> doPaginate(int pageNumber, int pageSize, Boolean isGroupBySql, String select,
-                                    String sqlExceptSelect, Object... paras) {
+      String sqlExceptSelect, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -892,7 +895,7 @@ public class DbPro {
   }
 
   public <T> Page<T> doPaginate(Class<T> clazz, int pageNumber, int pageSize, Boolean isGroupBySql, String select,
-                                String sqlExceptSelect, Object... paras) {
+      String sqlExceptSelect, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -908,8 +911,8 @@ public class DbPro {
   }
 
   protected Page<Record> doPaginateByFullSqlWithJsonFields(Config config, Connection conn, int pageNumber, int pageSize,
-                                                           Boolean isGroupBySql, String totalRowSql, StringBuilder findSql,
-                                                           String[] jsonFields, Object... paras) throws SQLException {
+      Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, String[] jsonFields, Object... paras)
+      throws SQLException {
     Page<Record> page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     // --------
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
@@ -919,7 +922,7 @@ public class DbPro {
   }
 
   protected Page<Record> doPaginateByFullSql(Config config, Connection conn, int pageNumber, int pageSize,
-                                             Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
+      Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
     Page<Record> page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     // --------
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
@@ -929,7 +932,7 @@ public class DbPro {
   }
 
   public <T> Page<T> doPaginateByFullSql(Class<T> clazz, Config config2, Connection conn, int pageNumber, int pageSize,
-                                         Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object[] paras) throws SQLException {
+      Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object[] paras) throws SQLException {
     Page<T> page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     // find with sql
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
@@ -939,7 +942,7 @@ public class DbPro {
   }
 
   protected Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select,
-                                  String sqlExceptSelect, Object... paras) throws SQLException {
+      String sqlExceptSelect, Object... paras) throws SQLException {
     String totalRowSql = config.dialect.forPaginateTotalRow(select, sqlExceptSelect, null);
     StringBuilder findSql = new StringBuilder();
     findSql.append(select).append(' ').append(sqlExceptSelect);
@@ -947,7 +950,7 @@ public class DbPro {
   }
 
   protected Page<Record> doPaginateByFullSql(int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql,
-                                             String findSql, Object... paras) {
+      String findSql, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -961,13 +964,13 @@ public class DbPro {
   }
 
   protected <T> Page<T> doPaginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, Boolean isGroupBySql,
-                                            String totalRowSql, String findSql, Object... paras) {
+      String totalRowSql, String findSql, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
       StringBuilder findSqlBuf = new StringBuilder().append(findSql);
       return doPaginateByFullSql(clazz, config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSqlBuf,
-        paras);
+          paras);
     } catch (Exception e) {
       throw new ActiveRecordException(e);
     } finally {
@@ -976,34 +979,34 @@ public class DbPro {
   }
 
   public Page<Record> paginateByFullSql(int pageNumber, int pageSize, String totalRowSql, String findSql,
-                                        Object... paras) {
+      Object... paras) {
     return doPaginateByFullSql(pageNumber, pageSize, null, totalRowSql, findSql, paras);
   }
 
   public Page<Record> paginateByFullSql(int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql,
-                                        String findSql, Object... paras) {
+      String findSql, Object... paras) {
     return doPaginateByFullSql(pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
   public <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, String totalRowSql, String findSql,
-                                       Object... paras) {
+      Object... paras) {
     return doPaginateByFullSql(clazz, pageNumber, pageSize, null, totalRowSql, findSql, paras);
   }
 
   public <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql,
-                                       String totalRowSql, String findSql, Object... paras) {
+      String totalRowSql, String findSql, Object... paras) {
     return doPaginateByFullSql(clazz, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
   protected boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record)
-    throws SQLException {
+      throws SQLException {
     String[] pKeys = primaryKey.split(",");
     List<Object> paras = new ArrayList<Object>();
     StringBuilder sql = new StringBuilder();
     config.dialect.forDbSave(tableName, pKeys, record, sql, paras);
 
     try (PreparedStatement pst = config.dialect.isOracle() ? conn.prepareStatement(sql.toString(), pKeys)
-      : conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+        : conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
       config.dialect.fillStatement(pst, paras);
       int result = pst.executeUpdate();
       config.dialect.getRecordGeneratedKey(pst, record, pKeys);
@@ -1064,7 +1067,7 @@ public class DbPro {
   }
 
   protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record)
-    throws SQLException {
+      throws SQLException {
     if (record.modifyFlag == null || record.modifyFlag.isEmpty()) {
       return false;
     }
@@ -1076,7 +1079,7 @@ public class DbPro {
       ids[i] = record.get(pKeys[i].trim()); // .trim() is important!
       if (ids[i] == null)
         throw new ActiveRecordException(
-          "You can't update record without Primary Key, " + pKeys[i] + " can not be null.");
+            "You can't update record without Primary Key, " + pKeys[i] + " can not be null.");
     }
 
     StringBuilder sql = new StringBuilder();
@@ -1191,7 +1194,7 @@ public class DbPro {
         if (result)
           return true;
         throw new NestedTransactionHelpException(
-          "Notice the outer transaction that the nested transaction return false"); // important:can not return false
+            "Notice the outer transaction that the nested transaction return false"); // important:can not return false
       } catch (SQLException e) {
         throw new ActiveRecordException(e);
       }
@@ -1364,7 +1367,7 @@ public class DbPro {
   }
 
   public <T> Page<T> doPaginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
-                                       Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+      Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     ICache cache = config.getCache();
     Page<T> result = cache.get(cacheName, key);
     if (result == null) {
@@ -1375,7 +1378,7 @@ public class DbPro {
   }
 
   public Page<Record> doPaginateByCache(String cacheName, Object key, int pageNumber, int pageSize,
-                                        Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+      Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     ICache cache = config.getCache();
     Page<Record> result = cache.get(cacheName, key);
     if (result == null) {
@@ -1392,7 +1395,7 @@ public class DbPro {
   }
 
   public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
-                                      SqlPara sqlPara) {
+      SqlPara sqlPara) {
     String[] sqls = PageSqlKit.parsePageSql(sqlPara.getSql());
     assert sqls != null;
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, sqls[0], sqls[1], sqlPara.getPara());
@@ -1402,15 +1405,15 @@ public class DbPro {
    * @see #paginateByCache(String, Object, int, int, String, String, Object...)
    */
   public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
-                                      String sqlExceptSelect) {
+      String sqlExceptSelect) {
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect,
-      DbKit.NULL_PARA_ARRAY);
+        DbKit.NULL_PARA_ARRAY);
   }
 
   public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
-                                      String select, String sqlExceptSelect) {
+      String select, String sqlExceptSelect) {
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect,
-      DbKit.NULL_PARA_ARRAY);
+        DbKit.NULL_PARA_ARRAY);
   }
 
   /**
@@ -1420,27 +1423,27 @@ public class DbPro {
    * @see #paginate(int, int, String, String, Object...)
    */
   public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
-                                      String sqlExceptSelect, Object... paras) {
+      String sqlExceptSelect, Object... paras) {
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect, paras);
   }
 
   public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
-                                      String select, String sqlExceptSelect, Object... paras) {
+      String select, String sqlExceptSelect, Object... paras) {
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
   public Page<Record> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize,
-                                               String totalRowSql, String findSql, Object... paras) {
+      String totalRowSql, String findSql, Object... paras) {
     return doPaginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, null, totalRowSql, findSql, paras);
   }
 
   public Page<Record> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize,
-                                               boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+      boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     return doPaginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
   private Page<Record> doPaginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize,
-                                                  Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+      Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     ICache cache = config.getCache();
     Page<Record> result = cache.get(cacheName, key);
     if (result == null) {
@@ -1451,18 +1454,18 @@ public class DbPro {
   }
 
   public <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object key, int pageNumber,
-                                              int pageSize, String totalRowSql, String findSql, Object... paras) {
+      int pageSize, String totalRowSql, String findSql, Object... paras) {
     return doPaginateByCacheByFullSql(clazz, cacheName, key, pageNumber, pageSize, null, totalRowSql, findSql, paras);
   }
 
   public <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object key, int pageNumber,
-                                              int pageSize, boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+      int pageSize, boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     return doPaginateByCacheByFullSql(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql,
-      paras);
+        paras);
   }
 
   private <T> Page<T> doPaginateByCacheByFullSql(Class<T> clazz, String cacheName, Object key, int pageNumber,
-                                                 int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+      int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     ICache cache = config.getCache();
     Page<T> result = cache.get(cacheName, key);
     if (result == null) {
@@ -1473,44 +1476,44 @@ public class DbPro {
   }
 
   public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
-                                     SqlPara sqlPara) {
+      SqlPara sqlPara) {
     String[] sqls = PageSqlKit.parsePageSql(sqlPara.getSql());
     assert sqls != null;
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, null, sqls[0], sqls[1], sqlPara.getPara());
   }
 
   public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
-                                     boolean isGroupBySql, SqlPara sqlPara) {
+      boolean isGroupBySql, SqlPara sqlPara) {
     String[] sqls = PageSqlKit.parsePageSql(sqlPara.getSql());
     assert sqls != null;
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, sqls[0], sqls[1],
-      sqlPara.getPara());
+        sqlPara.getPara());
   }
 
   public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
-                                     String select, String sqlExceptSelect) {
+      String select, String sqlExceptSelect) {
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect,
-      DbKit.NULL_PARA_ARRAY);
+        DbKit.NULL_PARA_ARRAY);
   }
 
   public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
-                                     boolean isGroupBySql, String select, String sqlExceptSelect) {
+      boolean isGroupBySql, String select, String sqlExceptSelect) {
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect,
-      DbKit.NULL_PARA_ARRAY);
+        DbKit.NULL_PARA_ARRAY);
   }
 
   public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
-                                     String select, String sqlExceptSelect, Object... paras) {
+      String select, String sqlExceptSelect, Object... paras) {
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect, paras);
   }
 
   public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
-                                     boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+      boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
   protected int[] batch(Config config, Connection conn, String sql, Object[][] paras, int batchSize)
-    throws SQLException {
+      throws SQLException {
     if (paras == null || paras.length == 0)
       return new int[0];
     if (batchSize < 1)
@@ -1596,7 +1599,7 @@ public class DbPro {
   }
 
   protected int[] batch(Config config, Connection conn, String sql, String columns, List list, int batchSize)
-    throws SQLException {
+      throws SQLException {
     if (list == null || list.size() == 0) {
       return new int[0];
     }
@@ -1776,7 +1779,6 @@ public class DbPro {
     if (modelList == null || modelList.size() == 0) {
       return new int[0];
     }
-
 
     Model model = modelList.get(0);
     Map<String, Object> attrs = model._getAttrs();
