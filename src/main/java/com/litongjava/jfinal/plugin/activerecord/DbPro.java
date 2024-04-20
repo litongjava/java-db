@@ -430,7 +430,7 @@ public class DbPro {
     Connection conn = null;
     try {
       conn = config.getConnection();
-      return find(config, conn, sql, paras);
+      return findJsonField(config, conn, sql, jsonFields, paras);
     } catch (Exception e) {
       throw new ActiveRecordException(e);
     } finally {
