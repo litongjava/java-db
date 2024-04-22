@@ -574,6 +574,37 @@ public class Cache {
   }
 
   /**
+   * Sets the value of a field in a hash stored at key.
+   * If the key does not exist, a new hash is created and the field-value pair is added.
+   * If the field already exists in the hash, the existing value is overwritten with the new value.
+   *
+   * @param key   The key of the hash.
+   * @param field The field in the hash to set.
+   * @param value The value to set for the field.
+   * @return The number of fields that were added to the hash, not including fields already present and updated.
+   */
+  public Long hsetRawString(String key, String field, String value) {
+    Jedis jedis = getJedis();
+    try {
+      return jedis.hset(key, field, value);
+    } finally {
+      close(jedis);
+    }
+  }
+
+  /**
+   * 返回哈希表 key 中给定域 field 的值。
+   */
+  public String hgetRawString(String key, String field) {
+    Jedis jedis = getJedis();
+    try {
+      return jedis.hget(key, field);
+    } finally {
+      close(jedis);
+    }
+  }
+
+  /**
    * 同时将多个 field-value (域-值)对设置到哈希表 key 中。
    * 此命令会覆盖哈希表中已存在的域。
    * 如果 key 不存在，一个空哈希表被创建并执行 HMSET 操作。
@@ -603,6 +634,38 @@ public class Cache {
     }
   }
 
+  public String hmsetRawString(String key, Map<String, String> hash) {
+    Jedis jedis = getJedis();
+    try {
+      Map<byte[], byte[]> para = new HashMap<>();
+      for (Entry<String, String> entry : hash.entrySet()) {
+        // 直接将键和值转换为字节，这里假设键和值都已经是 String 类型
+        // 或者确保它们都能够以合适的方式转换为字节
+        byte[] keyBytes = SafeEncoder.encode(entry.getKey());
+        byte[] valueBytes = SafeEncoder.encode(entry.getValue());
+        para.put(keyBytes, valueBytes);
+      }
+      return jedis.hmset(SafeEncoder.encode(key), para);
+    } finally {
+      close(jedis);
+    }
+  }
+
+  /**
+   * 返回哈希表 key 中给定域 field 的值。
+   * @param key   哈希表的键
+   * @param field 哈希表中的字段
+   * @return 返回字段对应的值，如果字段不存在则返回 null
+   */
+  public String hmgetRawString(String key, String field) {
+    Jedis jedis = getJedis();
+    try {
+      return jedis.hget(key, field); // 直接使用字符串参数
+    } finally {
+      close(jedis); // 确保在操作后关闭 Jedis 连接
+    }
+  }
+
   /**
    * 返回哈希表 key 中，一个或多个给定域的值。
    * 如果给定的域不存在于哈希表，那么返回一个 nil 值。
@@ -616,6 +679,24 @@ public class Cache {
       return valueListFromBytesList(data);
     } finally {
       close(jedis);
+    }
+  }
+
+  /**
+   * 返回哈希表 key 中，一个或多个给定域的值。
+   * 如果给定的域不存在于哈希表，那么返回一个 nil 值。
+   * 因为不存在的 key 被当作一个空哈希表来处理，所以对一个不存在的 key 进行 HMGET 操作将返回一个只带有 nil 值的表。
+   * @param key 哈希表的键，类型为 String
+   * @param fields 哈希表中的字段，类型为 String... (可变参数)
+   * @return 返回的 List 中包含每个字段对应的值，如果某个字段不存在，则对应位置为 null
+   */
+  public List<String> hmget(String key, String... fields) {
+    Jedis jedis = getJedis();
+    try {
+      List<String> values = jedis.hmget(key, fields); // 直接调用 Jedis 的 hmget
+      return values;
+    } finally {
+      close(jedis); // 确保 Jedis 实例在使用后被正确关闭
     }
   }
 
@@ -691,6 +772,15 @@ public class Cache {
       Set<Object> result = new HashSet<Object>();
       fieldSetFromBytesSet(fieldSet, result);
       return result;
+    } finally {
+      close(jedis);
+    }
+  }
+
+  public Set<String> hkeysRawString(String key) {
+    Jedis jedis = getJedis();
+    try {
+      return jedis.hkeys(key);
     } finally {
       close(jedis);
     }
@@ -1813,4 +1903,5 @@ public class Cache {
   public void scan(Integer cursor, F11<List<String>, Boolean> keyList) {
     scan(cursor, null, null, keyList);
   }
+
 }
