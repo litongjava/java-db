@@ -2112,4 +2112,10 @@ public class DbPro {
 
     return this.exists(stringBuffer.toString(), paras);
   }
+
+  public Long count(String sql) {
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append("SELECT count(*) from (").append(sql).append(") AS subquery;");
+    return Db.queryLong(sql, stringBuffer.toString());
+  }
 }

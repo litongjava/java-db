@@ -1539,4 +1539,8 @@ public class Db {
     return MAIN.exists(tableName, fields, paras);
   }
 
+  public static Long count(String sql) {
+    return MAIN.count(sql);
+  }
+
 }
