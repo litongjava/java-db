@@ -135,6 +135,27 @@ public class PostgreSqlDialect extends Dialect {
     return sql.toString();
   }
 
+  @Override
+  public void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+    tableName = tableName.trim();
+    trimPrimaryKeys(pKeys); // important
+
+    sql.append("delete from \"");
+    sql.append(tableName).append("\"");
+
+    sql.append(" where ");
+
+    int i = 0;
+    for (Entry<String, Object> e : record.getColumns().entrySet()) {
+      if (i > 0) {
+        sql.append(" and ");
+      }
+      sql.append('\"').append(e.getKey()).append('\"').append("=? ");
+      paras.add(e.getValue());
+      i++;
+    }
+  }
+  
   public String forDbDeleteById(String tableName, String[] pKeys) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
@@ -302,8 +323,5 @@ public class PostgreSqlDialect extends Dialect {
     return DialectUtils.forDbFindColumns(tableName, columns);
   }
 
-  @Override
-  public void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
-    DialectUtils.forDbDelete(tableName, pKeys, record, sql, paras);
-  }
+
 }
