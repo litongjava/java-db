@@ -1015,6 +1015,23 @@ public class DbPro {
     }
   }
 
+  protected boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record,
+      String[] jsonFields) throws SQLException {
+    String[] pKeys = primaryKey.split(",");
+    List<Object> paras = new ArrayList<Object>();
+    StringBuilder sql = new StringBuilder();
+    config.dialect.forDbSave(tableName, pKeys, record, sql, paras, jsonFields);
+
+    try (PreparedStatement pst = config.dialect.isOracle() ? conn.prepareStatement(sql.toString(), pKeys)
+        : conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+      config.dialect.fillStatement(pst, paras);
+      int result = pst.executeUpdate();
+      config.dialect.getRecordGeneratedKey(pst, record, pKeys);
+      record.clearModifyFlag();
+      return result >= 1;
+    }
+  }
+
   /**
    * Save record.
    * <pre>
@@ -1039,6 +1056,18 @@ public class DbPro {
     }
   }
 
+  public boolean save(String tableName, String primaryKey, Record record, String[] jsonFields) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
+      return save(config, conn, tableName, primaryKey, record, jsonFields);
+    } catch (Exception e) {
+      throw new ActiveRecordException(e);
+    } finally {
+      config.close(conn);
+    }
+  }
+
   /**
    * @see #save(String, String, Record)
    */
@@ -1053,17 +1082,7 @@ public class DbPro {
    * @return
    */
   public boolean save(String tableName, Record record, String[] jsonFields) {
-    if (jsonFields != null) {
-      for (String f : jsonFields) {
-        Object object = record.get(f);
-        if (object != null) {
-          String value = Json.getJson().toJson(object);
-          record.set(f, value);
-        }
-
-      }
-    }
-    return save(tableName, config.dialect.getDefaultPrimaryKey(), record);
+    return save(tableName, config.dialect.getDefaultPrimaryKey(), record, jsonFields);
   }
 
   protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record)
@@ -1085,6 +1104,38 @@ public class DbPro {
     StringBuilder sql = new StringBuilder();
     List<Object> paras = new ArrayList<Object>();
     config.dialect.forDbUpdate(tableName, pKeys, ids, record, sql, paras);
+
+    if (paras.size() <= 1) { // 参数个数为 1 的情况表明只有主键，也无需更新
+      return false;
+    }
+
+    int result = update(config, conn, sql.toString(), paras.toArray());
+    if (result >= 1) {
+      record.clearModifyFlag();
+      return true;
+    }
+    return false;
+  }
+
+  protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record,
+      String[] jsonFields) throws SQLException {
+    if (record.modifyFlag == null || record.modifyFlag.isEmpty()) {
+      return false;
+    }
+
+    String[] pKeys = primaryKey.split(",");
+    Object[] ids = new Object[pKeys.length];
+
+    for (int i = 0; i < pKeys.length; i++) {
+      ids[i] = record.get(pKeys[i].trim()); // .trim() is important!
+      if (ids[i] == null)
+        throw new ActiveRecordException(
+            "You can't update record without Primary Key, " + pKeys[i] + " can not be null.");
+    }
+
+    StringBuilder sql = new StringBuilder();
+    List<Object> paras = new ArrayList<Object>();
+    config.dialect.forDbUpdate(tableName, pKeys, ids, record, sql, paras, jsonFields);
 
     if (paras.size() <= 1) { // 参数个数为 1 的情况表明只有主键，也无需更新
       return false;
@@ -1122,20 +1173,16 @@ public class DbPro {
     }
   }
 
-  /**
-   * @param tableName
-   * @param primaryKey
-   * @param record
-   * @param jsonFields
-   * @return
-   */
   public boolean update(String tableName, String primaryKey, Record record, String[] jsonFields) {
-    if (jsonFields != null) {
-      for (String f : jsonFields) {
-        record.set(f, Json.getJson().toJson(record.get(f)));
-      }
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
+      return update(config, conn, tableName, primaryKey, record, jsonFields);
+    } catch (Exception e) {
+      throw new ActiveRecordException(e);
+    } finally {
+      config.close(conn);
     }
-    return this.update(tableName, primaryKey, record);
   }
 
   /**
@@ -2100,17 +2147,8 @@ public class DbPro {
   }
 
   public boolean exists(String tableName, String fields, Object... paras) {
-    StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append("select count(1) from `").append(tableName).append("`");
-    String[] split = fields.split(",");
-    if (split.length > 0) {
-      stringBuffer.append(" where ");
-      for (String string : split) {
-        stringBuffer.append(string.trim()).append(" = ?");
-      }
-    }
-
-    return this.exists(stringBuffer.toString(), paras);
+    String sql = config.dialect.forExistsByFields(tableName, fields);
+    return this.exists(sql, paras);
   }
 
   public Long count(String sql) {

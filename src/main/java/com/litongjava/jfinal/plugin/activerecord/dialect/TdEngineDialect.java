@@ -10,6 +10,7 @@ import java.util.Set;
 import com.litongjava.jfinal.plugin.activerecord.CPI;
 import com.litongjava.jfinal.plugin.activerecord.Record;
 import com.litongjava.jfinal.plugin.activerecord.Table;
+import com.litongjava.tio.utils.json.Json;
 
 /**
  * MysqlDialect.
@@ -58,7 +59,7 @@ public class TdEngineDialect extends Dialect {
   }
 
   public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
-                             List<Object> paras) {
+      List<Object> paras) {
     sql.append("update `").append(table.getName()).append("` set ");
     String[] pKeys = table.getPrimaryKey();
     for (Entry<String, Object> e : attrs.entrySet()) {
@@ -145,7 +146,7 @@ public class TdEngineDialect extends Dialect {
   }
 
   public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-                          List<Object> paras) {
+      List<Object> paras) {
     tableName = tableName.trim();
     DialectUtils.trimPrimaryKeys(pKeys);
 
@@ -198,8 +199,8 @@ public class TdEngineDialect extends Dialect {
       } else if (object instanceof java.sql.Timestamp) {
         long time = ((java.sql.Timestamp) object).getTime();
         pst.setLong(i + 1, time);
-        //parse row block info error:unsupported data type 9
-        //pst.setTimestamp(i + 1, ((java.sql.Timestamp) object));
+        // parse row block info error:unsupported data type 9
+        // pst.setTimestamp(i + 1, ((java.sql.Timestamp) object));
       } else if (object instanceof java.util.Date) {
         long time = ((java.util.Date) object).getTime();
         pst.setLong(i + 1, time);
@@ -234,6 +235,39 @@ public class TdEngineDialect extends Dialect {
     for (int i = 0, size = paras.size(); i < size; i++) {
       pst.setString(i + 1, (String) paras.get(i));
     }
+  }
+
+  @Override
+  public String forExistsByFields(String tableName, String fields) {
+    return DialectUtils.forExistsByFields(tableName, fields);
+  }
+
+  @Override
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
+      List<Object> paras, String[] jsonFields) {
+    if (jsonFields != null) {
+      for (String f : jsonFields) {
+        record.set(f, Json.getJson().toJson(record.get(f)));
+      }
+    }
+    forDbUpdate(tableName, pKeys, ids, record, sql, paras);
+
+  }
+
+  @Override
+  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras,
+      String[] jsonFields) {
+    if (jsonFields != null) {
+      for (String f : jsonFields) {
+        Object object = record.get(f);
+        if (object != null) {
+          String value = Json.getJson().toJson(object);
+          record.set(f, value);
+        }
+
+      }
+    }
+    this.forDbSave(tableName, pKeys, record, sql, paras);
   }
 
 }

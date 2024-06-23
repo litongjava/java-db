@@ -44,7 +44,7 @@ public abstract class Dialect {
   public abstract void forModelSave(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras);
 
   public abstract void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
-                                      List<Object> paras);
+      List<Object> paras);
 
   // Methods for DbPro. Do not delete the String[] pKeys parameter, the element of pKeys needs to trim()
   public abstract String forDbFindById(String tableName, String[] pKeys);
@@ -55,14 +55,20 @@ public abstract class Dialect {
 
   public abstract String forDbDeleteById(String tableName, String[] pKeys);
 
+  public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras,
+      String[] jsonFields);
+
   public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql,
-                                 List<Object> paras);
+      List<Object> paras);
 
   public abstract void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql,
-                                   List<Object> paras);
+      List<Object> paras);
 
   public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-                                   List<Object> paras);
+      List<Object> paras);
+
+  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
+      List<Object> paras, String[] jsonFields);
 
   public String forFindAll(String tableName) {
     return "select * from " + tableName;
@@ -134,13 +140,13 @@ public abstract class Dialect {
 
   @SuppressWarnings("rawtypes")
   public <T> List<T> buildModelList(ResultSet rs, Class<? extends Model> modelClass)
-    throws SQLException, ReflectiveOperationException {
+      throws SQLException, ReflectiveOperationException {
     return modelBuilder.build(rs, modelClass);
   }
 
   @SuppressWarnings("rawtypes")
   public <T> void eachModel(ResultSet rs, Class<? extends Model> modelClass, Function<T, Boolean> func)
-    throws SQLException, ReflectiveOperationException {
+      throws SQLException, ReflectiveOperationException {
     modelBuilder.build(rs, modelClass, func);
   }
 
@@ -148,8 +154,9 @@ public abstract class Dialect {
     return recordBuilder.build(config, rs);
   }
 
-  public List<Record> buildRecordListWithJsonFields(Config config, ResultSet rs, String[] jsonFields) throws SQLException {
-    return recordBuilder.buildJsonFields(config, rs,jsonFields);
+  public List<Record> buildRecordListWithJsonFields(Config config, ResultSet rs, String[] jsonFields)
+      throws SQLException {
+    return recordBuilder.buildJsonFields(config, rs, jsonFields);
   }
 
   public void eachRecord(Config config, ResultSet rs, Function<Record, Boolean> func) throws SQLException {
@@ -225,7 +232,7 @@ public abstract class Dialect {
   }
 
   public <T> Page<T> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql,
-                                        String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
+      String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
     throw new RuntimeException("You should implements this method in " + getClass().getName());
   }
 
@@ -235,7 +242,7 @@ public abstract class Dialect {
 
   @SuppressWarnings("rawtypes")
   public Page takeOverModelPaginate(Connection conn, Class<? extends Model> modelClass, int pageNumber, int pageSize,
-                                    Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws Exception {
+      Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws Exception {
     throw new RuntimeException("You should implements this method in " + getClass().getName());
   }
 
@@ -267,8 +274,8 @@ public abstract class Dialect {
   protected static class Holder {
     // "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*";
     private static final Pattern ORDER_BY_PATTERN = Pattern.compile(
-      "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*",
-      Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+        "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*",
+        Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
   }
 
   public String replaceOrderBy(String sql) {
@@ -333,5 +340,7 @@ public abstract class Dialect {
   public void trimPrimaryKeys(String[] pKeys) {
     DialectUtils.trimPrimaryKeys(pKeys);
   }
+
+  public abstract String forExistsByFields(String tableName, String fields);
 
 }

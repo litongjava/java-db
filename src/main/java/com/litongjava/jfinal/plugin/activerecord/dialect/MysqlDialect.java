@@ -8,6 +8,7 @@ import java.util.Set;
 import com.litongjava.jfinal.plugin.activerecord.CPI;
 import com.litongjava.jfinal.plugin.activerecord.Record;
 import com.litongjava.jfinal.plugin.activerecord.Table;
+import com.litongjava.tio.utils.json.Json;
 
 /**
  * MysqlDialect.
@@ -136,11 +137,10 @@ public class MysqlDialect extends Dialect {
     }
     sql.append(temp.toString()).append(')');
   }
-  
 
   @Override
   public void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
-    DialectUtils.forDbDelete(tableName,pKeys,record,sql,paras);
+    DialectUtils.forDbDelete(tableName, pKeys, record, sql, paras);
   }
 
   public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
@@ -186,6 +186,38 @@ public class MysqlDialect extends Dialect {
   @Override
   public String forDbFindColumns(String tableName, String columns) {
     return DialectUtils.forDbFindColumns(tableName, columns);
+  }
+
+  @Override
+  public String forExistsByFields(String tableName, String fields) {
+    return DialectUtils.forExistsByFields(tableName, fields);
+  }
+
+  @Override
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
+      List<Object> paras, String[] jsonFields) {
+    if (jsonFields != null) {
+      for (String f : jsonFields) {
+        record.set(f, Json.getJson().toJson(record.get(f)));
+      }
+    }
+    forDbUpdate(tableName, pKeys, ids, record, sql, paras);
+  }
+  
+  @Override
+  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras,
+      String[] jsonFields) {
+    if (jsonFields != null) {
+      for (String f : jsonFields) {
+        Object object = record.get(f);
+        if (object != null) {
+          String value = Json.getJson().toJson(object);
+          record.set(f, value);
+        }
+
+      }
+    }
+    this.forDbSave(tableName, pKeys, record, sql, paras);
   }
 
 }

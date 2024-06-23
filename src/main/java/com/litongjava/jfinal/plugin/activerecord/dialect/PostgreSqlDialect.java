@@ -10,13 +10,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.postgresql.util.PGobject;
+
 import com.litongjava.jfinal.plugin.activerecord.CPI;
 import com.litongjava.jfinal.plugin.activerecord.Model;
 import com.litongjava.jfinal.plugin.activerecord.Record;
 import com.litongjava.jfinal.plugin.activerecord.Table;
 import com.litongjava.jfinal.plugin.activerecord.builder.TimestampProcessedModelBuilder;
 import com.litongjava.jfinal.plugin.activerecord.builder.TimestampProcessedRecordBuilder;
-import org.postgresql.util.PGobject;
+import com.litongjava.tio.utils.json.Json;
 
 /**
  * PostgreSqlDialect.
@@ -70,7 +72,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
-                             List<Object> paras) {
+      List<Object> paras) {
     sql.append("update \"").append(table.getName()).append("\" set ");
     String[] pKeys = table.getPrimaryKey();
     for (Entry<String, Object> e : attrs.entrySet()) {
@@ -155,7 +157,7 @@ public class PostgreSqlDialect extends Dialect {
       i++;
     }
   }
-  
+
   public String forDbDeleteById(String tableName, String[] pKeys) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
@@ -192,7 +194,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-                          List<Object> paras) {
+      List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -253,7 +255,7 @@ public class PostgreSqlDialect extends Dialect {
         if (value instanceof String) {
           String jsonValue = (String) value;
           if (jsonValue.startsWith("{") || jsonValue.startsWith("[{")) {
-            //add support for json
+            // add support for json
             pst.setObject(i + 1, value, Types.OTHER);
           } else {
             pst.setObject(i + 1, value);
@@ -323,5 +325,62 @@ public class PostgreSqlDialect extends Dialect {
     return DialectUtils.forDbFindColumns(tableName, columns);
   }
 
+  @Override
+  public String forExistsByFields(String tableName, String fields) {
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append("select count(1) from \"").append(tableName).append("\"");
+    String[] split = fields.split(",");
+    if (split.length > 0) {
+      stringBuffer.append(" where ");
+      for (String field : split) {
+        stringBuffer.append('\"').append(field.trim()).append('\"').append("= ?");
+      }
+    }
+    return stringBuffer.toString();
+  }
 
+  @Override
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
+      List<Object> paras, String[] jsonFields) {
+    if (jsonFields != null) {
+      for (String f : jsonFields) {
+        Object object = record.get(f);
+
+        if (object != null) {
+          try {
+            PGobject pGobject = new PGobject();
+            pGobject.setType("json");
+            pGobject.setValue(Json.getJson().toJson(object));
+            record.set(f, pGobject);
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }
+    }
+    forDbUpdate(tableName, pKeys, ids, record, sql, paras);
+
+  }
+
+  @Override
+  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras,
+      String[] jsonFields) {
+    if (jsonFields != null) {
+      for (String f : jsonFields) {
+        Object object = record.get(f);
+
+        if (object != null) {
+          try {
+            PGobject pGobject = new PGobject();
+            pGobject.setType("json");
+            pGobject.setValue(Json.getJson().toJson(object));
+            record.set(f, pGobject);
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }
+    }
+    this.forDbSave(tableName, pKeys, record, sql, paras);
+  }
 }

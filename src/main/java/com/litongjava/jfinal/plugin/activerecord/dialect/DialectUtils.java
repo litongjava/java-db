@@ -78,4 +78,17 @@ public class DialectUtils {
     }
   }
 
+  public static String forExistsByFields(String tableName, String fields) {
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append("select count(1) from `").append(tableName).append("`");
+    String[] split = fields.split(",");
+    if (split.length > 0) {
+      stringBuffer.append(" where ");
+      for (String field : split) {
+        stringBuffer.append('`').append(field.trim()).append('`').append("= ?");
+      }
+    }
+    return stringBuffer.toString();
+  }
+
 }
