@@ -1,5 +1,6 @@
 package com.litongjava.jfinal.plugin.activerecord;
 
+import com.litongjava.tio.utils.json.Json;
 import com.litongjava.tio.utils.json.JsonUtils;
 import org.postgresql.util.PGobject;
 
@@ -102,9 +103,11 @@ public class RecordBuilder {
 
   private Object parseJsonField(String stringValue) {
     if (stringValue.startsWith("[") && stringValue.endsWith("]")) {
-      return JsonUtils.parseArray(stringValue);
+      List<Map<String, Object>> lists = Json.getJson().parseToListMap(stringValue, String.class, Object.class);
+      return lists;
     } else {
-      return JsonUtils.parseObject(stringValue);
+      Map<String, Object> map = Json.getJson().parseToMap(stringValue, String.class, Object.class);
+      return map;
     }
   }
 
