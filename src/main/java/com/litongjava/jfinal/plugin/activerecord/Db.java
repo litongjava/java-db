@@ -317,6 +317,10 @@ public class Db {
     return MAIN.find(sql, paras);
   }
 
+  public List<Record> findWithJsonField(String sql, String[] jsonFields, Object... paras) {
+    return MAIN.findWithJsonField(sql, jsonFields, paras);
+  }
+
   /**
    * @param <T>
    * @param clazz
@@ -585,7 +589,7 @@ public class Db {
   public static boolean deleteByIds(String tableName, Record record) {
     return MAIN.deleteByIds(tableName, record);
   }
-  
+
   public static boolean delete(String tableName, Record record) {
     return MAIN.delete(tableName, record);
   }
@@ -1135,16 +1139,15 @@ public class Db {
   public static boolean save(String tableName, Record record) {
     return MAIN.save(tableName, record);
   }
-  
-  
+
   /**
    * @param tableName
    * @param record
    * @param jsonFields
    * @return
    */
-  public static boolean save(String tableName, Record record,String[] jsonFields) {
-    return MAIN.save(tableName, record,jsonFields);
+  public static boolean save(String tableName, Record record, String[] jsonFields) {
+    return MAIN.save(tableName, record, jsonFields);
   }
 
   /**
@@ -1175,7 +1178,7 @@ public class Db {
   public static boolean update(String tableName, String primaryKey, Record record) {
     return MAIN.update(tableName, primaryKey, record);
   }
-  
+
   /**
    * 
    * @param tableName
@@ -1183,8 +1186,8 @@ public class Db {
    * @param record
    * @return
    */
-  public static boolean update(String tableName, String primaryKey, Record record,String[] jsonFields) {
-    return MAIN.update(tableName, primaryKey, record,jsonFields);
+  public static boolean update(String tableName, String primaryKey, Record record, String[] jsonFields) {
+    return MAIN.update(tableName, primaryKey, record, jsonFields);
   }
 
   /**
@@ -1346,10 +1349,9 @@ public class Db {
   public static int[] batchSave(String tableName, List<? extends Record> recordList, int batchSize) {
     return MAIN.batchSave(tableName, recordList, batchSize);
   }
-  
 
   public static int[] batchDelete(String tableName, List<? extends Record> recordList, int batchSize) {
-    return MAIN.batchDelete(tableName, recordList, batchSize);    
+    return MAIN.batchDelete(tableName, recordList, batchSize);
   }
 
   /**
