@@ -317,7 +317,7 @@ public class Db {
     return MAIN.find(sql, paras);
   }
 
-  public List<Record> findWithJsonField(String sql, String[] jsonFields, Object... paras) {
+  public static List<Record> findWithJsonField(String sql, String[] jsonFields, Object... paras) {
     return MAIN.findWithJsonField(sql, jsonFields, paras);
   }
 
