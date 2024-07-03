@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.litongjava</groupId>
   <artifactId>jfinal-plugins</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.2</version>
   <packaging>jar</packaging>
   <name>JFinal Plugins</name>
   <description>JFinal Plugins</description>
@@ -20,7 +20,7 @@
     <dependency>
       <groupId>com.litongjava</groupId>
       <artifactId>tio-utils</artifactId>
-      <version>3.7.3.v20240601-RELEASE</version>
+      <version>3.7.3.v20240701-RELEASE</version>
     </dependency>
     <dependency>
       <groupId>it.sauronsoftware.cron4j</groupId>

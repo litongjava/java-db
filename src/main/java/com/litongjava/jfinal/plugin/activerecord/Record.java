@@ -17,8 +17,17 @@ import com.jfinal.kit.TypeKit;
 public class Record implements IRow<Record>, Serializable {
 
   private static final long serialVersionUID = 905784513600884082L;
-
   private Map<String, Object> columns; // = getColumnsMap(); // getConfig().containerFactory.getColumnsMap(); // new HashMap<String, Object>();
+  private String tableName;
+
+  public String getTableName() {
+    return tableName;
+  }
+
+  public Record setTableName(String tableName) {
+    this.tableName = tableName;
+    return this;
+  }
 
   /**
    * Flag of column has been modified. update need this flag
@@ -472,7 +481,7 @@ public class Record implements IRow<Record>, Serializable {
   public Kv toKv() {
     return Kv.create().set(columns);
   }
-  
+
   /**将
    * @param bean
    * @return

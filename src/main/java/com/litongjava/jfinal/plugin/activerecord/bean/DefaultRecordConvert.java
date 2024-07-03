@@ -4,6 +4,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 import com.litongjava.jfinal.plugin.activerecord.Record;
+import com.litongjava.jfinal.plugin.annotation.ATableField;
+import com.litongjava.jfinal.plugin.annotation.ATableName;
+import com.litongjava.tio.utils.name.CamelNameUtils;
 
 public class DefaultRecordConvert implements RecordConvert {
 
@@ -15,7 +18,17 @@ public class DefaultRecordConvert implements RecordConvert {
       for (Field field : fields) {
         field.setAccessible(true);
         String fieldName = field.getName();
-        Object fieldValue = record.get(fieldName);
+        String columnName;
+
+        // 处理 ATableField 注解
+        ATableField tableFieldAnnotation = field.getAnnotation(ATableField.class);
+        if (tableFieldAnnotation != null && !tableFieldAnnotation.value().isEmpty()) {
+          columnName = tableFieldAnnotation.value();
+        } else {
+          columnName = CamelNameUtils.toUnderscore(fieldName);
+        }
+
+        Object fieldValue = record.get(columnName);
         if (fieldValue != null) {
           field.set(bean, fieldValue);
         }
@@ -28,7 +41,40 @@ public class DefaultRecordConvert implements RecordConvert {
 
   @Override
   public Record fromJavaBean(Object bean) {
-    return null;
+    Record record = new Record();
+    Class<?> beanClass = bean.getClass();
+
+    // 处理 ATableName 注解
+    ATableName tableNameAnnotation = beanClass.getAnnotation(ATableName.class);
+    if (tableNameAnnotation != null) {
+      record.setTableName(tableNameAnnotation.value());
+    } else {
+      record.setTableName(CamelNameUtils.toUnderscore(beanClass.getSimpleName()));
+    }
+
+    Field[] fields = beanClass.getDeclaredFields();
+    for (Field field : fields) {
+      field.setAccessible(true);
+      String fieldName = field.getName();
+      String columnName;
+
+      // 处理 ATableField 注解
+      ATableField tableFieldAnnotation = field.getAnnotation(ATableField.class);
+      if (tableFieldAnnotation != null && !tableFieldAnnotation.value().isEmpty()) {
+        columnName = tableFieldAnnotation.value();
+      } else {
+        columnName = CamelNameUtils.toUnderscore(fieldName);
+      }
+
+      try {
+        Object value = field.get(bean);
+        record.set(columnName, value);
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException("Error accessing field: " + fieldName, e);
+      }
+    }
+
+    return record;
   }
 
 }
