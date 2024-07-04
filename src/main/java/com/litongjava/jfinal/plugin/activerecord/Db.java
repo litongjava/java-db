@@ -522,6 +522,10 @@ public class Db {
       Object... idValues) {
     return MAIN.findColumnsByIds(clazz, tableName, columns, primaryKey, idValues);
   }
+
+  public static List<Record> findByColumn(String tableName, String column, String value) {
+    return MAIN.findByColumn(tableName, column, value);
+  }
   // =======================================dlete
 
   /**

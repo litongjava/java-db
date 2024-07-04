@@ -477,6 +477,11 @@ public class DbPro {
     return find(clazz, sql, DbKit.NULL_PARA_ARRAY);
   }
 
+  public List<Record> findByColumn(String tableName, String column, String value) {
+    String sql = config.dialect.forDbFindById(tableName, new String[] { column });
+    return find(sql, value);
+  }
+
   /**
    * Find first record. I recommend add "limit 1" in your sql.
    *
@@ -2151,4 +2156,5 @@ public class DbPro {
     stringBuffer.append("SELECT count(*) from (").append(sql).append(") AS subquery;");
     return Db.queryLong(sql, stringBuffer.toString());
   }
+
 }
