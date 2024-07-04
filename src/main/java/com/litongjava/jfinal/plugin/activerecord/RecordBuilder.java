@@ -3,15 +3,12 @@ package com.litongjava.jfinal.plugin.activerecord;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.postgresql.util.PGobject;
-
-import com.litongjava.tio.utils.json.Json;
+import com.litongjava.jfinal.plugin.activerecord.builder.BuilderKit;
 
 /**
  * RecordBuilder.
@@ -41,7 +38,8 @@ public class RecordBuilder {
       record.setColumnsMap(config.containerFactory.getColumnsMap());
       Map<String, Object> columns = record.getColumns();
       for (int i = 1; i <= columnCount; i++) {
-        Object value = getFieldValue(rs, types, i);
+        Object value = BuilderKit.getColumnValue(types, rs, i);
+        // Object value = getFieldValue(rs, types, i);
 
         columns.put(labelNames[i], value);
       }
@@ -58,7 +56,8 @@ public class RecordBuilder {
   }
 
   @SuppressWarnings("unchecked")
-  public List<Record> buildJsonFields(Config config, ResultSet rs, String[] jsonFields, Function<Record, Boolean> func) throws SQLException {
+  public List<Record> buildJsonFields(Config config, ResultSet rs, String[] jsonFields, Function<Record, Boolean> func)
+      throws SQLException {
     List<Record> result = new ArrayList<>();
 
     ResultSetMetaData rsmd = rs.getMetaData();
@@ -71,20 +70,15 @@ public class RecordBuilder {
       record.setColumnsMap(config.containerFactory.getColumnsMap());
       Map<String, Object> columns = record.getColumns();
       for (int i = 1; i <= columnCount; i++) {
-        Object value = getFieldValue(rs, types, i);
+        Object value = BuilderKit.getColumnValue(types, rs, i);
         String labelName = labelNames[i];
 
+        // add suport for mysql
         for (String jsonField : jsonFields) {
           if (labelName.equals(jsonField) && value != null) {
             if (value instanceof String) {
               String stringValue = (String) value;
-              value = parseJsonField(stringValue);
-            } else if (value instanceof PGobject) {
-              PGobject pGobject = (PGobject) value;
-              if ("json".equals(pGobject.getType())) {
-                String stringValue = pGobject.getValue();
-                value = parseJsonField(stringValue);
-              }
+              value = BuilderKit.parseJsonField(stringValue);
             }
           }
         }
@@ -100,37 +94,6 @@ public class RecordBuilder {
       }
     }
     return result;
-  }
-
-  private Object parseJsonField(String stringValue) {
-    if (stringValue.startsWith("[") && stringValue.endsWith("]")) {
-      List<Map<String, Object>> lists = Json.getJson().parseToListMap(stringValue, String.class, Object.class);
-      return lists;
-    } else {
-      Map<String, Object> map = Json.getJson().parseToMap(stringValue, String.class, Object.class);
-      return map;
-    }
-  }
-
-  public Object getFieldValue(ResultSet rs, int[] types, int i) throws SQLException {
-    Object value;
-    //System.out.println("types[i]=" + types[i]);
-    if (types[i] == Types.ARRAY) {
-      value = rs.getArray(i);
-    } else if (types[i] < Types.BLOB) {
-      value = rs.getObject(i);
-    } else {
-      if (types[i] == Types.CLOB) {
-        value = ModelBuilder.me.handleClob(rs.getClob(i));
-      } else if (types[i] == Types.NCLOB) {
-        value = ModelBuilder.me.handleClob(rs.getNClob(i));
-      } else if (types[i] == Types.BLOB) {
-        value = ModelBuilder.me.handleBlob(rs.getBlob(i));
-      } else {
-        value = rs.getObject(i);
-      }
-    }
-    return value;
   }
 
   public void buildLabelNamesAndTypes(ResultSetMetaData rsmd, String[] labelNames, int[] types) throws SQLException {

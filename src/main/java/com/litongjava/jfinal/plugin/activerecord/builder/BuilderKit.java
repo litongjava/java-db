@@ -1,10 +1,13 @@
 package com.litongjava.jfinal.plugin.activerecord.builder;
 
 import com.litongjava.jfinal.plugin.activerecord.ModelBuilder;
+import com.litongjava.tio.utils.json.Json;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.List;
+import java.util.Map;
 
 import org.postgresql.util.PGobject;
 
@@ -55,9 +58,13 @@ public class BuilderKit {
         value = rs.getObject(i);
         if (value instanceof PGobject) {
           PGobject pGobject = (PGobject) value;
-          if (!pGobject.isNull()) {
+          if ("json".equals(pGobject.getType())) {
+            String stringValue = pGobject.getValue();
+            value = parseJsonField(stringValue);
+          } else {
             value = pGobject.getValue();
           }
+
         }
       } else if (types[i] == Types.CLOB) {
         value = ModelBuilder.me.handleClob(rs.getClob(i));
@@ -72,5 +79,15 @@ public class BuilderKit {
       }
     }
     return value;
+  }
+
+  public static Object parseJsonField(String stringValue) {
+    if (stringValue.startsWith("[") && stringValue.endsWith("]")) {
+      List<Map<String, Object>> lists = Json.getJson().parseToListMap(stringValue, String.class, Object.class);
+      return lists;
+    } else {
+      Map<String, Object> map = Json.getJson().parseToMap(stringValue, String.class, Object.class);
+      return map;
+    }
   }
 }
