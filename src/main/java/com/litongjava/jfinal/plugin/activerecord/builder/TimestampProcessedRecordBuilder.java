@@ -3,7 +3,6 @@ package com.litongjava.jfinal.plugin.activerecord.builder;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +10,6 @@ import java.util.function.Function;
 
 import com.litongjava.jfinal.plugin.activerecord.CPI;
 import com.litongjava.jfinal.plugin.activerecord.Config;
-import com.litongjava.jfinal.plugin.activerecord.ModelBuilder;
 import com.litongjava.jfinal.plugin.activerecord.Record;
 import com.litongjava.jfinal.plugin.activerecord.RecordBuilder;
 
@@ -43,9 +41,7 @@ public class TimestampProcessedRecordBuilder extends RecordBuilder {
       CPI.setColumnsMap(record, config.getContainerFactory().getColumnsMap());
       Map<String, Object> columns = record.getColumns();
       for (int i = 1; i <= columnCount; i++) {
-
         Object value = BuilderKit.getColumnValue(types, rs, i);
-
         columns.put(labelNames[i], value);
       }
 
@@ -60,7 +56,3 @@ public class TimestampProcessedRecordBuilder extends RecordBuilder {
     return result;
   }
 }
-
-
-
-

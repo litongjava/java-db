@@ -1545,4 +1545,8 @@ public class Db {
     return MAIN.count(sql);
   }
 
+  public static boolean save(Record r) {
+    return MAIN.save(r.getTableName(), r);
+  }
+
 }

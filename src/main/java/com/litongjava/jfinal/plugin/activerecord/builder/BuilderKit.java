@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.postgresql.util.PGobject;
+
 /**
  * JDBC 获取 Byte 和 Short 时，把 null 转换成了 0，很多时候 0 是有意义的，容易引发业务错误
  *
@@ -41,7 +43,7 @@ public class BuilderKit {
    * @throws SQLException
    */
   public static Object getColumnValue(int[] types, ResultSet rs, int i) throws SQLException {
-    Object value;
+    Object value = null;
     if (types[i] < Types.DATE) {
       value = rs.getObject(i);
     } else {
@@ -49,6 +51,14 @@ public class BuilderKit {
         value = rs.getTimestamp(i);
       } else if (types[i] == Types.DATE) {
         value = rs.getDate(i);
+      } else if (types[i] == Types.OTHER) {
+        value = rs.getObject(i);
+        if (value instanceof PGobject) {
+          PGobject pGobject = (PGobject) value;
+          if (!pGobject.isNull()) {
+            value = pGobject.getValue();
+          }
+        }
       } else if (types[i] == Types.CLOB) {
         value = ModelBuilder.me.handleClob(rs.getClob(i));
       } else if (types[i] == Types.NCLOB) {
@@ -56,7 +66,7 @@ public class BuilderKit {
       } else if (types[i] == Types.BLOB) {
         value = ModelBuilder.me.handleBlob(rs.getBlob(i));
       } else if (types[i] == Types.ARRAY) {
-				value = ModelBuilder.me.handleArray(rs.getArray(i));
+        value = ModelBuilder.me.handleArray(rs.getArray(i));
       } else {
         value = rs.getObject(i);
       }
@@ -64,4 +74,3 @@ public class BuilderKit {
     return value;
   }
 }
-

@@ -236,9 +236,9 @@ public class PostgreSqlDialect extends Dialect {
     fillStatementHandleDateType(pst, paras);
   }
 
-  protected void fillStatementHandleDateType(PreparedStatement pst, List<Object> paras) throws SQLException {
-    for (int i = 0, size = paras.size(); i < size; i++) {
-      Object value = paras.get(i);
+  protected void fillStatementHandleDateType(PreparedStatement pst, Object... paras) throws SQLException {
+    for (int i = 0, size = paras.length; i < size; i++) {
+      Object value = paras[i];
       if (value instanceof java.util.Date) {
         if (value instanceof java.sql.Date) {
           pst.setDate(i + 1, (java.sql.Date) value);
@@ -254,7 +254,7 @@ public class PostgreSqlDialect extends Dialect {
       } else {
         if (value instanceof String) {
           String jsonValue = (String) value;
-          if (jsonValue.startsWith("{") || jsonValue.startsWith("[{")) {
+          if (jsonValue.startsWith("{") || jsonValue.startsWith("[")) {
             // add support for json
             pst.setObject(i + 1, value, Types.OTHER);
           } else {

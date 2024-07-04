@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import com.jfinal.kit.StrKit;
 import com.jfinal.kit.TimeKit;
 import com.litongjava.jfinal.plugin.activerecord.cache.ICache;
-import com.litongjava.tio.utils.json.Json;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -141,10 +140,6 @@ public class DbPro {
       return temp;
     }
     return null;
-  }
-
-  public <T> T queryColumn(String sql) {
-    return (T) queryColumn(sql, DbKit.NULL_PARA_ARRAY);
   }
 
   public String queryStr(String sql, Object... paras) {

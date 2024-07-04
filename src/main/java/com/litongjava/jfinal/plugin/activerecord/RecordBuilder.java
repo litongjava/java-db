@@ -1,9 +1,5 @@
 package com.litongjava.jfinal.plugin.activerecord;
 
-import com.litongjava.tio.utils.json.Json;
-import com.litongjava.tio.utils.json.JsonUtils;
-import org.postgresql.util.PGobject;
-
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -12,6 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import org.postgresql.util.PGobject;
+
+import com.litongjava.tio.utils.json.Json;
 
 /**
  * RecordBuilder.
@@ -57,6 +57,7 @@ public class RecordBuilder {
     return result;
   }
 
+  @SuppressWarnings("unchecked")
   public List<Record> buildJsonFields(Config config, ResultSet rs, String[] jsonFields, Function<Record, Boolean> func) throws SQLException {
     List<Record> result = new ArrayList<>();
 
