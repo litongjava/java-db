@@ -1,8 +1,5 @@
 package com.litongjava.jfinal.plugin.activerecord.builder;
 
-import com.litongjava.jfinal.plugin.activerecord.ModelBuilder;
-import com.litongjava.tio.utils.json.Json;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -10,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.postgresql.util.PGobject;
+
+import com.litongjava.jfinal.plugin.activerecord.ModelBuilder;
+import com.litongjava.tio.utils.json.Json;
 
 /**
  * JDBC 获取 Byte 和 Short 时，把 null 转换成了 0，很多时候 0 是有意义的，容易引发业务错误
@@ -85,9 +85,13 @@ public class BuilderKit {
     if (stringValue.startsWith("[") && stringValue.endsWith("]")) {
       List<Map<String, Object>> lists = Json.getJson().parseToListMap(stringValue, String.class, Object.class);
       return lists;
-    } else {
+    } else if (stringValue.startsWith("{") && stringValue.endsWith("}")) {
       Map<String, Object> map = Json.getJson().parseToMap(stringValue, String.class, Object.class);
       return map;
+    } else if (stringValue.startsWith("\"") && stringValue.endsWith("\"")) {
+      return Json.getJson().parse(stringValue);
+    } else {
+      return stringValue;
     }
   }
 }
