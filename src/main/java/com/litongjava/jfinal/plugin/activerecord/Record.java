@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -396,6 +397,26 @@ public class Record implements IRow<Record>, Serializable {
     return TypeKit.toNumber(getColumns().get(column));
   }
 
+  @SuppressWarnings("unchecked")
+  public <K, V> Map<K, V> getMap(String column) {
+    Object object = getColumns().get(column);
+    if (object instanceof Map) {
+      return (Map<K, V>) object;
+    } else {
+      throw new RuntimeException(column + " is not type of map");
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> List<T> getList(String column) {
+    Object object = getColumns().get(column);
+    if (object instanceof List) {
+      return (List<T>) object;
+    } else {
+      throw new RuntimeException(column + " is not type of list");
+    }
+  }
+
   public String toString() {
     if (columns == null) {
       return "{}";
@@ -489,4 +510,5 @@ public class Record implements IRow<Record>, Serializable {
   public static Record fromBean(Object bean) {
     return DbKit.getConfig().getRecordConvert().fromJavaBean(bean);
   }
+
 }
