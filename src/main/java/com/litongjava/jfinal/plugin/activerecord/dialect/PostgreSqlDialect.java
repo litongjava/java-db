@@ -342,15 +342,20 @@ public class PostgreSqlDialect extends Dialect {
   @Override
   public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
       List<Object> paras, String[] jsonFields) {
-    if (jsonFields != null) {
+    if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
         Object object = record.get(f);
-
         if (object != null) {
+          PGobject pGobject = new PGobject();
+          pGobject.setType("json");
+          String jsonString = null;
+          if (object instanceof String) {
+            jsonString = (String) object;
+          } else {
+            jsonString = Json.getJson().toJson(object);
+          }
           try {
-            PGobject pGobject = new PGobject();
-            pGobject.setType("json");
-            pGobject.setValue(Json.getJson().toJson(object));
+            pGobject.setValue(jsonString);
             record.set(f, pGobject);
           } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -365,15 +370,20 @@ public class PostgreSqlDialect extends Dialect {
   @Override
   public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras,
       String[] jsonFields) {
-    if (jsonFields != null) {
+    if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
         Object object = record.get(f);
-
         if (object != null) {
+          PGobject pGobject = new PGobject();
+          pGobject.setType("json");
+          String jsonString = null;
+          if (object instanceof String) {
+            jsonString = (String) object;
+          } else {
+            jsonString = Json.getJson().toJson(object);
+          }
           try {
-            PGobject pGobject = new PGobject();
-            pGobject.setType("json");
-            pGobject.setValue(Json.getJson().toJson(object));
+            pGobject.setValue(jsonString);
             record.set(f, pGobject);
           } catch (SQLException e) {
             throw new RuntimeException(e);
