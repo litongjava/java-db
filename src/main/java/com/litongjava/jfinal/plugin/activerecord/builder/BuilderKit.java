@@ -59,11 +59,10 @@ public class BuilderKit {
         if (value instanceof PGobject) {
           PGobject pGobject = (PGobject) value;
           if ("json".equals(pGobject.getType())) {
-            String stringValue = pGobject.getValue();
-            value = parseJsonField(stringValue);
-          } else {
             value = pGobject.getValue();
           }
+//          String stringValue = pGobject.getValue();
+//          value = parseJsonField(stringValue);
 
         }
       } else if (types[i] == Types.CLOB) {

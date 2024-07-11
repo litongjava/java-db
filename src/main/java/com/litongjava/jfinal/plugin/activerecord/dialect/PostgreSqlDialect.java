@@ -351,18 +351,51 @@ public class PostgreSqlDialect extends Dialect {
           String jsonString = null;
           if (object instanceof String) {
             jsonString = (String) object;
+            if ("".equals(jsonString)) {
+              try {
+                pGobject.setValue(null);
+                record.set(f, pGobject);
+              } catch (SQLException e) {
+                throw new RuntimeException(e);
+              }
+            } else if (jsonString.startsWith("\"") && jsonString.endsWith("\"")) {
+              try {
+                pGobject.setValue(jsonString);
+                record.set(f, pGobject);
+              } catch (SQLException e) {
+                throw new RuntimeException(e);
+              }
+            } else if (jsonString.startsWith("{") && jsonString.endsWith("}")) {
+              try {
+                pGobject.setValue(jsonString);
+                record.set(f, pGobject);
+              } catch (SQLException e) {
+                throw new RuntimeException(e);
+              }
+
+            } else if (jsonString.startsWith("[") && jsonString.endsWith("]")) {
+              try {
+                pGobject.setValue(jsonString);
+                record.set(f, pGobject);
+              } catch (SQLException e) {
+                throw new RuntimeException(e);
+              }
+            }
+
           } else {
             jsonString = Json.getJson().toJson(object);
+            try {
+              pGobject.setValue(jsonString);
+              record.set(f, pGobject);
+            } catch (SQLException e) {
+              throw new RuntimeException(e);
+            }
           }
-          try {
-            pGobject.setValue(jsonString);
-            record.set(f, pGobject);
-          } catch (SQLException e) {
-            throw new RuntimeException(e);
-          }
+
         }
       }
     }
+
     forDbUpdate(tableName, pKeys, ids, record, sql, paras);
 
   }
