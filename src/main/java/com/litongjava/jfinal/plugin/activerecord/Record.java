@@ -513,7 +513,7 @@ public class Record implements IRow<Record>, Serializable {
     return DbKit.getConfig().getRecordConvert().fromJavaBean(bean);
   }
 
-  public static Record by(String column, String value) {
+  public static Record by(String column, Object value) {
     Record record = new Record();
     record.getColumns().put(column, value);
     record._getModifyFlag().add(column); // Add modify flag, update() need this flag.
