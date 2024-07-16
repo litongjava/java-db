@@ -1154,6 +1154,10 @@ public class Db {
     return MAIN.save(tableName, record, jsonFields);
   }
 
+  public static boolean save(String tableName, String primaryKey, Record record, String[] jsonFields) {
+    return MAIN.save(tableName, primaryKey, record, jsonFields);
+  }
+
   /**
    * @param config
    * @param conn
@@ -1526,12 +1530,7 @@ public class Db {
     return MAIN.templateByString(content, paras);
   }
 
-  /**
-   * @param sql
-   * @param username
-   * @return
-   */
-  public static boolean exists(String sql, Object... paras) {
+  public static boolean existsBySql(String sql, Object... paras) {
     return MAIN.exists(sql, paras);
   }
 
@@ -1552,5 +1551,4 @@ public class Db {
   public static boolean save(Record r) {
     return MAIN.save(r.getTableName(), r);
   }
-
 }

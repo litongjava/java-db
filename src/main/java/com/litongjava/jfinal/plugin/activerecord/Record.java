@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.naming.ldap.PagedResultsResponseControl;
+
 import com.jfinal.kit.Kv;
 import com.jfinal.kit.TypeKit;
 
@@ -509,6 +511,13 @@ public class Record implements IRow<Record>, Serializable {
    */
   public static Record fromBean(Object bean) {
     return DbKit.getConfig().getRecordConvert().fromJavaBean(bean);
+  }
+
+  public static Record by(String column, String value) {
+    Record record = new Record();
+    record.getColumns().put(column, value);
+    record._getModifyFlag().add(column); // Add modify flag, update() need this flag.
+    return record;
   }
 
 }

@@ -1085,6 +1085,7 @@ public class DbPro {
     return save(tableName, config.dialect.getDefaultPrimaryKey(), record, jsonFields);
   }
 
+
   protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record)
       throws SQLException {
     if (record.modifyFlag == null || record.modifyFlag.isEmpty()) {
