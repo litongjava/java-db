@@ -21,6 +21,8 @@ import java.util.concurrent.FutureTask;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.management.RuntimeErrorException;
+
 import com.jfinal.kit.StrKit;
 import com.jfinal.kit.TimeKit;
 import com.litongjava.jfinal.plugin.activerecord.cache.ICache;
@@ -1016,20 +1018,23 @@ public class DbPro {
   }
 
   protected boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record,
-      String[] jsonFields) throws SQLException {
+      String[] jsonFields) {
     String[] pKeys = primaryKey.split(",");
     List<Object> paras = new ArrayList<Object>();
     StringBuilder sql = new StringBuilder();
     config.dialect.forDbSave(tableName, pKeys, record, sql, paras, jsonFields);
 
+    int result = 0;
     try (PreparedStatement pst = config.dialect.isOracle() ? conn.prepareStatement(sql.toString(), pKeys)
         : conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
       config.dialect.fillStatement(pst, paras);
-      int result = pst.executeUpdate();
+      result = pst.executeUpdate();
       config.dialect.getRecordGeneratedKey(pst, record, pKeys);
-      record.clearModifyFlag();
-      return result >= 1;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
+    record.clearModifyFlag();
+    return result >= 1;
   }
 
   /**
@@ -1061,8 +1066,8 @@ public class DbPro {
     try {
       conn = config.getConnection();
       return save(config, conn, tableName, primaryKey, record, jsonFields);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     } finally {
       config.close(conn);
     }
@@ -1084,7 +1089,6 @@ public class DbPro {
   public boolean save(String tableName, Record record, String[] jsonFields) {
     return save(tableName, config.dialect.getDefaultPrimaryKey(), record, jsonFields);
   }
-
 
   protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record)
       throws SQLException {
