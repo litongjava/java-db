@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.naming.ldap.PagedResultsResponseControl;
-
 import com.jfinal.kit.Kv;
 import com.jfinal.kit.TypeKit;
 
@@ -520,4 +518,8 @@ public class Record implements IRow<Record>, Serializable {
     return record;
   }
 
+  public static Record fromMap(Map<String, Object> recordMap) {
+    Record record = new Record();
+    return record.setColumns(recordMap);
+  }
 }

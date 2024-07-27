@@ -3,6 +3,7 @@ package com.litongjava.jfinal.plugin.activerecord.dialect;
 import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
@@ -303,16 +304,34 @@ public class PostgreSqlDialect extends Dialect {
    * <p>
    * 相对于 Dialect 中的默认实现，仅将 rs.getXxx(1) 改成了 rs.getXxx(pKey)
    */
-  public void getRecordGeneratedKey(PreparedStatement pst, Record record, String[] pKeys) throws SQLException {
-    ResultSet rs = pst.getGeneratedKeys();
-    for (String pKey : pKeys) {
-      if (record.get(pKey) == null || isOracle()) {
-        if (rs.next()) {
-          record.set(pKey, rs.getObject(pKey));
+  public void getRecordGeneratedKey(PreparedStatement pst, Record record, String[] pKeys) {
+
+    ResultSet rs = null;
+    try {
+      rs = pst.getGeneratedKeys();
+      // 获取元数据
+      ResultSetMetaData metaData = rs.getMetaData();
+      // 获取列长度
+      int columnCount = metaData.getColumnCount();
+
+      // 遍历表格中的内容
+      if (rs.next()) { // 下移第一次跳过列名
+        for (int i = 1; i < columnCount + 1; i++) {
+          String name = metaData.getColumnName(i);
+          record.set(name, rs.getObject(name));
+        }
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    } finally {
+      if (rs != null) {
+        try {
+          rs.close();
+        } catch (SQLException e) {
+          e.printStackTrace();
         }
       }
     }
-    rs.close();
   }
 
   @Override

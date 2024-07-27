@@ -21,8 +21,6 @@ import java.util.concurrent.FutureTask;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.management.RuntimeErrorException;
-
 import com.jfinal.kit.StrKit;
 import com.jfinal.kit.TimeKit;
 import com.litongjava.jfinal.plugin.activerecord.cache.ICache;
@@ -56,27 +54,31 @@ public class DbPro {
     return config;
   }
 
-  protected <T> List<T> query(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+  protected <T> List<T> query(Config config, Connection conn, String sql, Object... paras) {
     List result = new ArrayList();
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
-      ResultSet rs = pst.executeQuery();
-      int colAmount = rs.getMetaData().getColumnCount();
-      if (colAmount > 1) {
-        while (rs.next()) {
-          Object[] temp = new Object[colAmount];
-          for (int i = 0; i < colAmount; i++) {
-            temp[i] = rs.getObject(i + 1);
+      try (ResultSet rs = pst.executeQuery()) {
+        int colAmount = rs.getMetaData().getColumnCount();
+        if (colAmount > 1) {
+          while (rs.next()) {
+            Object[] temp = new Object[colAmount];
+            for (int i = 0; i < colAmount; i++) {
+              temp[i] = rs.getObject(i + 1);
+            }
+            result.add(temp);
           }
-          result.add(temp);
+        } else if (colAmount == 1) {
+          while (rs.next()) {
+            result.add(rs.getObject(1));
+          }
         }
-      } else if (colAmount == 1) {
-        while (rs.next()) {
-          result.add(rs.getObject(1));
-        }
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
       }
-      DbKit.close(rs);
       return result;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -1000,8 +1002,7 @@ public class DbPro {
     return doPaginateByFullSql(clazz, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
-  protected boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record)
-      throws SQLException {
+  protected boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record) {
     String[] pKeys = primaryKey.split(",");
     List<Object> paras = new ArrayList<Object>();
     StringBuilder sql = new StringBuilder();
@@ -1014,6 +1015,8 @@ public class DbPro {
       config.dialect.getRecordGeneratedKey(pst, record, pKeys);
       record.clearModifyFlag();
       return result >= 1;
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
     }
   }
 
@@ -1054,7 +1057,7 @@ public class DbPro {
     try {
       conn = config.getConnection();
       return save(config, conn, tableName, primaryKey, record);
-    } catch (Exception e) {
+    } catch (SQLException e) {
       throw new ActiveRecordException(e);
     } finally {
       config.close(conn);

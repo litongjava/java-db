@@ -1551,4 +1551,13 @@ public class Db {
   public static boolean save(Record r) {
     return MAIN.save(r.getTableName(), r);
   }
+
+  public static List<String> queryListString(String sql) {
+    return MAIN.query(sql);
+  }
+
+  public static List<String> queryListString(String sql, Object... params) {
+    return MAIN.query(sql, params);
+  }
+
 }
