@@ -1,11 +1,19 @@
-#jfinal-plugins
-## JFinal Plugins简介
-JFinal自带了一些实用的插件，这些插件默认是整合在JFinal包中的。我从中提取了一些插件，并将它们组织成了一个独立的项目，名为jfinal-plugins。你可以利用jfinal-plugins来连接ehcache，redis以及数据库。
-开源地址
-https://github.com/litongjava/jfinal-plugins
+# java-db
+## Introduction
 
-##使用jfinal-plugins连接数库
-1. 使用jfinal-plugins连接数据库
+java-db 是一个数据库 操作库
+
+- 支持关系型数据库 SqlLite3,H2,AnsiSQL,InforMix,Mysql,Oracle,PostgreSQL,,SqlServer,
+- 支持缓存数据库 redis
+- 支持非关系数据库 mongodb
+- 支持本地缓存 ehcache
+- 支持时序数据库 TdEngine
+
+开源地址
+https://github.com/litongjava/java-db
+
+## 使用java-db连接数库
+1. 使用java-db连接数据库
 首先，我们创建一个表：
 
 ```
@@ -33,8 +41,8 @@ INSERT INTO USER (id, NAME, age, email, addr, remark) VALUES (3, '王五', 35, '
 ```
 <dependency>
   <groupId>com.litongjava</groupId>
-  <artifactId>jfinal-plugins</artifactId>
-  <version>1.0.1</version>
+  <artifactId>java-db</artifactId>
+  <version>1.1.4</version>
 </dependency>
 <!-- 连接池 -->
 <dependency>
@@ -53,13 +61,11 @@ INSERT INTO USER (id, NAME, age, email, addr, remark) VALUES (3, '王五', 35, '
 最后，我们编写测试代码：
 
 ```
-package com.litongjava.jfinal.plugins.mysql;
-
-import com.litongjava.jfinal.plugin.activerecord.ActiveRecordPlugin;
-import com.litongjava.jfinal.plugin.activerecord.Db;
-import com.litongjava.jfinal.plugin.activerecord.OrderedFieldContainerFactory;
-import com.litongjava.jfinal.plugin.activerecord.Record;
-import com.litongjava.jfinal.plugin.druid.DruidPlugin;
+import com.litongjava.db.activerecord.ActiveRecordPlugin;
+import com.litongjava.db.activerecord.Db;
+import com.litongjava.db.activerecord.OrderedFieldContainerFactory;
+import com.litongjava.db.activerecord.Record;
+import com.litongjava.db.druid.DruidPlugin;
 
 import java.util.List;
 
@@ -84,7 +90,7 @@ public class MysqlTestMain {
 }
 ```
 
-这段代码使用ActiveRecord插件来连接MySQL数据库并执行查询。以下是每部分的详细解释：
+这段代码使用java db 的 ActiveRecord插件来连接MySQL数据库并执行查询。以下是每部分的详细解释：
 
 1. **导入所需的库**：首先，我们导入了所需的库，包括ActiveRecordPlugin（用于操作数据库的插件），Db（用于数据库操作的类），OrderedFieldContainerFactory（用于设置字段的顺序），Record（用于表示数据库记录的类），以及DruidPlugin（用于数据库连接的插件）。
 
@@ -100,14 +106,14 @@ public class MysqlTestMain {
 
 7. **执行查询并打印结果**：最后，我们调用`Db.findAll`方法查询了"USER"表中的所有记录，并打印出了记录的数量。
 
-## 使用jfinal-plugins连接ehcache
+## 使用java-db连接ehcache
 
 首先，我们添加了必要的依赖项：
 
 ```
 <dependency>
   <groupId>com.litongjava</groupId>
-  <artifactId>jfinal-plugins</artifactId>
+  <artifactId>java-db</artifactId>
   <version>1.0.1</version>
 </dependency>
 <dependency>
@@ -125,11 +131,11 @@ public class MysqlTestMain {
 然后，我们创建了一个名为`UserService`的类，该类有一个名为`getUser`的方法，该方法在被调用时会打印出输入的用户名，并返回这个用户名：
 
 ```java
-package com.litongjava.jfinal.plugins.ecache;
+package com.litongjava.dbs.ecache;
 
 import com.litongjava.jfinal.aop.Before;
-import com.litongjava.jfinal.plugin.cache.CacheName;
-import com.litongjava.jfinal.plugin.ehcache.EcacheCacheInterceptor;
+import com.litongjava.db.cache.CacheName;
+import com.litongjava.db.ehcache.EcacheCacheInterceptor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -146,9 +152,9 @@ public class UserService {
 最后，我们创建了一个名为`EcacheDemo`的类，该类在其`main`方法中启动了`EhCachePlugin`，然后获取了`UserService`的一个实例，并调用了其`getUser`方法三次，最后停止了`EhCachePlugin`：
 
 ```java
-package com.litongjava.jfinal.plugins.ecache;
+package com.litongjava.dbs.ecache;
 import com.litongjava.jfinal.aop.Aop;
-import com.litongjava.jfinal.plugin.ehcache.EhCachePlugin;
+import com.litongjava.db.ehcache.EhCachePlugin;
 
 public class EcacheDemo {
   public static void main(String[] args) {
@@ -163,13 +169,13 @@ public class EcacheDemo {
 }
 ```
 
-## 使用jfinal-plugins连接Redis
+## 使用java-db连接Redis
 
 添加依赖
 ```
 <dependency>
   <groupId>com.litongjava</groupId>
-  <artifactId>jfinal-plugins</artifactId>
+  <artifactId>java-db</artifactId>
   <version>1.0.1</version>
 </dependency>
 <dependency>
@@ -193,10 +199,10 @@ public class EcacheDemo {
 创建了一个名为`UserService`的类，该类有一个名为`getUser`的方法并添加了RedisCacheInterceptor注解，该方法在被调用时会打印出输入的用户名，并返回这个用户名：
 
 ```java
-package com.litongjava.jfinal.plugins.redis;
+package com.litongjava.dbs.redis;
 
 import com.litongjava.jfinal.aop.Before;
-import com.litongjava.jfinal.plugin.redis.RedisCacheInterceptor;
+import com.litongjava.db.redis.RedisCacheInterceptor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -213,10 +219,10 @@ public class UserService {
 然后，我们创建了一个名为`RedisUserDemo`的类，该类在其`main`方法中启动了`RedisPlugin`，然后获取了`UserService`的一个实例，并调用了其`getUser`方法三次，最后停止了`RedisPlugin`：在第一次调用时就会将返回存入到redis中
 
 ```java
-package com.litongjava.jfinal.plugins.redis;
+package com.litongjava.dbs.redis;
 
 import com.litongjava.jfinal.aop.Aop;
-import com.litongjava.jfinal.plugin.redis.RedisPlugin;
+import com.litongjava.db.redis.RedisPlugin;
 
 public class RedisUserDemo {
 
@@ -236,7 +242,7 @@ public class RedisUserDemo {
 ```
 
 ## Cacheable注解
-`RedisCacheInterceptor`和`EcacheCacheInterceptor`可以单独使用，也可以和`@Cacheable`注解配合使用。全类名为`com.litongjava.jfinal.plugin.cache.Cacheable`。下面是一个示例：
+`RedisCacheInterceptor`和`EcacheCacheInterceptor`可以单独使用，也可以和`@Cacheable`注解配合使用。全类名为`com.litongjava.db.cache.Cacheable`。下面是一个示例：
 
 ```java
 @Before(RedisCacheInterceptor.class)
@@ -247,6 +253,6 @@ public String getUser(String username) {
 }
 ```
 
-在单独使用时及不使用@Cacheable注解时，`@Cacheable`注解的默认`name`值是类名，`value`值是方法名加上所有参数名的HashCode值，`ttl`（Time To Live）值默认为3600秒。具体的实现细节可以参考源码`com.litongjava.jfinal.plugin.cache.CacheableModel.buildCacheModel`。
+在单独使用时及不使用@Cacheable注解时，`@Cacheable`注解的默认`name`值是类名，`value`值是方法名加上所有参数名的HashCode值，`ttl`（Time To Live）值默认为3600秒。具体的实现细节可以参考源码`com.litongjava.db.cache.CacheableModel.buildCacheModel`。
 
 简单来说，`@Cacheable`注解用于标记一个方法的结果是可以被缓存的。当一个被`@Cacheable`注解的方法被调用时，系统首先会检查缓存中是否已经有了这个方法的结果，如果有，就直接返回缓存的结果，否则，就运行方法并把结果存入缓存中。这样，当我们需要再次调用这个方法时，就可以直接从缓存中获取结果.
