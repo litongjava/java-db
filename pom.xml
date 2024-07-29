@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.litongjava</groupId>
-  <artifactId>jfinal-plugins</artifactId>
+  <artifactId>java-db</artifactId>
   <version>1.1.4</version>
   <packaging>jar</packaging>
-  <name>JFinal Plugins</name>
-  <description>JFinal Plugins</description>
-  <url>https://github.com/litongjava/jfinal-plugins</url>
+  <name>Java Database</name>
+  <description>Java Database</description>
+  <url>https://github.com/litongjava/java-db</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,7 +20,7 @@
     <dependency>
       <groupId>com.litongjava</groupId>
       <artifactId>tio-utils</artifactId>
-      <version>3.7.3.v20240701-RELEASE</version>
+      <version>3.7.3.v20240801-RELEASE</version>
     </dependency>
     <dependency>
       <groupId>it.sauronsoftware.cron4j</groupId>
@@ -55,7 +55,7 @@
     <dependency>
       <groupId>com.litongjava</groupId>
       <artifactId>jfinal-aop</artifactId>
-      <version>1.2.4</version>
+      <version>1.2.5</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -149,16 +149,16 @@
   <developers>
     <developer>
       <id>litongjava</id>
-      <name>Ping E Lee</name>
+      <name>Tong Li</name>
       <email>litongjava@qq.com</email>
       <url>https://github.com/litongjava</url>
     </developer>
   </developers>
 
   <scm>
-    <connection>scm:git:git@github.com:litongjava/litongjava-utils.git</connection>
-    <developerConnection>scm:git:git@github.com:litongjava/litongjava-utils.git</developerConnection>
-    <url>git@github.com:litongjava/litongjava-utils.git</url>
+    <connection>scm:git:git@github.com:litongjava/java-db.git</connection>
+    <developerConnection>scm:git:git@github.com:litongjava/java-db.git</developerConnection>
+    <url>git@github.com:litongjava/java-db.git</url>
   </scm>
 
   <distributionManagement>
