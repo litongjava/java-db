@@ -13,15 +13,22 @@ import java.util.stream.Collectors;
 
 import com.litongjava.tio.utils.hutool.ResourceUtil;
 
-public class SqlTpls {
+public class SqlTemplates {
 
-  private static final Map<String, String> sqlTemplates = new HashMap<>();
+  private static Map<String, String> sqlTemplates = null;
 
   public static void load(String mainFilePath) {
     parseSQLFile(mainFilePath);
   }
 
+  public static void load() {
+    parseSQLFile("sql-templates/main.sql");
+  }
+
   private static void parseSQLFile(String filePath) {
+    if (sqlTemplates == null) {
+      sqlTemplates = new HashMap<>();
+    }
     URL resource = ResourceUtil.getResource(filePath);
     if (resource == null) {
       throw new RuntimeException();
@@ -58,6 +65,9 @@ public class SqlTpls {
   }
 
   public static String get(String sqlId) throws IllegalArgumentException {
+    if (sqlTemplates == null) {
+      load();
+    }
     String sql = sqlTemplates.get(sqlId);
     if (sql == null) {
       throw new IllegalArgumentException("SQL ID not found");
@@ -66,6 +76,9 @@ public class SqlTpls {
   }
 
   public static Map<String, String> getAll() {
+    if (sqlTemplates == null) {
+      load();
+    }
     return sqlTemplates;
   }
 }
