@@ -21,8 +21,6 @@ import java.util.concurrent.FutureTask;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.management.RuntimeErrorException;
-
 import com.jfinal.kit.StrKit;
 import com.jfinal.kit.TimeKit;
 import com.litongjava.db.activerecord.cache.ICache;
@@ -85,14 +83,10 @@ public class DbPro {
   }
 
   public <T> List<T> query(String sql, Object... paras) {
-    Connection conn = null;
-    try {
-      conn = config.getConnection();
+    try (Connection conn = config.getConnection()) {
       return query(config, conn, sql, paras);
     } catch (Exception e) {
       throw new ActiveRecordException(e);
-    } finally {
-      config.close(conn);
     }
   }
 
@@ -2133,4 +2127,9 @@ public class DbPro {
     return Db.queryLong(sql, stringBuffer.toString());
   }
 
+  public Long countTable(String table) {
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append("SELECT count(*) from ").append(table).append(";");
+    return Db.queryLong(stringBuffer.toString());
+  }
 }

@@ -19,6 +19,12 @@
   <dependencies>
     <dependency>
       <groupId>com.litongjava</groupId>
+      <artifactId>jfinal-aop</artifactId>
+      <version>1.2.5</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.litongjava</groupId>
       <artifactId>tio-utils</artifactId>
       <version>3.7.3.v20240801-RELEASE</version>
     </dependency>
@@ -52,11 +58,14 @@
       <version>1.37.0</version>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
-      <groupId>com.litongjava</groupId>
-      <artifactId>jfinal-aop</artifactId>
-      <version>1.2.5</version>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>elasticsearch-rest-high-level-client</artifactId>
+      <version>7.10.0</version>
+      <scope>provided</scope>
     </dependency>
+
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
