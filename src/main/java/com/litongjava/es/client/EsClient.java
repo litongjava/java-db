@@ -5,6 +5,8 @@ import java.io.IOException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -55,5 +57,17 @@ public class EsClient {
     } catch (IOException e) {
       throw new RuntimeException();
     }
+  }
+
+  public final GetResponse get(GetRequest getRequest, RequestOptions options) {
+    try {
+      return client.get(getRequest, options);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public final Cancellable getAsync(GetRequest getRequest, RequestOptions options, ActionListener<GetResponse> listener) {
+    return client.getAsync(getRequest, options, listener);
   }
 }
