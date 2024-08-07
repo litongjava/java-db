@@ -2,8 +2,11 @@ package com.litongjava.db.redis;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import redis.clients.jedis.Jedis;
+
 import com.jfinal.kit.StrKit;
+import com.litongjava.tio.utils.json.JsonUtils;
+
+import redis.clients.jedis.Jedis;
 
 /**
  * Redis.
@@ -107,5 +110,73 @@ public class Redis {
         jedis.close();
       }
     }
+  }
+
+  public static <R> R getBean(String key, Class<R> type) {
+    Function<Jedis, R> function = (jedis) -> {
+      String str = jedis.get(key);
+      if (str != null) {
+        return JsonUtils.parse(str, type);
+      } else {
+        return null;
+      }
+    };
+
+    return use().call(function);
+  }
+
+  public static <R> String setBean(String key, long seconds, Object input) {
+    return use().call(j -> j.setex(key, seconds, JsonUtils.toJson(input)));
+  }
+
+  public static <R> String setBean(String key, Object input) {
+    return use().call(j -> j.set(key, JsonUtils.toJson(input)));
+  }
+
+  public static <R> String setStr(String key, String input) {
+    return use().call(j -> j.set(key, input));
+  }
+
+  public static <R> String setStr(String key, long seconds, String input) {
+    return use().call(j -> j.setex(key, seconds, input));
+  }
+
+  public static String getStr(String key) {
+    Function<Jedis, String> function = (jedis) -> {
+      return jedis.get(key);
+    };
+    return use().call(function);
+  }
+
+  public static String setInt(String key, int value) {
+    return use().call(j -> j.set(key, Integer.toString(value)));
+  }
+
+  public static String setInt(String key, long seconds, int value) {
+    return use().call(j -> j.setex(key, seconds, Integer.toString(value)));
+  }
+
+  public static Integer getInt(String key) {
+    Function<Jedis, String> function = (jedis) -> {
+      return jedis.get(key);
+    };
+    String value = use().call(function);
+    return Integer.parseInt(value);
+  }
+
+  public static String setLong(String key, long value) {
+    return use().call(j -> j.set(key, Long.toString(value)));
+  }
+
+  public static String setLong(String key, long seconds, long value) {
+    return use().call(j -> j.setex(key, seconds, Long.toString(value)));
+  }
+
+  public static Long getLong(String key) {
+    Function<Jedis, String> function = (jedis) -> {
+      return jedis.get(key);
+    };
+    String value = use().call(function);
+    return Long.parseLong(value);
   }
 }

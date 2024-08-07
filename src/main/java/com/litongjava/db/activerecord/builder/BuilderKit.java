@@ -49,6 +49,10 @@ public class BuilderKit {
     Object value = null;
     if (types[i] < Types.DATE) {
       value = rs.getObject(i);
+
+      if (types[i] == Types.SMALLINT && value instanceof Integer) {
+        value = ((Integer) value).shortValue();
+      }
     } else {
       if (types[i] == Types.TIMESTAMP) {
         value = rs.getTimestamp(i);
@@ -61,9 +65,6 @@ public class BuilderKit {
           if ("json".equals(pGobject.getType())) {
             value = pGobject.getValue();
           }
-//          String stringValue = pGobject.getValue();
-//          value = parseJsonField(stringValue);
-
         }
       } else if (types[i] == Types.CLOB) {
         value = ModelBuilder.me.handleClob(rs.getClob(i));

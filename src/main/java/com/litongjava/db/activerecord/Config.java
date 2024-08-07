@@ -39,8 +39,7 @@ public class Config {
 
   // For ActiveRecordPlugin only, dataSource can be null
   public Config(String name, DataSource dataSource, int transactionLevel) {
-    init(name, dataSource, new MysqlDialect(), false, false, transactionLevel,
-        IContainerFactory.defaultContainerFactory, new EhCache());
+    init(name, dataSource, new MysqlDialect(), false, false, transactionLevel, IContainerFactory.defaultContainerFactory, new EhCache());
   }
 
   /**
@@ -54,16 +53,16 @@ public class Config {
    * @param containerFactory the containerFactory
    * @param cache the cache
    */
-  public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode,
-      int transactionLevel, IContainerFactory containerFactory, ICache cache) {
+  public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel,
+      IContainerFactory containerFactory, ICache cache) {
     if (dataSource == null) {
       throw new IllegalArgumentException("DataSource can not be null");
     }
     init(name, dataSource, dialect, showSql, devMode, transactionLevel, containerFactory, cache);
   }
 
-  private void init(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode,
-      int transactionLevel, IContainerFactory containerFactory, ICache cache) {
+  private void init(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel,
+      IContainerFactory containerFactory, ICache cache) {
     if (StrKit.isBlank(name)) {
       throw new IllegalArgumentException("Config name can not be blank");
     }
@@ -101,8 +100,7 @@ public class Config {
    * Constructor with name, dataSource and dialect
    */
   public Config(String name, DataSource dataSource, Dialect dialect) {
-    this(name, dataSource, dialect, false, false, DbKit.DEFAULT_TRANSACTION_LEVEL,
-        IContainerFactory.defaultContainerFactory, new EhCache());
+    this(name, dataSource, dialect, false, false, DbKit.DEFAULT_TRANSACTION_LEVEL, IContainerFactory.defaultContainerFactory, new EhCache());
   }
 
   private Config() {
@@ -194,8 +192,10 @@ public class Config {
    */
   public Connection getConnection() throws SQLException {
     Connection conn = threadLocal.get();
-    if (conn != null)
+    if (conn != null) {
       return conn;
+    }
+
     return showSql ? new SqlReporter(dataSource.getConnection()).getConnection() : dataSource.getConnection();
   }
 
