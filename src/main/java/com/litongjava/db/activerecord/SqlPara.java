@@ -58,4 +58,8 @@ public class SqlPara implements Serializable {
   public String toString() {
     return "Sql: " + sql + "\nPara: " + paraList;
   }
+
+  public static SqlPara by(String sql) {
+    return new SqlPara(sql);
+  }
 }
