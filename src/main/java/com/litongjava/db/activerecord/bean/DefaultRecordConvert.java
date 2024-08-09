@@ -30,11 +30,20 @@ public class DefaultRecordConvert implements RecordConvert {
 
         Object fieldValue = record.get(columnName);
         if (fieldValue != null) {
-          field.set(bean, fieldValue);
+          // 进行类型转换
+          if (tableFieldAnnotation != null && tableFieldAnnotation.targetType() != Object.class) {
+            fieldValue = convertType(fieldValue, tableFieldAnnotation.targetType());
+          }
+          try {
+            field.set(bean, fieldValue);
+          } catch (java.lang.IllegalArgumentException e) {
+            throw new RuntimeException("Failed to set:" + columnName + ":" + fieldValue, e);
+          }
+
         }
       }
       return bean;
-    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+    } catch (InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException("Error converting Record to Bean", e);
     }
   }
@@ -68,7 +77,10 @@ public class DefaultRecordConvert implements RecordConvert {
 
       try {
         Object value = field.get(bean);
-        record.set(columnName, value);
+        if (value != null) {
+          record.set(columnName, value);
+        }
+
       } catch (IllegalAccessException e) {
         throw new RuntimeException("Error accessing field: " + fieldName, e);
       }
@@ -77,4 +89,14 @@ public class DefaultRecordConvert implements RecordConvert {
     return record;
   }
 
+  // 类型转换方法
+  private Object convertType(Object value, Class<?> targetType) {
+    if (targetType == Short.class) {
+      return Short.valueOf(value.toString());
+    } else if (targetType == Integer.class) {
+      return Integer.valueOf(value.toString());
+    }
+    // 其他类型转换
+    return value;
+  }
 }

@@ -76,11 +76,14 @@ public class Db {
   }
 
   /**
-   * Execute sql query and return the first result. I recommend add "limit 1" in your sql.
-   * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
+   * Execute sql query and return the first result. I recommend add "limit 1" in
+   * your sql.
+   * 
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
    * @param paras the parameters of sql
-   * @return Object[] if your sql has select more than one column,
-   * 			and it return Object if your sql has select only one column.
+   * @return Object[] if your sql has select more than one column, and it return
+   *         Object if your sql has select only one column.
    */
   public static <T> T queryFirst(String sql, Object... paras) {
     return MAIN.queryFirst(sql, paras);
@@ -97,8 +100,10 @@ public class Db {
   // 26 queryXxx method below -----------------------------------------------
   /**
    * Execute sql query just return one column.
-   * @param <T> the type of the column that in your sql's select statement
-   * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
+   * 
+   * @param <T>   the type of the column that in your sql's select statement
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
    * @param paras the parameters of sql
    * @return <T> T
    */
@@ -257,11 +262,13 @@ public class Db {
 
   /**
    * Execute update, insert or delete sql statement.
-   * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
+   * 
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
    * @param paras the parameters of sql
-   * @return either the row count for <code>INSERT</code>, <code>UPDATE</code>,
-     *         or <code>DELETE</code> statements, or 0 for SQL statements 
-     *         that return nothing
+   * @return either the row count for <code>INSERT</code>, <code>UPDATE</code>, or
+   *         <code>DELETE</code> statements, or 0 for SQL statements that return
+   *         nothing
    */
   public static int updateBySql(String sql, Object... paras) {
     return MAIN.update(sql, paras);
@@ -275,7 +282,8 @@ public class Db {
     return MAIN.update(sql);
   }
 
-  // =====================================================find start===========================================
+  // =====================================================find
+  // start===========================================
   /**
    * 
    * @param config
@@ -374,7 +382,9 @@ public class Db {
 
   /**
    * Find first record. I recommend add "limit 1" in your sql.
-   * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
+   * 
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
    * @param paras the parameters of sql
    * @return the Record object
    */
@@ -413,12 +423,14 @@ public class Db {
 
   /**
    * Find record by id with default primary key.
+   * 
    * <pre>
    * Example:
    * Record user = Db.findById("user", 15);
    * </pre>
+   * 
    * @param tableName the table name of the table
-   * @param idValue the id value of the record
+   * @param idValue   the id value of the record
    */
   public static Record findById(String tableName, Object idValue) {
     return MAIN.findById(tableName, idValue);
@@ -481,14 +493,17 @@ public class Db {
 
   /**
    * Find record by ids.
+   * 
    * <pre>
    * Example:
    * Record user = Db.findByIds("user", "user_id", 123);
    * Record userRole = Db.findByIds("user_role", "user_id, role_id", 123, 456);
    * </pre>
-   * @param tableName the table name of the table
-   * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-   * @param idValues the id value of the record, it can be composite id values
+   * 
+   * @param tableName  the table name of the table
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
+   * @param idValues   the id value of the record, it can be composite id values
    */
   public static Record findByIds(String tableName, String primaryKey, Object... idValues) {
     return MAIN.findByIds(tableName, primaryKey, idValues);
@@ -529,12 +544,13 @@ public class Db {
 
   /**
    * Delete record by id with default primary key.
+   * 
    * <pre>
-   * Example:
-   * Db.deleteById("user", 15);
+   * Example: Db.deleteById("user", 15);
    * </pre>
+   * 
    * @param tableName the table name of the table
-   * @param idValue the id value of the record
+   * @param idValue   the id value of the record
    * @return true if delete succeed otherwise false
    */
   public static boolean deleteById(String tableName, Object idValue) {
@@ -553,14 +569,16 @@ public class Db {
 
   /**
    * Delete record by ids.
+   * 
    * <pre>
-   * Example:
-   * Db.deleteByIds("user", "user_id", 15);
+   * Example: Db.deleteByIds("user", "user_id", 15);
    * Db.deleteByIds("user_role", "user_id, role_id", 123, 456);
    * </pre>
-   * @param tableName the table name of the table
-   * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-   * @param idValues the id value of the record, it can be composite id values
+   * 
+   * @param tableName  the table name of the table
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
+   * @param idValues   the id value of the record, it can be composite id values
    * @return true if delete succeed otherwise false
    */
   public static boolean deleteByIds(String tableName, String primaryKey, Object... idValues) {
@@ -569,13 +587,16 @@ public class Db {
 
   /**
    * Delete record.
+   * 
    * <pre>
    * Example:
    * boolean succeed = Db.delete("user", "id", user);
    * </pre>
-   * @param tableName the table name of the table
-   * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-   * @param record the record
+   * 
+   * @param tableName  the table name of the table
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
+   * @param record     the record
    * @return true if delete succeed otherwise false
    */
   public static boolean delete(String tableName, String primaryKey, Record record) {
@@ -587,6 +608,7 @@ public class Db {
    * Example:
    * boolean succeed = Db.delete("user", user);
    * </pre>
+   * 
    * @see #delete(String, String, Record)
    */
   public static boolean deleteByIds(String tableName, Record record) {
@@ -599,10 +621,12 @@ public class Db {
 
   /**
    * Execute delete sql statement.
-   * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
+   * 
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
    * @param paras the parameters of sql
-   * @return the row count for <code>DELETE</code> statements, or 0 for SQL statements 
-   *         that return nothing
+   * @return the row count for <code>DELETE</code> statements, or 0 for SQL
+   *         statements that return nothing
    */
   public static int delete(String sql, Object... paras) {
     return MAIN.delete(sql, paras);
@@ -680,11 +704,12 @@ public class Db {
 
   /**
    * Paginate.
-   * @param pageNumber the page number
-   * @param pageSize the page size
-   * @param select the select part of the sql statement
+   * 
+   * @param pageNumber      the page number
+   * @param pageSize        the page size
+   * @param select          the select part of the sql statement
    * @param sqlExceptSelect the sql statement excluded select part
-   * @param paras the parameters of sql
+   * @param paras           the parameters of sql
    * @return the Page object
    */
   public static Page<Record> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
@@ -865,6 +890,7 @@ public class Db {
 
   /**
    * Paginate by cache.
+   * 
    * @param cacheName
    * @param key
    * @param pageNumber
@@ -1105,15 +1131,18 @@ public class Db {
 
   /**
    * Save record.
+   * 
    * <pre>
    * Example:
    * Record userRole = new Record().set("user_id", 123).set("role_id", 456);
    * Db.save("user_role", "user_id, role_id", userRole);
    * </pre>
-   * @param tableName the table name of the table
-   * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-   * @param record the record will be saved
-   * @param true if save succeed otherwise false
+   * 
+   * @param tableName  the table name of the table
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
+   * @param record     the record will be saved
+   * @param true       if save succeed otherwise false
    */
   public static boolean save(String tableName, String primaryKey, Record record) {
     return MAIN.save(tableName, primaryKey, record);
@@ -1155,14 +1184,16 @@ public class Db {
 
   /**
    * Update Record.
+   * 
    * <pre>
-   * Example:
-   * Db.update("user_role", "user_id, role_id", record);
+   * Example: Db.update("user_role", "user_id, role_id", record);
    * </pre>
-   * @param tableName the table name of the Record save to
-   * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-   * @param record the Record object
-   * @param true if update succeed otherwise false
+   * 
+   * @param tableName  the table name of the Record save to
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
+   * @param record     the Record object
+   * @param true       if update succeed otherwise false
    */
   public static boolean update(String tableName, String primaryKey, Record record) {
     return MAIN.update(tableName, primaryKey, record);
@@ -1181,10 +1212,11 @@ public class Db {
 
   /**
    * Update record with default primary key.
+   * 
    * <pre>
-   * Example:
-   * Db.update("user", record);
+   * Example: Db.update("user", record);
    * </pre>
+   * 
    * @see #update(String, String, Record)
    */
   public static boolean update(String tableName, Record record) {
@@ -1199,8 +1231,10 @@ public class Db {
   }
 
   /**
-   * Execute callback. It is useful when all the API can not satisfy your requirement.
-   * @param config the Config object
+   * Execute callback. It is useful when all the API can not satisfy your
+   * requirement.
+   * 
+   * @param config   the Config object
    * @param callback the ICallback interface
    */
   static Object execute(Config config, ICallback callback) {
@@ -1209,9 +1243,10 @@ public class Db {
 
   /**
    * Execute transaction.
-   * @param config the Config object
+   * 
+   * @param config           the Config object
    * @param transactionLevel the transaction level
-   * @param atom the atom operation
+   * @param atom             the atom operation
    * @return true if transaction executing succeed otherwise false
    */
   static boolean tx(Config config, int transactionLevel, IAtom atom) {
@@ -1220,6 +1255,7 @@ public class Db {
 
   /**
    * Execute transaction with default transaction level.
+   * 
    * @see #tx(int, IAtom)
    */
   public static boolean tx(IAtom atom) {
@@ -1235,12 +1271,10 @@ public class Db {
    * 
    * 实例：https://jfinal.com/feedback/4008
    * 
-   * 默认情况下嵌套事务会被合并成为一个事务，那么内层与外层任何地方回滚事务
-   * 所有嵌套层都将回滚事务，也就是说嵌套事务无法独立提交与回滚
+   * 默认情况下嵌套事务会被合并成为一个事务，那么内层与外层任何地方回滚事务 所有嵌套层都将回滚事务，也就是说嵌套事务无法独立提交与回滚
    * 
-   * 使用 txInNewThread(...) 方法可以实现层之间的事务控制的独立性
-   * 由于事务处理是将 Connection 绑定到线程上的，所以 txInNewThread(...)
-   * 通过建立新线程来实现嵌套事务的独立控制
+   * 使用 txInNewThread(...) 方法可以实现层之间的事务控制的独立性 由于事务处理是将 Connection 绑定到线程上的，所以
+   * txInNewThread(...) 通过建立新线程来实现嵌套事务的独立控制
    */
   public static Future<Boolean> txInNewThread(IAtom atom) {
     return MAIN.txInNewThread(atom);
@@ -1252,9 +1286,10 @@ public class Db {
 
   /**
    * Find Record by cache.
+   * 
    * @see #find(String, Object...)
    * @param cacheName the cache name
-   * @param key the key used to get date from cache
+   * @param key       the key used to get date from cache
    * @return the list of Record
    */
   public static List<Record> findByCache(String cacheName, Object key, String sql, Object... paras) {
@@ -1278,11 +1313,13 @@ public class Db {
 
   /**
    * Find first record by cache. I recommend add "limit 1" in your sql.
+   * 
    * @see #findFirst(String, Object...)
    * @param cacheName the cache name
-   * @param key the key used to get date from cache
-   * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
-   * @param paras the parameters of sql
+   * @param key       the key used to get date from cache
+   * @param sql       an SQL statement that may contain one or more '?' IN
+   *                  parameter placeholders
+   * @param paras     the parameters of sql
    * @return the Record object
    */
   public static Record findFirstByCache(String cacheName, Object key, String sql, Object... paras) {
@@ -1306,34 +1343,34 @@ public class Db {
 
   /**
    * @see DbPro#batch(String, Object[][], int)
-     */
+   */
   public static int[] batch(String sql, Object[][] paras, int batchSize) {
     return MAIN.batch(sql, paras, batchSize);
   }
 
   /**
    * @see DbPro#batch(String, String, List, int)
-     */
+   */
   public static int[] batch(String sql, String columns, List modelOrRecordList, int batchSize) {
     return MAIN.batch(sql, columns, modelOrRecordList, batchSize);
   }
 
   /**
    * @see DbPro#batch(List, int)
-     */
+   */
   public static int[] batch(List<String> sqlList, int batchSize) {
     return MAIN.batch(sqlList, batchSize);
   }
 
   /**
-  * @see DbPro#batchSave(List, int)
+   * @see DbPro#batchSave(List, int)
    */
   public static int[] batchSave(List<? extends Model> modelList, int batchSize) {
     return MAIN.batchSave(modelList, batchSize);
   }
 
   /**
-  * @see DbPro#batchSave(String, List, int)
+   * @see DbPro#batchSave(String, List, int)
    */
   public static int[] batchSave(String tableName, List<? extends Record> recordList, int batchSize) {
     return MAIN.batchSave(tableName, recordList, batchSize);
@@ -1344,21 +1381,21 @@ public class Db {
   }
 
   /**
-  * @see DbPro#batchUpdate(List, int)
+   * @see DbPro#batchUpdate(List, int)
    */
   public static int[] batchUpdate(List<? extends Model> modelList, int batchSize) {
     return MAIN.batchUpdate(modelList, batchSize);
   }
 
   /**
-  * @see DbPro#batchUpdate(String, String, List, int)
+   * @see DbPro#batchUpdate(String, String, List, int)
    */
   public static int[] batchUpdate(String tableName, String primaryKey, List<? extends Record> recordList, int batchSize) {
     return MAIN.batchUpdate(tableName, primaryKey, recordList, batchSize);
   }
 
   /**
-  * @see DbPro#batchUpdate(String, List, int)
+   * @see DbPro#batchUpdate(String, List, int)
    */
   public static int[] batchUpdate(String tableName, List<? extends Record> recordList, int batchSize) {
     return MAIN.batchUpdate(tableName, recordList, batchSize);
@@ -1397,7 +1434,8 @@ public class Db {
     return MAIN.getSqlParaByString(content, paras);
   }
 
-  // ======================================find start========================================
+  // ======================================find
+  // start========================================
   /**
    * @param sqlPara
    * @return
@@ -1440,6 +1478,7 @@ public class Db {
 
   /**
    * 迭代处理每一个查询出来的 Record 对象
+   * 
    * <pre>
    * 例子：
    * Db.each(record -> {
@@ -1483,8 +1522,7 @@ public class Db {
   // ---------
 
   /**
-   * 使用字符串变量作为 sql 模板进行查询，可省去外部 sql 文件来使用
-   * sql 模板功能
+   * 使用字符串变量作为 sql 模板进行查询，可省去外部 sql 文件来使用 sql 模板功能
    * 
    * <pre>
    * 例子：
@@ -1497,8 +1535,7 @@ public class Db {
   }
 
   /**
-   * 使用字符串变量作为 sql 模板进行查询，可省去外部 sql 文件来使用
-   * sql 模板功能
+   * 使用字符串变量作为 sql 模板进行查询，可省去外部 sql 文件来使用 sql 模板功能
    * 
    * <pre>
    * 例子：

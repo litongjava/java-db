@@ -72,8 +72,7 @@ public class PostgreSqlDialect extends Dialect {
     return sql.toString();
   }
 
-  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
-      List<Object> paras) {
+  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras) {
     sql.append("update \"").append(table.getName()).append("\" set ");
     String[] pKeys = table.getPrimaryKey();
     for (Entry<String, Object> e : attrs.entrySet()) {
@@ -194,8 +193,7 @@ public class PostgreSqlDialect extends Dialect {
     sql.append(temp.toString()).append(')');
   }
 
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -269,8 +267,8 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   /**
-   * 解决 PostgreSql 获取自增主键时 rs.getObject(1) 总是返回第一个字段的值，而非返回了 id 值
-   * issue: https://www.oschina.net/question/2312705_2243354
+   * 解决 PostgreSql 获取自增主键时 rs.getObject(1) 总是返回第一个字段的值，而非返回了 id 值 issue:
+   * https://www.oschina.net/question/2312705_2243354
    * <p>
    * 相对于 Dialect 中的默认实现，仅将 rs.getXxx(1) 改成了 rs.getXxx(pKey)
    */
@@ -299,38 +297,39 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   /**
-   * 解决 PostgreSql 获取自增主键时 rs.getObject(1) 总是返回第一个字段的值，而非返回了 id 值
-   * issue: https://www.oschina.net/question/2312705_2243354
+   * 解决 PostgreSql 获取自增主键时 rs.getObject(1) 总是返回第一个字段的值，而非返回了 id 值 issue:
+   * https://www.oschina.net/question/2312705_2243354
    * <p>
    * 相对于 Dialect 中的默认实现，仅将 rs.getXxx(1) 改成了 rs.getXxx(pKey)
    */
   public void getRecordGeneratedKey(PreparedStatement pst, Record record, String[] pKeys) {
-
-    ResultSet rs = null;
-    try {
-      rs = pst.getGeneratedKeys();
-      // 获取元数据
+    try (ResultSet rs = pst.getGeneratedKeys()) { // Automatically closes ResultSet
       ResultSetMetaData metaData = rs.getMetaData();
-      // 获取列长度
       int columnCount = metaData.getColumnCount();
 
-      // 遍历表格中的内容
-      if (rs.next()) { // 下移第一次跳过列名
-        for (int i = 1; i < columnCount + 1; i++) {
+      if (rs.next()) {
+        for (int i = 1; i <= columnCount; i++) {
           String name = metaData.getColumnName(i);
-          record.set(name, rs.getObject(name));
+          int columnType = metaData.getColumnType(i);
+
+          Object value;
+          switch (columnType) {
+          case java.sql.Types.SMALLINT:
+            value = rs.getShort(i);
+            break;
+          case java.sql.Types.INTEGER:
+            value = rs.getInt(i);
+            break;
+          default:
+            value = rs.getObject(i);
+            break;
+          }
+
+          record.set(name, value);
         }
       }
     } catch (SQLException e) {
-      e.printStackTrace();
-    } finally {
-      if (rs != null) {
-        try {
-          rs.close();
-        } catch (SQLException e) {
-          e.printStackTrace();
-        }
-      }
+      throw new RuntimeException(e);
     }
   }
 
@@ -359,8 +358,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras, String[] jsonFields) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
         Object object = record.get(f);
@@ -420,8 +418,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
-  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras,
-      String[] jsonFields) {
+  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
         Object object = record.get(f);
