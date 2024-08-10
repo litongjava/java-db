@@ -2,11 +2,11 @@ package com.litongjava.db.activerecord;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * SqlPara
- * 封装查询使用的 sql 与参数，主要用于 getSqlPara(...) 返回值
+ * SqlPara 封装查询使用的 sql 与参数，主要用于 getSqlPara(...) 返回值
  */
 public class SqlPara implements Serializable {
 
@@ -32,6 +32,11 @@ public class SqlPara implements Serializable {
       paraList = new ArrayList<Object>();
     }
     paraList.add(para);
+    return this;
+  }
+
+  public SqlPara setPara(List<Object> paraList) {
+    this.paraList = paraList;
     return this;
   }
 
@@ -61,5 +66,10 @@ public class SqlPara implements Serializable {
 
   public static SqlPara by(String sql) {
     return new SqlPara(sql);
+  }
+
+  public static SqlPara by(String sql, Object... paras) {
+    List<Object> asList = Arrays.asList(paras);
+    return new SqlPara(sql).setPara(asList);
   }
 }
