@@ -5,9 +5,11 @@ import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import com.jfinal.kit.SyncWriteMap;
@@ -19,7 +21,13 @@ import com.jfinal.kit.SyncWriteMap;
 public class Db {
 
   private static DbPro MAIN = null;
+  private static List<DbPro> replicas = null;
+  private static int replicaSize = 0;
+
+  private static final AtomicInteger counter = new AtomicInteger(0);
+
   private static final Map<String, DbPro> cache = new SyncWriteMap<String, DbPro>(32, 0.25F);
+  private static final Map<String, DbPro> replicaCaches = new SyncWriteMap<String, DbPro>(32, 0.25F);
 
   /**
    * for DbKit.addConfig(configName)
@@ -27,6 +35,17 @@ public class Db {
   static void init(String configName) {
     MAIN = DbKit.getConfig(configName).dbProFactory.getDbPro(configName); // new DbPro(configName);
     cache.put(configName, MAIN);
+  }
+
+  public static void initReplicas(List<Config> replicaConfigs) {
+    replicaSize = replicaConfigs.size();
+    replicas = new ArrayList<>(replicaSize);
+    for (Config config : replicaConfigs) {
+      String configName = config.getName();
+      DbPro dbPro = config.dbProFactory.getDbPro(configName);
+      replicaCaches.put(configName, dbPro);
+      replicas.add(dbPro);
+    }
   }
 
   /**
@@ -56,198 +75,90 @@ public class Db {
     return MAIN;
   }
 
-  static <T> List<T> query(Config config, Connection conn, String sql, Object... paras) throws SQLException {
-    return MAIN.query(config, conn, sql, paras);
+  public static DbPro useReplica(String configName) {
+    DbPro result = replicaCaches.get(configName);
+    if (result == null) {
+      Config config = DbKit.getConfig(configName);
+      if (config == null) {
+        throw new IllegalArgumentException("Config not found by configName: " + configName);
+      }
+      result = config.dbProFactory.getDbPro(configName); // new DbPro(configName);
+      replicaCaches.put(configName, result);
+    }
+    return result;
+  }
+
+  public static DbPro useReplica() {
+    // Get the index in a round-robin fashion
+    int index = counter.getAndIncrement() % replicaSize;
+
+    // Retrieve the DbPro instance from replicas
+    return replicas.get(index);
+  }
+
+  // =================================================save================================================
+  public static boolean save(Record r) {
+    return MAIN.save(r.getTableName(), r);
   }
 
   /**
-   * @see #query(String, String, Object...)
+   * @param config
+   * @param conn
+   * @param tableName
+   * @param primaryKey
+   * @param record
+   * @return
+   * @throws SQLException
    */
-  public static <T> List<T> query(String sql, Object... paras) {
-    return MAIN.query(sql, paras);
+  static boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
+    return MAIN.save(config, conn, tableName, primaryKey, record);
   }
 
   /**
-   * @see #query(String, Object...)
-   * @param sql an SQL statement
-   */
-  public static <T> List<T> query(String sql) {
-    return MAIN.query(sql);
-  }
-
-  /**
-   * Execute sql query and return the first result. I recommend add "limit 1" in
-   * your sql.
+   * Save record.
    * 
-   * @param sql   an SQL statement that may contain one or more '?' IN parameter
-   *              placeholders
-   * @param paras the parameters of sql
-   * @return Object[] if your sql has select more than one column, and it return
-   *         Object if your sql has select only one column.
-   */
-  public static <T> T queryFirst(String sql, Object... paras) {
-    return MAIN.queryFirst(sql, paras);
-  }
-
-  /**
-   * @see #queryFirst(String, Object...)
-   * @param sql an SQL statement
-   */
-  public static <T> T queryFirst(String sql) {
-    return MAIN.queryFirst(sql);
-  }
-
-  // 26 queryXxx method below -----------------------------------------------
-  /**
-   * Execute sql query just return one column.
+   * <pre>
+   * Example:
+   * Record userRole = new Record().set("user_id", 123).set("role_id", 456);
+   * Db.save("user_role", "user_id, role_id", userRole);
+   * </pre>
    * 
-   * @param <T>   the type of the column that in your sql's select statement
-   * @param sql   an SQL statement that may contain one or more '?' IN parameter
-   *              placeholders
-   * @param paras the parameters of sql
-   * @return <T> T
+   * @param tableName  the table name of the table
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
+   * @param record     the record will be saved
+   * @param true       if save succeed otherwise false
    */
-  public static <T> T queryColumn(String sql, Object... paras) {
-    return MAIN.queryColumn(sql, paras);
+  public static boolean save(String tableName, String primaryKey, Record record) {
+    return MAIN.save(tableName, primaryKey, record);
   }
 
-  public static <T> T queryColumn(String sql) {
-    return MAIN.queryColumn(sql);
+  /**
+   * @see #save(String, String, Record)
+   */
+  public static boolean save(String tableName, Record record) {
+    return MAIN.save(tableName, record);
   }
 
-  public static String queryStr(String sql, Object... paras) {
-    return MAIN.queryStr(sql, paras);
+  /**
+   * @param tableName
+   * @param record
+   * @param jsonFields
+   * @return
+   */
+  public static boolean save(String tableName, Record record, String[] jsonFields) {
+    return MAIN.save(tableName, record, jsonFields);
   }
 
-  public static String queryStr(String sql) {
-    return MAIN.queryStr(sql);
-  }
-
-  public static Integer queryInt(String sql, Object... paras) {
-    return MAIN.queryInt(sql, paras);
-  }
-
-  public static Integer queryInt(String sql) {
-    return MAIN.queryInt(sql);
-  }
-
-  public static Long queryLong(String sql, Object... paras) {
-    return MAIN.queryLong(sql, paras);
-  }
-
-  public static Long queryLong(String sql) {
-    return MAIN.queryLong(sql);
-  }
-
-  public static Double queryDouble(String sql, Object... paras) {
-    return MAIN.queryDouble(sql, paras);
-  }
-
-  public static Double queryDouble(String sql) {
-    return MAIN.queryDouble(sql);
-  }
-
-  public static Float queryFloat(String sql, Object... paras) {
-    return MAIN.queryFloat(sql, paras);
-  }
-
-  public static Float queryFloat(String sql) {
-    return MAIN.queryFloat(sql);
-  }
-
-  public static BigDecimal queryBigDecimal(String sql, Object... paras) {
-    return MAIN.queryBigDecimal(sql, paras);
-  }
-
-  public static BigDecimal queryBigDecimal(String sql) {
-    return MAIN.queryBigDecimal(sql);
-  }
-
-  public static BigInteger queryBigInteger(String sql, Object... paras) {
-    return MAIN.queryBigInteger(sql, paras);
-  }
-
-  public static BigInteger queryBigInteger(String sql) {
-    return MAIN.queryBigInteger(sql);
-  }
-
-  public static byte[] queryBytes(String sql, Object... paras) {
-    return MAIN.queryBytes(sql, paras);
-  }
-
-  public static byte[] queryBytes(String sql) {
-    return MAIN.queryBytes(sql);
-  }
-
-  public static java.util.Date queryDate(String sql, Object... paras) {
-    return MAIN.queryDate(sql, paras);
-  }
-
-  public static java.util.Date queryDate(String sql) {
-    return MAIN.queryDate(sql);
-  }
-
-  public static LocalDateTime queryLocalDateTime(String sql, Object... paras) {
-    return MAIN.queryLocalDateTime(sql, paras);
-  }
-
-  public static LocalDateTime queryLocalDateTime(String sql) {
-    return MAIN.queryLocalDateTime(sql);
-  }
-
-  public static java.sql.Time queryTime(String sql, Object... paras) {
-    return MAIN.queryTime(sql, paras);
-  }
-
-  public static java.sql.Time queryTime(String sql) {
-    return MAIN.queryTime(sql);
-  }
-
-  public static java.sql.Timestamp queryTimestamp(String sql, Object... paras) {
-    return MAIN.queryTimestamp(sql, paras);
-  }
-
-  public static java.sql.Timestamp queryTimestamp(String sql) {
-    return MAIN.queryTimestamp(sql);
-  }
-
-  public static Boolean queryBoolean(String sql, Object... paras) {
-    return MAIN.queryBoolean(sql, paras);
-  }
-
-  public static Boolean queryBoolean(String sql) {
-    return MAIN.queryBoolean(sql);
-  }
-
-  public static Short queryShort(String sql, Object... paras) {
-    return MAIN.queryShort(sql, paras);
-  }
-
-  public static Short queryShort(String sql) {
-    return MAIN.queryShort(sql);
-  }
-
-  public static Byte queryByte(String sql, Object... paras) {
-    return MAIN.queryByte(sql, paras);
-  }
-
-  public static Byte queryByte(String sql) {
-    return MAIN.queryByte(sql);
-  }
-
-  public static Number queryNumber(String sql, Object... paras) {
-    return MAIN.queryNumber(sql, paras);
-  }
-
-  public static Number queryNumber(String sql) {
-    return MAIN.queryNumber(sql);
+  public static boolean save(String tableName, String primaryKey, Record record, String[] jsonFields) {
+    return MAIN.save(tableName, primaryKey, record, jsonFields);
   }
 
   // ===================================================update==================================
   /**
    * Execute sql update
    */
-  static int update(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+  public static int update(Config config, Connection conn, String sql, Object... paras) throws SQLException {
     return MAIN.update(config, conn, sql, paras);
   }
 
@@ -282,265 +193,61 @@ public class Db {
     return MAIN.update(sql);
   }
 
-  // =====================================================find
-  // start===========================================
   /**
-   * 
    * @param config
    * @param conn
-   * @param sql
-   * @param paras
+   * @param tableName
+   * @param primaryKey
+   * @param record
    * @return
    * @throws SQLException
    */
-  static List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
-    return MAIN.find(config, conn, sql, paras);
+  static boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
+    return MAIN.update(config, conn, tableName, primaryKey, record);
   }
 
   /**
-   * @param sql the sql statement
-   * @return
-   */
-  public static List<Record> find(String sql) {
-    return MAIN.find(sql);
-  }
-
-  /**
-   * @param <T>
-   * @param clazz
-   * @param sql
-   * @return
-   */
-  public static <T> List<T> find(Class<T> clazz, String sql) {
-    return MAIN.find(clazz, sql);
-  }
-
-  /**
-   * 
-   * @param sql
-   * @param paras
-   * @return
-   */
-  public static List<Record> find(String sql, Object... paras) {
-    return MAIN.find(sql, paras);
-  }
-
-  public static List<Record> findWithJsonField(String sql, String[] jsonFields, Object... paras) {
-    return MAIN.findWithJsonField(sql, jsonFields, paras);
-  }
-
-  /**
-   * @param <T>
-   * @param clazz
-   * @param sql
-   * @param paras
-   * @return
-   */
-  public static <T> List<T> find(Class<T> clazz, String sql, Object... paras) {
-    return MAIN.find(clazz, sql, paras);
-  }
-
-  /**
-   * @param tableName
-   * @return
-   */
-  public static List<Record> findAll(String tableName) {
-    return MAIN.findAll(tableName);
-  }
-
-  /**
-   * 
-   * @param <T>
-   * @param clazz
-   * @param tableName
-   * @return
-   */
-  public static <T> List<T> findAll(Class<T> clazz, String tableName) {
-    return MAIN.findAll(clazz, tableName);
-  }
-
-  /**
-   * 
-   * @param tableName
-   * @param columns
-   * @return
-   */
-  public static List<Record> findColumnsAll(String tableName, String columns) {
-    return MAIN.findColumnsAll(tableName, columns);
-  }
-
-  /**
-   * @param <T>
-   * @param clazz
-   * @param tableName
-   * @param columns
-   * @return
-   */
-  public static <T> List<T> findColumnsAll(Class<T> clazz, String tableName, String columns) {
-    return MAIN.findColumnsAll(clazz, tableName, columns);
-  }
-
-  /**
-   * Find first record. I recommend add "limit 1" in your sql.
-   * 
-   * @param sql   an SQL statement that may contain one or more '?' IN parameter
-   *              placeholders
-   * @param paras the parameters of sql
-   * @return the Record object
-   */
-  public static Record findFirst(String sql, Object... paras) {
-    return MAIN.findFirst(sql, paras);
-  }
-
-  /**
-   * @param <T>
-   * @param clazz
-   * @param sql
-   * @param paras
-   * @return
-   */
-  public static <T> T findFirst(Class<T> clazz, String sql, Object... paras) {
-    return MAIN.findFirst(clazz, sql, paras);
-  }
-
-  /**
-   * @see #findFirst(String, Object...)
-   * @param sql an SQL statement
-   */
-  public static Record findFirst(String sql) {
-    return MAIN.findFirst(sql);
-  }
-
-  /**
-   * @param <T>
-   * @param clazz
-   * @param sql
-   * @return
-   */
-  public static <T> T findFirst(Class<T> clazz, String sql) {
-    return MAIN.findFirst(clazz, sql);
-  }
-
-  /**
-   * Find record by id with default primary key.
+   * Update Record.
    * 
    * <pre>
-   * Example:
-   * Record user = Db.findById("user", 15);
+   * Example: Db.update("user_role", "user_id, role_id", record);
    * </pre>
    * 
-   * @param tableName the table name of the table
-   * @param idValue   the id value of the record
-   */
-  public static Record findById(String tableName, Object idValue) {
-    return MAIN.findById(tableName, idValue);
-  }
-
-  /**
-   * @param <T>
-   * @param clazz
-   * @param tableName
-   * @param idValue
-   * @return
-   */
-  public static <T> T findById(Class<T> clazz, String tableName, Object idValue) {
-    return MAIN.findById(clazz, tableName, idValue);
-  }
-
-  /**
-   * @param <T>
-   * @param clazz
-   * @param tableName
-   * @param columns
-   * @param idValue
-   * @return
-   */
-  public static <T> T findColumnsById(Class<T> clazz, String tableName, String columns, Object idValue) {
-    return MAIN.findColumnsById(clazz, tableName, columns, idValue);
-  }
-
-  /**
-   * @param tableName
-   * @param columns
-   * @param idValue
-   * @return
-   */
-  public static Record findColumnsById(String tableName, String columns, int idValue) {
-    return MAIN.findColumnsById(tableName, columns, idValue);
-  }
-
-  /**
-   * @param tableName
-   * @param primaryKey
-   * @param idValue
-   * @return
-   */
-  public static Record findById(String tableName, String primaryKey, Object idValue) {
-    return MAIN.findById(tableName, primaryKey, idValue);
-  }
-
-  /**
-   * @param <T>
-   * @param clazz
-   * @param tableName
-   * @param primaryKey
-   * @param idValue
-   * @return
-   */
-  public static <T> T findById(Class<T> clazz, String tableName, String primaryKey, Object idValue) {
-    return MAIN.findById(clazz, tableName, primaryKey, idValue);
-  }
-
-  /**
-   * Find record by ids.
-   * 
-   * <pre>
-   * Example:
-   * Record user = Db.findByIds("user", "user_id", 123);
-   * Record userRole = Db.findByIds("user_role", "user_id, role_id", 123, 456);
-   * </pre>
-   * 
-   * @param tableName  the table name of the table
+   * @param tableName  the table name of the Record save to
    * @param primaryKey the primary key of the table, composite primary key is
    *                   separated by comma character: ","
-   * @param idValues   the id value of the record, it can be composite id values
+   * @param record     the Record object
+   * @param true       if update succeed otherwise false
    */
-  public static Record findByIds(String tableName, String primaryKey, Object... idValues) {
-    return MAIN.findByIds(tableName, primaryKey, idValues);
-  }
-
-  public static <T> T findByIds(Class<T> clazz, String tableName, String primaryKey, Object... idValues) {
-    return MAIN.findByIds(clazz, tableName, primaryKey, idValues);
+  public static boolean update(String tableName, String primaryKey, Record record) {
+    return MAIN.update(tableName, primaryKey, record);
   }
 
   /**
+   * 
    * @param tableName
-   * @param columns
    * @param primaryKey
-   * @param idValues
+   * @param record
    * @return
    */
-  public static Record findColumnsByIds(String tableName, String columns, String primaryKey, Object... idValues) {
-    return MAIN.findColumnsByIds(tableName, columns, primaryKey, idValues);
+  public static boolean update(String tableName, String primaryKey, Record record, String[] jsonFields) {
+    return MAIN.update(tableName, primaryKey, record, jsonFields);
   }
 
   /**
-   * @param <T>
-   * @param clazz
-   * @param tableName
-   * @param columns
-   * @param primaryKey
-   * @param idValues
-   * @return
+   * Update record with default primary key.
+   * 
+   * <pre>
+   * Example: Db.update("user", record);
+   * </pre>
+   * 
+   * @see #update(String, String, Record)
    */
-  public static <T> T findColumnsByIds(Class<T> clazz, String tableName, String columns, String primaryKey, Object... idValues) {
-    return MAIN.findColumnsByIds(clazz, tableName, columns, primaryKey, idValues);
+  public static boolean update(String tableName, Record record) {
+    return MAIN.update(tableName, record);
   }
 
-  public static List<Record> findByColumn(String tableName, String column, String value) {
-    return MAIN.findByColumn(tableName, column, value);
-  }
-  // =======================================dlete
+  // =======================================delete==============
 
   /**
    * Delete record by id with default primary key.
@@ -640,6 +347,647 @@ public class Db {
     return MAIN.delete(sql);
   }
 
+  static <T> List<T> query(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+    if (replicas != null) {
+      return useReplica().query(config, conn, sql, paras);
+    } else {
+      return MAIN.query(config, conn, sql, paras);
+    }
+  }
+
+  /**
+   * @see #query(String, String, Object...)
+   */
+  public static <T> List<T> query(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().query(sql, paras);
+    }
+
+    return MAIN.query(sql, paras);
+  }
+
+  /**
+   * @see #query(String, Object...)
+   * @param sql an SQL statement
+   */
+  public static <T> List<T> query(String sql) {
+    if (replicas != null) {
+      return useReplica().query(sql);
+    }
+
+    return MAIN.query(sql);
+  }
+
+  /**
+   * Execute sql query and return the first result. I recommend add "limit 1" in
+   * your sql.
+   * 
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
+   * @param paras the parameters of sql
+   * @return Object[] if your sql has select more than one column, and it return
+   *         Object if your sql has select only one column.
+   */
+  public static <T> T queryFirst(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryFirst(sql, paras);
+    }
+    return MAIN.queryFirst(sql, paras);
+  }
+
+  /**
+   * @see #queryFirst(String, Object...)
+   * @param sql an SQL statement
+   */
+  public static <T> T queryFirst(String sql) {
+    if (replicas != null) {
+      return useReplica().queryFirst(sql);
+    }
+    return MAIN.queryFirst(sql);
+  }
+
+  // 26 queryXxx method below -----------------------------------------------
+  /**
+   * Execute sql query just return one column.
+   * 
+   * @param <T>   the type of the column that in your sql's select statement
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
+   * @param paras the parameters of sql
+   * @return <T> T
+   */
+  public static <T> T queryColumn(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryFirst(sql, paras);
+    }
+    return MAIN.queryColumn(sql, paras);
+  }
+
+  public static <T> T queryColumn(String sql) {
+    if (replicas != null) {
+      return useReplica().queryColumn(sql);
+    }
+    return MAIN.queryColumn(sql);
+  }
+
+  public static String queryStr(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryStr(sql, paras);
+    }
+    return MAIN.queryStr(sql, paras);
+  }
+
+  public static String queryStr(String sql) {
+    if (replicas != null) {
+      return useReplica().queryStr(sql);
+    }
+    return MAIN.queryStr(sql);
+  }
+
+  public static Integer queryInt(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryInt(sql, paras);
+    }
+    return MAIN.queryInt(sql, paras);
+  }
+
+  public static Integer queryInt(String sql) {
+    if (replicas != null) {
+      return useReplica().queryInt(sql);
+    }
+    return MAIN.queryInt(sql);
+  }
+
+  public static Long queryLong(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryLong(sql, paras);
+    }
+    return MAIN.queryLong(sql, paras);
+  }
+
+  public static Long queryLong(String sql) {
+    if (replicas != null) {
+      return useReplica().queryLong(sql);
+    }
+    return MAIN.queryLong(sql);
+  }
+
+  public static Double queryDouble(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryDouble(sql, paras);
+    }
+    return MAIN.queryDouble(sql, paras);
+  }
+
+  public static Double queryDouble(String sql) {
+    if (replicas != null) {
+      return useReplica().queryDouble(sql);
+    }
+    return MAIN.queryDouble(sql);
+  }
+
+  public static Float queryFloat(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryFloat(sql, paras);
+    }
+    return MAIN.queryFloat(sql, paras);
+  }
+
+  public static Float queryFloat(String sql) {
+    if (replicas != null) {
+      return useReplica().queryFloat(sql);
+    }
+    return MAIN.queryFloat(sql);
+  }
+
+  public static BigDecimal queryBigDecimal(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryBigDecimal(sql, paras);
+    }
+    return MAIN.queryBigDecimal(sql, paras);
+  }
+
+  public static BigDecimal queryBigDecimal(String sql) {
+    if (replicas != null) {
+      return useReplica().queryBigDecimal(sql);
+    }
+    return MAIN.queryBigDecimal(sql);
+  }
+
+  public static BigInteger queryBigInteger(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryBigInteger(sql, paras);
+    }
+    return MAIN.queryBigInteger(sql, paras);
+  }
+
+  public static BigInteger queryBigInteger(String sql) {
+    if (replicas != null) {
+      return useReplica().queryBigInteger(sql);
+    }
+    return MAIN.queryBigInteger(sql);
+  }
+
+  public static byte[] queryBytes(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryBytes(sql, paras);
+    }
+    return MAIN.queryBytes(sql, paras);
+  }
+
+  public static byte[] queryBytes(String sql) {
+    if (replicas != null) {
+      return useReplica().queryBytes(sql);
+    }
+    return MAIN.queryBytes(sql);
+  }
+
+  public static java.util.Date queryDate(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryDate(sql, paras);
+    }
+    return MAIN.queryDate(sql, paras);
+  }
+
+  public static java.util.Date queryDate(String sql) {
+    if (replicas != null) {
+      return useReplica().queryDate(sql);
+    }
+    return MAIN.queryDate(sql);
+  }
+
+  public static LocalDateTime queryLocalDateTime(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryLocalDateTime(sql, paras);
+    }
+    return MAIN.queryLocalDateTime(sql, paras);
+  }
+
+  public static LocalDateTime queryLocalDateTime(String sql) {
+    if (replicas != null) {
+      return useReplica().queryLocalDateTime(sql);
+    }
+    return MAIN.queryLocalDateTime(sql);
+  }
+
+  public static java.sql.Time queryTime(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryTime(sql, paras);
+    }
+    return MAIN.queryTime(sql, paras);
+  }
+
+  public static java.sql.Time queryTime(String sql) {
+    if (replicas != null) {
+      return useReplica().queryTime(sql);
+    }
+    return MAIN.queryTime(sql);
+  }
+
+  public static java.sql.Timestamp queryTimestamp(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryFirst(sql, paras);
+    }
+    return MAIN.queryTimestamp(sql, paras);
+  }
+
+  public static java.sql.Timestamp queryTimestamp(String sql) {
+    if (replicas != null) {
+      return useReplica().queryTimestamp(sql);
+    }
+    return MAIN.queryTimestamp(sql);
+  }
+
+  public static Boolean queryBoolean(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryBoolean(sql, paras);
+    }
+    return MAIN.queryBoolean(sql, paras);
+  }
+
+  public static Boolean queryBoolean(String sql) {
+    if (replicas != null) {
+      return useReplica().queryBoolean(sql);
+    }
+    return MAIN.queryBoolean(sql);
+  }
+
+  public static Short queryShort(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryShort(sql, paras);
+    }
+    return MAIN.queryShort(sql, paras);
+  }
+
+  public static Short queryShort(String sql) {
+    if (replicas != null) {
+      return useReplica().queryShort(sql);
+    }
+    return MAIN.queryShort(sql);
+  }
+
+  public static Byte queryByte(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryByte(sql, paras);
+    }
+    return MAIN.queryByte(sql, paras);
+  }
+
+  public static Byte queryByte(String sql) {
+    if (replicas != null) {
+      return useReplica().queryByte(sql);
+    }
+    return MAIN.queryByte(sql);
+  }
+
+  public static Number queryNumber(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryNumber(sql, paras);
+    }
+    return MAIN.queryNumber(sql, paras);
+  }
+
+  public static Number queryNumber(String sql) {
+    if (replicas != null) {
+      return useReplica().queryNumber(sql);
+    }
+    return MAIN.queryNumber(sql);
+  }
+
+  // ===============================find
+  // start===========================================
+  /**
+   * 
+   * @param config
+   * @param conn
+   * @param sql
+   * @param paras
+   * @return
+   * @throws SQLException
+   */
+  static List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+    if (replicas != null) {
+      return useReplica().find(config, conn, sql, paras);
+    }
+    return MAIN.find(config, conn, sql, paras);
+  }
+
+  /**
+   * @param sql the sql statement
+   * @return
+   */
+  public static List<Record> find(String sql) {
+    if (replicas != null) {
+      return useReplica().find(sql);
+    }
+    return MAIN.find(sql);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param sql
+   * @return
+   */
+  public static <T> List<T> find(Class<T> clazz, String sql) {
+    if (replicas != null) {
+      return useReplica().find(clazz, sql);
+    }
+    return MAIN.find(clazz, sql);
+  }
+
+  /**
+   * 
+   * @param sql
+   * @param paras
+   * @return
+   */
+  public static List<Record> find(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().find(sql, paras);
+    }
+    return MAIN.find(sql, paras);
+  }
+
+  public static List<Record> findWithJsonField(String sql, String[] jsonFields, Object... paras) {
+    if (replicas != null) {
+      return useReplica().findWithJsonField(sql, jsonFields, paras);
+    }
+    return MAIN.findWithJsonField(sql, jsonFields, paras);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param sql
+   * @param paras
+   * @return
+   */
+  public static <T> List<T> find(Class<T> clazz, String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().find(clazz, sql, paras);
+    }
+    return MAIN.find(clazz, sql, paras);
+  }
+
+  /**
+   * @param tableName
+   * @return
+   */
+  public static List<Record> findAll(String tableName) {
+    if (replicas != null) {
+      return useReplica().findAll(tableName);
+    }
+    return MAIN.findAll(tableName);
+  }
+
+  /**
+   * 
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @return
+   */
+  public static <T> List<T> findAll(Class<T> clazz, String tableName) {
+    if (replicas != null) {
+      return useReplica().findAll(clazz, tableName);
+    }
+    return MAIN.findAll(clazz, tableName);
+  }
+
+  /**
+   * 
+   * @param tableName
+   * @param columns
+   * @return
+   */
+  public static List<Record> findColumnsAll(String tableName, String columns) {
+    if (replicas != null) {
+      return useReplica().findColumnsAll(tableName, columns);
+    }
+    return MAIN.findColumnsAll(tableName, columns);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @param columns
+   * @return
+   */
+  public static <T> List<T> findColumnsAll(Class<T> clazz, String tableName, String columns) {
+    if (replicas != null) {
+      return useReplica().findColumnsAll(clazz, tableName, columns);
+    }
+    return MAIN.findColumnsAll(clazz, tableName, columns);
+  }
+
+  /**
+   * Find first record. I recommend add "limit 1" in your sql.
+   * 
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
+   * @param paras the parameters of sql
+   * @return the Record object
+   */
+  public static Record findFirst(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().findFirst(sql, paras);
+    }
+    return MAIN.findFirst(sql, paras);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param sql
+   * @param paras
+   * @return
+   */
+  public static <T> T findFirst(Class<T> clazz, String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().findFirst(clazz, sql, paras);
+    }
+    return MAIN.findFirst(clazz, sql, paras);
+  }
+
+  /**
+   * @see #findFirst(String, Object...)
+   * @param sql an SQL statement
+   */
+  public static Record findFirst(String sql) {
+    if (replicas != null) {
+      return useReplica().findFirst(sql);
+    }
+    return MAIN.findFirst(sql);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param sql
+   * @return
+   */
+  public static <T> T findFirst(Class<T> clazz, String sql) {
+    if (replicas != null) {
+      return useReplica().findFirst(clazz, sql);
+    }
+    return MAIN.findFirst(clazz, sql);
+  }
+
+  /**
+   * Find record by id with default primary key.
+   * 
+   * <pre>
+   * Example:
+   * Record user = Db.findById("user", 15);
+   * </pre>
+   * 
+   * @param tableName the table name of the table
+   * @param idValue   the id value of the record
+   */
+  public static Record findById(String tableName, Object idValue) {
+    if (replicas != null) {
+      return useReplica().findById(tableName, idValue);
+    }
+    return MAIN.findById(tableName, idValue);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @param idValue
+   * @return
+   */
+  public static <T> T findById(Class<T> clazz, String tableName, Object idValue) {
+    if (replicas != null) {
+      return useReplica().findById(clazz, tableName, idValue);
+    }
+    return MAIN.findById(clazz, tableName, idValue);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @param columns
+   * @param idValue
+   * @return
+   */
+  public static <T> T findColumnsById(Class<T> clazz, String tableName, String columns, Object idValue) {
+    if (replicas != null) {
+      return useReplica().findColumnsById(clazz, tableName, columns, idValue);
+    }
+    return MAIN.findColumnsById(clazz, tableName, columns, idValue);
+  }
+
+  /**
+   * @param tableName
+   * @param columns
+   * @param idValue
+   * @return
+   */
+  public static Record findColumnsById(String tableName, String columns, int idValue) {
+    if (replicas != null) {
+      return useReplica().findColumnsById(tableName, columns, idValue);
+    }
+    return MAIN.findColumnsById(tableName, columns, idValue);
+  }
+
+  /**
+   * @param tableName
+   * @param primaryKey
+   * @param idValue
+   * @return
+   */
+  public static Record findById(String tableName, String primaryKey, Object idValue) {
+    if (replicas != null) {
+      return useReplica().findById(tableName, primaryKey, idValue);
+    }
+    return MAIN.findById(tableName, primaryKey, idValue);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @param primaryKey
+   * @param idValue
+   * @return
+   */
+  public static <T> T findById(Class<T> clazz, String tableName, String primaryKey, Object idValue) {
+    if (replicas != null) {
+      return useReplica().findById(clazz, tableName, primaryKey, idValue);
+    }
+    return MAIN.findById(clazz, tableName, primaryKey, idValue);
+  }
+
+  /**
+   * Find record by ids.
+   * 
+   * <pre>
+   * Example:
+   * Record user = Db.findByIds("user", "user_id", 123);
+   * Record userRole = Db.findByIds("user_role", "user_id, role_id", 123, 456);
+   * </pre>
+   * 
+   * @param tableName  the table name of the table
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
+   * @param idValues   the id value of the record, it can be composite id values
+   */
+  public static Record findByIds(String tableName, String primaryKey, Object... idValues) {
+    if (replicas != null) {
+      return useReplica().findByIds(tableName, primaryKey, idValues);
+    }
+    return MAIN.findByIds(tableName, primaryKey, idValues);
+  }
+
+  public static <T> T findByIds(Class<T> clazz, String tableName, String primaryKey, Object... idValues) {
+    if (replicas != null) {
+      return useReplica().findByIds(clazz, tableName, primaryKey, idValues);
+    }
+    return MAIN.findByIds(clazz, tableName, primaryKey, idValues);
+  }
+
+  /**
+   * @param tableName
+   * @param columns
+   * @param primaryKey
+   * @param idValues
+   * @return
+   */
+  public static Record findColumnsByIds(String tableName, String columns, String primaryKey, Object... idValues) {
+    if (replicas != null) {
+      return useReplica().findColumnsByIds(tableName, columns, primaryKey, idValues);
+    }
+    return MAIN.findColumnsByIds(tableName, columns, primaryKey, idValues);
+  }
+
+  /**
+   * @param <T>
+   * @param clazz
+   * @param tableName
+   * @param columns
+   * @param primaryKey
+   * @param idValues
+   * @return
+   */
+  public static <T> T findColumnsByIds(Class<T> clazz, String tableName, String columns, String primaryKey, Object... idValues) {
+    if (replicas != null) {
+      return useReplica().findColumnsByIds(clazz, tableName, columns, primaryKey, idValues);
+    }
+    return MAIN.findColumnsByIds(clazz, tableName, columns, primaryKey, idValues);
+  }
+
+  public static List<Record> findByColumn(String tableName, String column, String value) {
+    if (replicas != null) {
+      return useReplica().findByColumn(tableName, column, value);
+    }
+    return MAIN.findByColumn(tableName, column, value);
+  }
+
   // ===========================================paginate
   /**
    * @param config
@@ -654,6 +1002,9 @@ public class Db {
    */
   static Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras)
       throws SQLException {
+    if (replicas != null) {
+      return useReplica().paginate(config, conn, pageNumber, pageSize, select, sqlExceptSelect, paras);
+    }
     return MAIN.paginate(config, conn, pageNumber, pageSize, select, sqlExceptSelect, paras);
   }
 
@@ -665,6 +1016,9 @@ public class Db {
    * @return
    */
   public static Page<Record> paginate(int pageNumber, int pageSize, SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().paginate(pageNumber, pageSize, sqlPara);
+    }
     return MAIN.paginate(pageNumber, pageSize, sqlPara);
   }
 
@@ -676,6 +1030,9 @@ public class Db {
    * @return
    */
   public static Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql, SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().paginate(pageNumber, pageSize, isGroupBySql, sqlPara);
+    }
     return MAIN.paginate(pageNumber, pageSize, isGroupBySql, sqlPara);
   }
 
@@ -687,6 +1044,9 @@ public class Db {
    * @return
    */
   public static Page<Record> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect) {
+    if (replicas != null) {
+      return useReplica().paginate(pageNumber, pageSize, select, sqlExceptSelect);
+    }
     return MAIN.paginate(pageNumber, pageSize, select, sqlExceptSelect);
   }
 
@@ -699,6 +1059,9 @@ public class Db {
    * @return
    */
   public static Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect) {
+    if (replicas != null) {
+      return useReplica().paginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
+    }
     return MAIN.paginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
   }
 
@@ -713,6 +1076,9 @@ public class Db {
    * @return the Page object
    */
   public static Page<Record> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginate(pageNumber, pageSize, select, sqlExceptSelect, paras);
+    }
     return MAIN.paginate(pageNumber, pageSize, select, sqlExceptSelect, paras);
   }
 
@@ -726,6 +1092,9 @@ public class Db {
    * @return
    */
   public static Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
+    }
     return MAIN.paginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
@@ -738,6 +1107,9 @@ public class Db {
    * @return
    */
   public static Page<Record> paginateByFullSql(int pageNumber, int pageSize, String totalRowSql, String findSql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByFullSql(pageNumber, pageSize, totalRowSql, findSql, paras);
+    }
     return MAIN.paginateByFullSql(pageNumber, pageSize, totalRowSql, findSql, paras);
   }
 
@@ -752,6 +1124,9 @@ public class Db {
    */
   public static Page<Record> paginateByFullSql(int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql, String findSql,
       Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByFullSql(pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+    }
     return MAIN.paginateByFullSql(pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
@@ -764,6 +1139,9 @@ public class Db {
    * @return
    */
   public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().paginate(clazz, pageNumber, pageSize, sqlPara);
+    }
     return MAIN.paginate(clazz, pageNumber, pageSize, sqlPara);
   }
 
@@ -777,6 +1155,9 @@ public class Db {
    * @return
    */
   public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().paginate(clazz, pageNumber, pageSize, isGroupBySql, sqlPara);
+    }
     return MAIN.paginate(clazz, pageNumber, pageSize, isGroupBySql, sqlPara);
   }
 
@@ -790,6 +1171,9 @@ public class Db {
    * @return
    */
   public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, String select, String sqlExceptSelect) {
+    if (replicas != null) {
+      return useReplica().paginate(clazz, pageNumber, pageSize, select, sqlExceptSelect);
+    }
     return MAIN.paginate(clazz, pageNumber, pageSize, select, sqlExceptSelect);
   }
 
@@ -804,6 +1188,9 @@ public class Db {
    * @return
    */
   public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect) {
+    if (replicas != null) {
+      return useReplica().paginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
+    }
     return MAIN.paginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
   }
 
@@ -818,6 +1205,9 @@ public class Db {
    * @return
    */
   public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginate(clazz, pageNumber, pageSize, select, sqlExceptSelect, paras);
+    }
     return MAIN.paginate(clazz, pageNumber, pageSize, select, sqlExceptSelect, paras);
   }
 
@@ -834,6 +1224,9 @@ public class Db {
    */
   public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect,
       Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
+    }
     return MAIN.paginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
@@ -846,6 +1239,9 @@ public class Db {
    * @return
    */
   public static <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, String totalRowSql, String findSql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByFullSql(clazz, pageNumber, pageSize, totalRowSql, findSql, paras);
+    }
     return MAIN.paginateByFullSql(clazz, pageNumber, pageSize, totalRowSql, findSql, paras);
   }
 
@@ -860,6 +1256,9 @@ public class Db {
    */
   public static <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql, String findSql,
       Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByFullSql(clazz, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+    }
     return MAIN.paginateByFullSql(clazz, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
@@ -872,6 +1271,9 @@ public class Db {
    * @return
    */
   public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, sqlPara);
+    }
     return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, sqlPara);
   }
 
@@ -885,6 +1287,9 @@ public class Db {
    * @return
    */
   public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, sqlPara);
+    }
     return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, sqlPara);
   }
 
@@ -902,6 +1307,9 @@ public class Db {
    */
   public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect,
       Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect, paras);
+    }
     return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect, paras);
   }
 
@@ -918,6 +1326,9 @@ public class Db {
    */
   public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select,
       String sqlExceptSelect, Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
+    }
     return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
@@ -931,6 +1342,9 @@ public class Db {
    * @return
    */
   public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
+    }
     return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
   }
 
@@ -946,6 +1360,9 @@ public class Db {
    */
   public static Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select,
       String sqlExceptSelect) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
+    }
     return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
   }
 
@@ -959,6 +1376,9 @@ public class Db {
    */
   public static Page<Record> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize, String totalRowSql, String findSql,
       Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, totalRowSql, findSql, paras);
+    }
     return MAIN.paginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, totalRowSql, findSql, paras);
   }
 
@@ -973,6 +1393,9 @@ public class Db {
    */
   public static Page<Record> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
       String totalRowSql, String findSql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+    }
     return MAIN.paginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
@@ -991,6 +1414,9 @@ public class Db {
    */
   public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
       String select, String sqlExceptSelect) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
+    }
     return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
   }
 
@@ -1008,6 +1434,9 @@ public class Db {
    */
   public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
       SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, sqlPara);
+    }
     return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, sqlPara);
   }
 
@@ -1023,6 +1452,9 @@ public class Db {
    * @return
    */
   public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, sqlPara);
+    }
     return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, sqlPara);
   }
 
@@ -1040,6 +1472,9 @@ public class Db {
    */
   public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, String select,
       String sqlExceptSelect) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
+    }
     return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
   }
 
@@ -1058,6 +1493,9 @@ public class Db {
    */
   public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, String select,
       String sqlExceptSelect, Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, select, sqlExceptSelect, paras);
+    }
     return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, select, sqlExceptSelect, paras);
   }
 
@@ -1077,6 +1515,9 @@ public class Db {
    */
   public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
       String select, String sqlExceptSelect, Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
+    }
     return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
@@ -1094,6 +1535,9 @@ public class Db {
    */
   public static <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object cacheKey, int pageNumber, int pageSize,
       String totalRowSql, String findSql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, totalRowSql, findSql, paras);
+    }
     return MAIN.paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, totalRowSql, findSql, paras);
   }
 
@@ -1112,115 +1556,10 @@ public class Db {
    */
   public static <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object cacheKey, int pageNumber, int pageSize,
       boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+    }
     return MAIN.paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
-  }
-
-  // =================================================save================================================
-  /**
-   * @param config
-   * @param conn
-   * @param tableName
-   * @param primaryKey
-   * @param record
-   * @return
-   * @throws SQLException
-   */
-  static boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
-    return MAIN.save(config, conn, tableName, primaryKey, record);
-  }
-
-  /**
-   * Save record.
-   * 
-   * <pre>
-   * Example:
-   * Record userRole = new Record().set("user_id", 123).set("role_id", 456);
-   * Db.save("user_role", "user_id, role_id", userRole);
-   * </pre>
-   * 
-   * @param tableName  the table name of the table
-   * @param primaryKey the primary key of the table, composite primary key is
-   *                   separated by comma character: ","
-   * @param record     the record will be saved
-   * @param true       if save succeed otherwise false
-   */
-  public static boolean save(String tableName, String primaryKey, Record record) {
-    return MAIN.save(tableName, primaryKey, record);
-  }
-
-  /**
-   * @see #save(String, String, Record)
-   */
-  public static boolean save(String tableName, Record record) {
-    return MAIN.save(tableName, record);
-  }
-
-  /**
-   * @param tableName
-   * @param record
-   * @param jsonFields
-   * @return
-   */
-  public static boolean save(String tableName, Record record, String[] jsonFields) {
-    return MAIN.save(tableName, record, jsonFields);
-  }
-
-  public static boolean save(String tableName, String primaryKey, Record record, String[] jsonFields) {
-    return MAIN.save(tableName, primaryKey, record, jsonFields);
-  }
-
-  /**
-   * @param config
-   * @param conn
-   * @param tableName
-   * @param primaryKey
-   * @param record
-   * @return
-   * @throws SQLException
-   */
-  static boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
-    return MAIN.update(config, conn, tableName, primaryKey, record);
-  }
-
-  /**
-   * Update Record.
-   * 
-   * <pre>
-   * Example: Db.update("user_role", "user_id, role_id", record);
-   * </pre>
-   * 
-   * @param tableName  the table name of the Record save to
-   * @param primaryKey the primary key of the table, composite primary key is
-   *                   separated by comma character: ","
-   * @param record     the Record object
-   * @param true       if update succeed otherwise false
-   */
-  public static boolean update(String tableName, String primaryKey, Record record) {
-    return MAIN.update(tableName, primaryKey, record);
-  }
-
-  /**
-   * 
-   * @param tableName
-   * @param primaryKey
-   * @param record
-   * @return
-   */
-  public static boolean update(String tableName, String primaryKey, Record record, String[] jsonFields) {
-    return MAIN.update(tableName, primaryKey, record, jsonFields);
-  }
-
-  /**
-   * Update record with default primary key.
-   * 
-   * <pre>
-   * Example: Db.update("user", record);
-   * </pre>
-   * 
-   * @see #update(String, String, Record)
-   */
-  public static boolean update(String tableName, Record record) {
-    return MAIN.update(tableName, record);
   }
 
   /**
@@ -1293,10 +1632,16 @@ public class Db {
    * @return the list of Record
    */
   public static List<Record> findByCache(String cacheName, Object key, String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryFirst(sql, paras);
+    }
     return MAIN.findByCache(cacheName, key, sql, paras);
   }
 
   public static <T> List<T> findByCache(Class<T> clazz, String cacheName, Object key, String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryFirst(sql, paras);
+    }
     return MAIN.findByCache(clazz, cacheName, key, sql, paras);
   }
 
@@ -1304,10 +1649,16 @@ public class Db {
    * @see #findByCache(String, Object, String, Object...)
    */
   public static List<Record> findByCache(String cacheName, Object key, String sql) {
+    if (replicas != null) {
+      return useReplica().findByCache(cacheName, key, sql);
+    }
     return MAIN.findByCache(cacheName, key, sql);
   }
 
   public static <T> List<T> findByCache(Class<T> clazz, String cacheName, Object key, String sql) {
+    if (replicas != null) {
+      return useReplica().findByCache(clazz, cacheName, key, sql);
+    }
     return MAIN.findByCache(clazz, cacheName, key, sql);
   }
 
@@ -1323,10 +1674,16 @@ public class Db {
    * @return the Record object
    */
   public static Record findFirstByCache(String cacheName, Object key, String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().findFirstByCache(cacheName, key, sql, paras);
+    }
     return MAIN.findFirstByCache(cacheName, key, sql, paras);
   }
 
   public static <T> T findFirstByCache(Class<T> clazz, String cacheName, Object key, String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().findFirstByCache(clazz, cacheName, key, sql, paras);
+    }
     return MAIN.findFirstByCache(clazz, cacheName, key, sql, paras);
   }
 
@@ -1334,10 +1691,16 @@ public class Db {
    * @see #findFirstByCache(String, Object, String, Object...)
    */
   public static Record findFirstByCache(String cacheName, Object key, String sql) {
+    if (replicas != null) {
+      return useReplica().findFirstByCache(cacheName, key, sql);
+    }
     return MAIN.findFirstByCache(cacheName, key, sql);
   }
 
   public static <T> T findFirstByCache(Class<T> clazz, String cacheName, Object key, String sql) {
+    if (replicas != null) {
+      return useReplica().findFirstByCache(clazz, cacheName, key, sql);
+    }
     return MAIN.findFirstByCache(clazz, cacheName, key, sql);
   }
 
@@ -1434,13 +1797,15 @@ public class Db {
     return MAIN.getSqlParaByString(content, paras);
   }
 
-  // ======================================find
-  // start========================================
+  // ===================find start========================================
   /**
    * @param sqlPara
    * @return
    */
   public static List<Record> find(SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().find(sqlPara);
+    }
     return MAIN.find(sqlPara);
   }
 
@@ -1451,6 +1816,9 @@ public class Db {
    * @return
    */
   public static <T> List<T> find(Class<T> clazz, SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().find(clazz, sqlPara);
+    }
     return MAIN.find(clazz, sqlPara);
   }
 
@@ -1460,6 +1828,9 @@ public class Db {
    * @return
    */
   public static Record findFirst(SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().findFirst(sqlPara);
+    }
     return MAIN.findFirst(sqlPara);
   }
 
@@ -1471,6 +1842,9 @@ public class Db {
    * @return
    */
   public static <T> T findFirst(Class<T> clazz, SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().findFirst(clazz, sqlPara);
+    }
     return MAIN.findFirst(clazz, sqlPara);
   }
 
@@ -1490,6 +1864,9 @@ public class Db {
    * </pre>
    */
   public static void each(Function<Record, Boolean> func, String sql, Object... paras) {
+    if (replicas != null) {
+      useReplica().each(func, sql, paras);
+    }
     MAIN.each(func, sql, paras);
   }
 
@@ -1504,6 +1881,9 @@ public class Db {
    * </pre>
    */
   public static DbTemplate template(String key, Map data) {
+    if (replicas != null) {
+      return useReplica().template(key, data);
+    }
     return MAIN.template(key, data);
   }
 
@@ -1516,6 +1896,9 @@ public class Db {
    * </pre>
    */
   public static DbTemplate template(String key, Object... paras) {
+    if (replicas != null) {
+      return useReplica().template(key, paras);
+    }
     return MAIN.template(key, paras);
   }
 
@@ -1531,6 +1914,9 @@ public class Db {
    * </pre>
    */
   public static DbTemplate templateByString(String content, Map data) {
+    if (replicas != null) {
+      return useReplica().templateByString(content, data);
+    }
     return MAIN.templateByString(content, data);
   }
 
@@ -1544,10 +1930,16 @@ public class Db {
    * </pre>
    */
   public static DbTemplate templateByString(String content, Object... paras) {
+    if (replicas != null) {
+      return useReplica().templateByString(content, paras);
+    }
     return MAIN.templateByString(content, paras);
   }
 
   public static boolean existsBySql(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().exists(sql, paras);
+    }
     return MAIN.exists(sql, paras);
   }
 
@@ -1558,27 +1950,37 @@ public class Db {
    * @return
    */
   public static boolean exists(String tableName, String fields, Object... paras) {
+    if (replicas != null) {
+      return useReplica().exists(tableName, fields, paras);
+    }
     return MAIN.exists(tableName, fields, paras);
   }
 
   public static Long count(String sql) {
+    if (replicas != null) {
+      return useReplica().count(sql);
+    }
     return MAIN.count(sql);
   }
 
   public static Long countTable(String table) {
+    if (replicas != null) {
+      return useReplica().countTable(table);
+    }
     return MAIN.countTable(table);
   }
 
-  public static boolean save(Record r) {
-    return MAIN.save(r.getTableName(), r);
-  }
-
   public static List<String> queryListString(String sql) {
+    if (replicas != null) {
+      return useReplica().query(sql);
+    }
     return MAIN.query(sql);
   }
 
   public static List<String> queryListString(String sql, Object... params) {
+    if (replicas != null) {
+      return useReplica().query(sql, params);
+    }
     return MAIN.query(sql, params);
   }
-
 }
