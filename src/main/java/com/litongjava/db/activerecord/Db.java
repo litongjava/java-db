@@ -89,11 +89,12 @@ public class Db {
   }
 
   public static DbPro useReplica() {
-    // Get the index in a round-robin fashion
     int index = counter.getAndIncrement() % replicaSize;
-
-    // Retrieve the DbPro instance from replicas
     return replicas.get(index);
+  }
+
+  public static DbPro useReplica(int i) {
+    return replicas.get(i);
   }
 
   // =================================================save================================================

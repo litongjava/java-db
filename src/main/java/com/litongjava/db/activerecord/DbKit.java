@@ -88,14 +88,14 @@ public final class DbKit {
       }
 
       configNameToConfig.put(config.getName(), config);
-
-      /**
-       * The configName may not be MAIN_CONFIG_NAME, the main config have to set the
-       * first comming Config if it is null
-       */
-      replicaConfigs = configs;
-      Db.initReplicas(replicaConfigs);
     }
+
+    /**
+     * The configName may not be MAIN_CONFIG_NAME, the main config have to set the
+     * first comming Config if it is null
+     */
+    replicaConfigs = configs;
+    Db.initReplicas(replicaConfigs);
 
   }
 
