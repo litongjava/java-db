@@ -1,6 +1,6 @@
 package com.litongjava.db.activerecord.cache;
 
-import com.litongjava.db.ehcache.CacheKit;
+import com.litongjava.ehcache.CacheKit;
 
 /**
  * EhCache.

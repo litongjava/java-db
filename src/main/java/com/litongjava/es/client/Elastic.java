@@ -90,8 +90,7 @@ public class Elastic {
   }
 
   @SuppressWarnings("deprecation")
-  public static CreateIndexResponse crateIndex(org.elasticsearch.action.admin.indices.create.CreateIndexRequest createIndexRequest,
-      RequestOptions options) {
+  public static CreateIndexResponse createIndex(org.elasticsearch.action.admin.indices.create.CreateIndexRequest createIndexRequest, RequestOptions options) {
     try {
       return client.indices().create(createIndexRequest, options);
     } catch (IOException e) {
@@ -100,8 +99,8 @@ public class Elastic {
   }
 
   @SuppressWarnings("deprecation")
-  public static Cancellable createIndexAsync(org.elasticsearch.action.admin.indices.create.CreateIndexRequest createIndexRequest,
-      RequestOptions options, ActionListener<org.elasticsearch.action.admin.indices.create.CreateIndexResponse> listener) {
+  public static Cancellable createIndexAsync(org.elasticsearch.action.admin.indices.create.CreateIndexRequest createIndexRequest, RequestOptions options,
+      ActionListener<org.elasticsearch.action.admin.indices.create.CreateIndexResponse> listener) {
     return client.indices().createAsync(createIndexRequest, options, listener);
   }
 
@@ -115,8 +114,7 @@ public class Elastic {
   }
 
   @SuppressWarnings("deprecation")
-  public static Cancellable existsIndexAsync(org.elasticsearch.action.admin.indices.get.GetIndexRequest request, RequestOptions options,
-      ActionListener<Boolean> listener) {
+  public static Cancellable existsIndexAsync(org.elasticsearch.action.admin.indices.get.GetIndexRequest request, RequestOptions options, ActionListener<Boolean> listener) {
     return client.indices().existsAsync(request, options, listener);
   }
 
