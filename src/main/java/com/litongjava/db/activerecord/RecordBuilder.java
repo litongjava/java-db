@@ -56,8 +56,7 @@ public class RecordBuilder {
   }
 
   @SuppressWarnings("unchecked")
-  public List<Record> buildJsonFields(Config config, ResultSet rs, String[] jsonFields, Function<Record, Boolean> func)
-      throws SQLException {
+  public List<Record> buildJsonFields(Config config, ResultSet rs, String[] jsonFields, Function<Record, Boolean> func) throws SQLException {
     List<Record> result = new ArrayList<>();
 
     ResultSetMetaData rsmd = rs.getMetaData();
@@ -105,14 +104,33 @@ public class RecordBuilder {
   }
 
   /*
-   * backup before use columnType static final List<Record> build(ResultSet rs) throws SQLException { List<Record> result = new ArrayList<Record>(); ResultSetMetaData rsmd = rs.getMetaData(); int columnCount = rsmd.getColumnCount(); String[] labelNames = getLabelNames(rsmd, columnCount); while (rs.next()) { Record record = new Record(); Map<String, Object> columns = record.getColumns(); for (int i=1; i<=columnCount; i++) { Object value = rs.getObject(i); columns.put(labelNames[i], value); } result.add(record); } return result; }
+   * backup before use columnType static final List<Record> build(ResultSet rs)
+   * throws SQLException { List<Record> result = new ArrayList<Record>();
+   * ResultSetMetaData rsmd = rs.getMetaData(); int columnCount =
+   * rsmd.getColumnCount(); String[] labelNames = getLabelNames(rsmd,
+   * columnCount); while (rs.next()) { Record record = new Record(); Map<String,
+   * Object> columns = record.getColumns(); for (int i=1; i<=columnCount; i++) {
+   * Object value = rs.getObject(i); columns.put(labelNames[i], value); }
+   * result.add(record); } return result; }
    *
-   * private static final String[] getLabelNames(ResultSetMetaData rsmd, int columnCount) throws SQLException { String[] result = new String[columnCount + 1]; for (int i=1; i<=columnCount; i++) result[i] = rsmd.getColumnLabel(i); return result; }
+   * private static final String[] getLabelNames(ResultSetMetaData rsmd, int
+   * columnCount) throws SQLException { String[] result = new String[columnCount +
+   * 1]; for (int i=1; i<=columnCount; i++) result[i] = rsmd.getColumnLabel(i);
+   * return result; }
    */
 
   /*
-   * backup static final List<Record> build(ResultSet rs) throws SQLException { List<Record> result = new ArrayList<Record>(); ResultSetMetaData rsmd = rs.getMetaData(); List<String> labelNames = getLabelNames(rsmd); while (rs.next()) { Record record = new Record(); Map<String, Object> columns = record.getColumns(); for (String lableName : labelNames) { Object value = rs.getObject(lableName); columns.put(lableName, value); } result.add(record); } return result; }
+   * backup static final List<Record> build(ResultSet rs) throws SQLException {
+   * List<Record> result = new ArrayList<Record>(); ResultSetMetaData rsmd =
+   * rs.getMetaData(); List<String> labelNames = getLabelNames(rsmd); while
+   * (rs.next()) { Record record = new Record(); Map<String, Object> columns =
+   * record.getColumns(); for (String lableName : labelNames) { Object value =
+   * rs.getObject(lableName); columns.put(lableName, value); } result.add(record);
+   * } return result; }
    *
-   * private static final List<String> getLabelNames(ResultSetMetaData rsmd) throws SQLException { int columCount = rsmd.getColumnCount(); List<String> result = new ArrayList<String>(); for (int i=1; i<=columCount; i++) { result.add(rsmd.getColumnLabel(i)); } return result; }
+   * private static final List<String> getLabelNames(ResultSetMetaData rsmd)
+   * throws SQLException { int columCount = rsmd.getColumnCount(); List<String>
+   * result = new ArrayList<String>(); for (int i=1; i<=columCount; i++) {
+   * result.add(rsmd.getColumnLabel(i)); } return result; }
    */
 }

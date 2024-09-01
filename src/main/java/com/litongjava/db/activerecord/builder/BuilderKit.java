@@ -64,6 +64,9 @@ public class BuilderKit {
           PGobject pGobject = (PGobject) value;
           if ("json".equals(pGobject.getType())) {
             value = pGobject.getValue();
+            if ("[null]".equals(value)) {
+              value = null;
+            }
           }
         }
       } else if (types[i] == Types.CLOB) {

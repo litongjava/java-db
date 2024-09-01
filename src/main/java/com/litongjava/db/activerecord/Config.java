@@ -15,6 +15,7 @@ import com.litongjava.db.activerecord.cache.ICache;
 import com.litongjava.db.activerecord.dialect.Dialect;
 import com.litongjava.db.activerecord.dialect.MysqlDialect;
 import com.litongjava.db.activerecord.sql.SqlKit;
+import com.litongjava.db.activerecord.stat.ISqlStatementStat;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,6 +36,9 @@ public class Config {
 
   SqlKit sqlKit;
 
+  ISqlStatementStat stat;
+  boolean writeSync;
+
   private RecordConvert recordConvert;
 
   // For ActiveRecordPlugin only, dataSource can be null
@@ -44,25 +48,24 @@ public class Config {
 
   /**
    * Constructor with full parameters
-   * @param name the name of the config
-   * @param dataSource the dataSource
-   * @param dialect the dialect
-   * @param showSql the showSql
-   * @param devMode the devMode
+   * 
+   * @param name             the name of the config
+   * @param dataSource       the dataSource
+   * @param dialect          the dialect
+   * @param showSql          the showSql
+   * @param devMode          the devMode
    * @param transactionLevel the transaction level
    * @param containerFactory the containerFactory
-   * @param cache the cache
+   * @param cache            the cache
    */
-  public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel,
-      IContainerFactory containerFactory, ICache cache) {
+  public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel, IContainerFactory containerFactory, ICache cache) {
     if (dataSource == null) {
       throw new IllegalArgumentException("DataSource can not be null");
     }
     init(name, dataSource, dialect, showSql, devMode, transactionLevel, containerFactory, cache);
   }
 
-  private void init(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel,
-      IContainerFactory containerFactory, ICache cache) {
+  private void init(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel, IContainerFactory containerFactory, ICache cache) {
     if (StrKit.isBlank(name)) {
       throw new IllegalArgumentException("Config name can not be blank");
     }
@@ -118,6 +121,19 @@ public class Config {
       throw new IllegalArgumentException("The transactionLevel only be 0, 1, 2, 4, 8");
     }
     this.transactionLevel = transactionLevel;
+  }
+
+  public void setSqlStatementStat(ISqlStatementStat stat, boolean writeSync) {
+    this.stat = stat;
+    this.writeSync = writeSync;
+  }
+
+  public ISqlStatementStat getSqlStatementStat() {
+    return stat;
+  }
+
+  public boolean writeSync() {
+    return writeSync;
   }
 
   /**
@@ -196,12 +212,13 @@ public class Config {
       return conn;
     }
 
-    return showSql ? new SqlReporter(dataSource.getConnection()).getConnection() : dataSource.getConnection();
+    Connection connection = new SqlReporter(dataSource.getConnection()).getConnection();
+    return showSql ? connection : dataSource.getConnection();
   }
 
   /**
-   * Helps to implement nested transaction.
-   * Tx.intercept(...) and Db.tx(...) need this method to detected if it in nested transaction.
+   * Helps to implement nested transaction. Tx.intercept(...) and Db.tx(...) need
+   * this method to detected if it in nested transaction.
    */
   public Connection getThreadLocalConnection() {
     return threadLocal.get();
@@ -215,8 +232,7 @@ public class Config {
   }
 
   /**
-   * Close ResultSet、Statement、Connection
-   * ThreadLocal support declare transaction.
+   * Close ResultSet、Statement、Connection ThreadLocal support declare transaction.
    */
   public void close(ResultSet rs, Statement st, Connection conn) {
     if (rs != null) {

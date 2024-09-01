@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import com.jfinal.kit.StrKit;
 import com.jfinal.kit.TimeKit;
 import com.litongjava.db.activerecord.cache.ICache;
+import com.litongjava.db.activerecord.stat.ISqlStatementStat;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,7 +59,9 @@ public class DbPro {
     List result = new ArrayList();
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
+      long start = System.currentTimeMillis();
       try (ResultSet rs = pst.executeQuery()) {
+
         int colAmount = rs.getMetaData().getColumnCount();
         if (colAmount > 1) {
           while (rs.next()) {
@@ -72,6 +75,12 @@ public class DbPro {
           while (rs.next()) {
             result.add(rs.getObject(1));
           }
+        }
+        ISqlStatementStat stat = config.getSqlStatementStat();
+        if (stat != null) {
+          long end = System.currentTimeMillis();
+          long elapsed = end - start;
+          stat.save(config.name, "query", sql, paras, result.size(), start, elapsed, config.writeSync);
         }
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -99,12 +108,14 @@ public class DbPro {
   }
 
   /**
-   * Execute sql query and return the first result. I recommend add "limit 1" in your sql.
+   * Execute sql query and return the first result. I recommend add "limit 1" in
+   * your sql.
    *
-   * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
    * @param paras the parameters of sql
-   * @return Object[] if your sql has select more than one column,
-   * and it return Object if your sql has select only one column.
+   * @return Object[] if your sql has select more than one column, and it return
+   *         Object if your sql has select only one column.
    */
   public <T> T queryFirst(String sql, Object... paras) {
     List<T> result = query(sql, paras);
@@ -127,7 +138,8 @@ public class DbPro {
    * Execute sql query just return one column.
    *
    * @param <T>   the type of the column that in your sql's select statement
-   * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
    * @param paras the parameters of sql
    * @return <T> T
    */
@@ -327,7 +339,14 @@ public class DbPro {
   protected int update(Config config, Connection conn, String sql, Object... paras) throws SQLException {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
+      long start = System.currentTimeMillis();
       int result = pst.executeUpdate();
+      ISqlStatementStat stat = config.getSqlStatementStat();
+      if (stat != null) {
+        long end = System.currentTimeMillis();
+        long elapsed = end - start;
+        stat.save(config.name, "update", sql, paras, result, start, elapsed, config.writeSync);
+      }
       return result;
     }
   }
@@ -335,11 +354,12 @@ public class DbPro {
   /**
    * Execute update, insert or delete sql statement.
    *
-   * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
    * @param paras the parameters of sql
-   * @return either the row count for <code>INSERT</code>, <code>UPDATE</code>,
-   * or <code>DELETE</code> statements, or 0 for SQL statements
-   * that return nothing
+   * @return either the row count for <code>INSERT</code>, <code>UPDATE</code>, or
+   *         <code>DELETE</code> statements, or 0 for SQL statements that return
+   *         nothing
    */
   public int update(String sql, Object... paras) {
     Connection conn = null;
@@ -364,9 +384,17 @@ public class DbPro {
   protected List<Record> findJsonField(Config config, Connection conn, String sql, String[] jsonFields, Object... paras) throws SQLException {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
-      ResultSet rs = pst.executeQuery();
-      List<Record> result = config.dialect.buildRecordListWithJsonFields(config, rs, jsonFields); // RecordBuilder.build(config, rs);
-      DbKit.close(rs);
+      List<Record> result = null;
+      long start = System.currentTimeMillis();
+      try (ResultSet rs = pst.executeQuery()) {
+        result = config.dialect.buildRecordListWithJsonFields(config, rs, jsonFields); // RecordBuilder.build(config, rs);
+        ISqlStatementStat stat = config.getSqlStatementStat();
+        if (stat != null) {
+          long end = System.currentTimeMillis();
+          long elapsed = end - start;
+          stat.save(config.name, "save", sql, paras, result.size(), start, elapsed, config.writeSync);
+        }
+      }
       return result;
     }
   }
@@ -374,9 +402,17 @@ public class DbPro {
   protected List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
-      ResultSet rs = pst.executeQuery();
-      List<Record> result = config.dialect.buildRecordList(config, rs); // RecordBuilder.build(config, rs);
-      DbKit.close(rs);
+      List<Record> result = null;
+      long start = System.currentTimeMillis();
+      try (ResultSet rs = pst.executeQuery()) {
+        result = config.dialect.buildRecordList(config, rs); // RecordBuilder.build(config, rs);
+        ISqlStatementStat stat = config.getSqlStatementStat();
+        if (stat != null) {
+          long end = System.currentTimeMillis();
+          long elapsed = end - start;
+          stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
+        }
+      }
       return result;
     }
   }
@@ -385,14 +421,24 @@ public class DbPro {
     List<Record> result = null;
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
-      ResultSet rs = pst.executeQuery();
-      result = config.dialect.buildRecordList(config, rs); // RecordBuilder.build(config, rs);
-      DbKit.close(rs);
+      long start = System.currentTimeMillis();
+      try (ResultSet rs = pst.executeQuery()) {
+        result = config.dialect.buildRecordList(config, rs); // RecordBuilder.build(config, rs);
+        ISqlStatementStat stat = config.getSqlStatementStat();
+        if (stat != null) {
+          long end = System.currentTimeMillis();
+          long elapsed = end - start;
+          stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
+        }
+      }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
 
-    List<T> collect = result.stream().map((e) -> e.toBean(clazz)).collect(Collectors.toList());
+    List<T> collect = new ArrayList<>(result.size());
+    for (Record e : result) {
+      collect.add(e.toBean(clazz));
+    }
     return collect;
   }
 
@@ -483,7 +529,8 @@ public class DbPro {
   /**
    * Find first record. I recommend add "limit 1" in your sql.
    *
-   * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
    * @param paras the parameters of sql
    * @return the Record object
    */
@@ -513,6 +560,7 @@ public class DbPro {
 
   /**
    * Find record by id with default primary key.
+   * 
    * <pre>
    * Example:
    * Record user = Db.use().findById("user", 15);
@@ -547,6 +595,7 @@ public class DbPro {
 
   /**
    * Find record by ids.
+   * 
    * <pre>
    * Example:
    * Record user = Db.use().findByIds("user", "user_id", 123);
@@ -554,7 +603,8 @@ public class DbPro {
    * </pre>
    *
    * @param tableName  the table name of the table
-   * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
    * @param idValues   the id value of the record, it can be composite id values
    */
   public Record findByIds(String tableName, String primaryKey, Object... idValues) {
@@ -613,9 +663,9 @@ public class DbPro {
 
   /**
    * Delete record by id with default primary key.
+   * 
    * <pre>
-   * Example:
-   * Db.use().deleteById("user", 15);
+   * Example: Db.use().deleteById("user", 15);
    * </pre>
    *
    * @param tableName the table name of the table
@@ -632,14 +682,15 @@ public class DbPro {
 
   /**
    * Delete record by ids.
+   * 
    * <pre>
-   * Example:
-   * Db.use().deleteByIds("user", "user_id", 15);
+   * Example: Db.use().deleteByIds("user", "user_id", 15);
    * Db.use().deleteByIds("user_role", "user_id, role_id", 123, 456);
    * </pre>
    *
    * @param tableName  the table name of the table
-   * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
    * @param idValues   the id value of the record, it can be composite id values
    * @return true if delete succeed otherwise false
    */
@@ -654,13 +705,15 @@ public class DbPro {
 
   /**
    * Delete record.
+   * 
    * <pre>
    * Example:
    * boolean succeed = Db.use().delete("user", "id", user);
    * </pre>
    *
    * @param tableName  the table name of the table
-   * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
    * @param record     the record
    * @return true if delete succeed otherwise false
    */
@@ -745,10 +798,11 @@ public class DbPro {
   /**
    * Execute delete sql statement.
    *
-   * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
    * @param paras the parameters of sql
-   * @return the row count for <code>DELETE</code> statements, or 0 for SQL statements
-   * that return nothing
+   * @return the row count for <code>DELETE</code> statements, or 0 for SQL
+   *         statements that return nothing
    */
   public int delete(String sql, Object... paras) {
     return update(sql, paras);
@@ -762,8 +816,7 @@ public class DbPro {
     return update(sql);
   }
 
-  private <T> Page<T> countPage(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql,
-      StringBuilder findSql, Object... paras) throws SQLException {
+  private <T> Page<T> countPage(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
     if (pageNumber < 1 || pageSize < 1) {
       throw new ActiveRecordException("pageNumber and pageSize must more than 0");
     }
@@ -845,24 +898,19 @@ public class DbPro {
     return doPaginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
-  public <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect,
-      Object[] paras) {
+  public <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object[] paras) {
     return doPaginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
-  protected Page<Record> doPaginateJsonFields(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect,
-      String[] jsonFields, Object... paras) {
-    Connection conn = null;
-    try {
-      conn = config.getConnection();
+  protected Page<Record> doPaginateJsonFields(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, String[] jsonFields, Object... paras) {
+
+    try (Connection conn = config.getConnection()) {
       String totalRowSql = config.dialect.forPaginateTotalRow(select, sqlExceptSelect, null);
       StringBuilder findSql = new StringBuilder();
       findSql.append(select).append(' ').append(sqlExceptSelect);
       return doPaginateByFullSqlWithJsonFields(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, jsonFields, paras);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
-    } finally {
-      config.close(conn);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -881,8 +929,7 @@ public class DbPro {
     }
   }
 
-  public <T> Page<T> doPaginate(Class<T> clazz, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect,
-      Object... paras) {
+  public <T> Page<T> doPaginate(Class<T> clazz, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -897,18 +944,29 @@ public class DbPro {
     }
   }
 
-  protected Page<Record> doPaginateByFullSqlWithJsonFields(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql,
-      String totalRowSql, StringBuilder findSql, String[] jsonFields, Object... paras) throws SQLException {
-    Page<Record> page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
-    // --------
+  protected Page<Record> doPaginateByFullSqlWithJsonFields(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql,
+      String[] jsonFields, Object... paras) {
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
-    List<Record> list = findJsonField(config, conn, sql, jsonFields, paras);
+
+    Page<Record> page = null;
+    try {
+      page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+    // --------
+    List<Record> list = null;
+    try {
+      list = findJsonField(config, conn, sql, jsonFields, paras);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
     page.setList(list);
     return page;
   }
 
-  protected Page<Record> doPaginateByFullSql(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql,
-      StringBuilder findSql, Object... paras) throws SQLException {
+  protected Page<Record> doPaginateByFullSql(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras)
+      throws SQLException {
     Page<Record> page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     // --------
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
@@ -917,8 +975,8 @@ public class DbPro {
     return page;
   }
 
-  public <T> Page<T> doPaginateByFullSql(Class<T> clazz, Config config2, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql,
-      String totalRowSql, StringBuilder findSql, Object[] paras) throws SQLException {
+  public <T> Page<T> doPaginateByFullSql(Class<T> clazz, Config config2, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object[] paras)
+      throws SQLException {
     Page<T> page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     // find with sql
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
@@ -927,16 +985,14 @@ public class DbPro {
     return page;
   }
 
-  protected Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect,
-      Object... paras) throws SQLException {
+  protected Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws SQLException {
     String totalRowSql = config.dialect.forPaginateTotalRow(select, sqlExceptSelect, null);
     StringBuilder findSql = new StringBuilder();
     findSql.append(select).append(' ').append(sqlExceptSelect);
     return doPaginateByFullSql(config, conn, pageNumber, pageSize, null, totalRowSql, findSql, paras);
   }
 
-  protected Page<Record> doPaginateByFullSql(int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql,
-      Object... paras) {
+  protected Page<Record> doPaginateByFullSql(int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -949,8 +1005,7 @@ public class DbPro {
     }
   }
 
-  protected <T> Page<T> doPaginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql,
-      Object... paras) {
+  protected <T> Page<T> doPaginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -975,8 +1030,7 @@ public class DbPro {
     return doPaginateByFullSql(clazz, pageNumber, pageSize, null, totalRowSql, findSql, paras);
   }
 
-  public <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql, String findSql,
-      Object... paras) {
+  public <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     return doPaginateByFullSql(clazz, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
@@ -986,10 +1040,17 @@ public class DbPro {
     StringBuilder sql = new StringBuilder();
     config.dialect.forDbSave(tableName, pKeys, record, sql, paras);
 
-    try (PreparedStatement pst = config.dialect.isOracle() ? conn.prepareStatement(sql.toString(), pKeys)
-        : conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+    String sqlString = sql.toString();
+    try (PreparedStatement pst = config.dialect.isOracle() ? conn.prepareStatement(sqlString, pKeys) : conn.prepareStatement(sqlString, Statement.RETURN_GENERATED_KEYS)) {
       config.dialect.fillStatement(pst, paras);
+      long start = System.currentTimeMillis();
       int result = pst.executeUpdate();
+      ISqlStatementStat stat = config.getSqlStatementStat();
+      if (stat != null) {
+        long end = System.currentTimeMillis();
+        long elapsed = end - start;
+        stat.save(config.name, "save", sqlString, paras.toArray(), result, start, elapsed, config.writeSync);
+      }
       config.dialect.getRecordGeneratedKey(pst, record, pKeys);
       record.clearModifyFlag();
       return result >= 1;
@@ -1005,10 +1066,17 @@ public class DbPro {
     config.dialect.forDbSave(tableName, pKeys, record, sql, paras, jsonFields);
 
     int result = 0;
-    try (PreparedStatement pst = config.dialect.isOracle() ? conn.prepareStatement(sql.toString(), pKeys)
-        : conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+    String sqlString = sql.toString();
+    try (PreparedStatement pst = config.dialect.isOracle() ? conn.prepareStatement(sqlString, pKeys) : conn.prepareStatement(sqlString, Statement.RETURN_GENERATED_KEYS)) {
       config.dialect.fillStatement(pst, paras);
+      long start = System.currentTimeMillis();
       result = pst.executeUpdate();
+      ISqlStatementStat stat = config.getSqlStatementStat();
+      if (stat != null) {
+        long end = System.currentTimeMillis();
+        long elapsed = end - start;
+        stat.save(config.name, "save", sqlString, paras.toArray(), result, start, elapsed, config.writeSync);
+      }
       config.dialect.getRecordGeneratedKey(pst, record, pKeys);
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -1019,6 +1087,7 @@ public class DbPro {
 
   /**
    * Save record.
+   * 
    * <pre>
    * Example:
    * Record userRole = new Record().set("user_id", 123).set("role_id", 456);
@@ -1026,7 +1095,8 @@ public class DbPro {
    * </pre>
    *
    * @param tableName  the table name of the table
-   * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
    * @param record     the record will be saved
    */
   public boolean save(String tableName, String primaryKey, Record record) {
@@ -1100,8 +1170,7 @@ public class DbPro {
     return false;
   }
 
-  protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record, String[] jsonFields)
-      throws SQLException {
+  protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record, String[] jsonFields) throws SQLException {
     if (record.modifyFlag == null || record.modifyFlag.isEmpty()) {
       return false;
     }
@@ -1133,13 +1202,14 @@ public class DbPro {
 
   /**
    * Update Record.
+   * 
    * <pre>
-   * Example:
-   * Db.use().update("user_role", "user_id, role_id", record);
+   * Example: Db.use().update("user_role", "user_id, role_id", record);
    * </pre>
    *
    * @param tableName  the table name of the Record save to
-   * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
    * @param record     the Record object
    */
   public boolean update(String tableName, String primaryKey, Record record) {
@@ -1169,9 +1239,9 @@ public class DbPro {
 
   /**
    * Update record with default primary key.
+   * 
    * <pre>
-   * Example:
-   * Db.use().update("user", record);
+   * Example: Db.use().update("user", record);
    * </pre>
    *
    * @see #update(String, String, Record)
@@ -1188,7 +1258,8 @@ public class DbPro {
   }
 
   /**
-   * Execute callback. It is useful when all the API can not satisfy your requirement.
+   * Execute callback. It is useful when all the API can not satisfy your
+   * requirement.
    *
    * @param config   the Config object
    * @param callback the ICallback interface
@@ -1266,7 +1337,8 @@ public class DbPro {
           conn.close();
         }
       } catch (Throwable t) {
-        log.error(t.getMessage(), t); // can not throw exception here, otherwise the more important exception in previous catch block can not be thrown
+        log.error(t.getMessage(), t); // can not throw exception here, otherwise the more important exception in
+                                      // previous catch block can not be thrown
       } finally {
         config.removeThreadLocalConnection(); // prevent memory leak
       }
@@ -1291,12 +1363,10 @@ public class DbPro {
    * <p>
    * 实例：https://jfinal.com/feedback/4008
    * <p>
-   * 默认情况下嵌套事务会被合并成为一个事务，那么内层与外层任何地方回滚事务
-   * 所有嵌套层都将回滚事务，也就是说嵌套事务无法独立提交与回滚
+   * 默认情况下嵌套事务会被合并成为一个事务，那么内层与外层任何地方回滚事务 所有嵌套层都将回滚事务，也就是说嵌套事务无法独立提交与回滚
    * <p>
-   * 使用 txInNewThread(...) 方法可以实现层之间的事务控制的独立性
-   * 由于事务处理是将 Connection 绑定到线程上的，所以 txInNewThread(...)
-   * 通过建立新线程来实现嵌套事务的独立控制
+   * 使用 txInNewThread(...) 方法可以实现层之间的事务控制的独立性 由于事务处理是将 Connection 绑定到线程上的，所以
+   * txInNewThread(...) 通过建立新线程来实现嵌套事务的独立控制
    */
   public Future<Boolean> txInNewThread(IAtom atom) {
     FutureTask<Boolean> task = new FutureTask<>(() -> tx(config, config.getTransactionLevel(), atom));
@@ -1358,7 +1428,8 @@ public class DbPro {
    *
    * @param cacheName the cache name
    * @param key       the key used to get date from cache
-   * @param sql       an SQL statement that may contain one or more '?' IN parameter placeholders
+   * @param sql       an SQL statement that may contain one or more '?' IN
+   *                  parameter placeholders
    * @param paras     the parameters of sql
    * @return the Record object
    * @see #findFirst(String, Object...)
@@ -1394,8 +1465,7 @@ public class DbPro {
     return findFirstByCache(clazz, cacheName, key, sql, DbKit.NULL_PARA_ARRAY);
   }
 
-  public <T> Page<T> doPaginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql,
-      String select, String sqlExceptSelect, Object... paras) {
+  public <T> Page<T> doPaginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     ICache cache = config.getCache();
     Page<T> result = cache.get(cacheName, key);
     if (result == null) {
@@ -1405,8 +1475,7 @@ public class DbPro {
     return result;
   }
 
-  public Page<Record> doPaginateByCache(String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String select,
-      String sqlExceptSelect, Object... paras) {
+  public Page<Record> doPaginateByCache(String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     ICache cache = config.getCache();
     Page<Record> result = cache.get(cacheName, key);
     if (result == null) {
@@ -1435,8 +1504,7 @@ public class DbPro {
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
   }
 
-  public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select,
-      String sqlExceptSelect) {
+  public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect) {
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
   }
 
@@ -1446,28 +1514,23 @@ public class DbPro {
    * @return Page
    * @see #paginate(int, int, String, String, Object...)
    */
-  public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect,
-      Object... paras) {
+  public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect, paras);
   }
 
-  public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select,
-      String sqlExceptSelect, Object... paras) {
+  public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
-  public Page<Record> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize, String totalRowSql, String findSql,
-      Object... paras) {
+  public Page<Record> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize, String totalRowSql, String findSql, Object... paras) {
     return doPaginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, null, totalRowSql, findSql, paras);
   }
 
-  public Page<Record> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql,
-      String findSql, Object... paras) {
+  public Page<Record> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     return doPaginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
-  private Page<Record> doPaginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql,
-      String totalRowSql, String findSql, Object... paras) {
+  private Page<Record> doPaginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     ICache cache = config.getCache();
     Page<Record> result = cache.get(cacheName, key);
     if (result == null) {
@@ -1477,18 +1540,16 @@ public class DbPro {
     return result;
   }
 
-  public <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, String totalRowSql,
-      String findSql, Object... paras) {
+  public <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, String totalRowSql, String findSql, Object... paras) {
     return doPaginateByCacheByFullSql(clazz, cacheName, key, pageNumber, pageSize, null, totalRowSql, findSql, paras);
   }
 
-  public <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
-      String totalRowSql, String findSql, Object... paras) {
+  public <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     return doPaginateByCacheByFullSql(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
-  private <T> Page<T> doPaginateByCacheByFullSql(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql,
-      String totalRowSql, String findSql, Object... paras) {
+  private <T> Page<T> doPaginateByCacheByFullSql(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql,
+      Object... paras) {
     ICache cache = config.getCache();
     Page<T> result = cache.get(cacheName, key);
     if (result == null) {
@@ -1504,30 +1565,25 @@ public class DbPro {
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, null, sqls[0], sqls[1], sqlPara.getPara());
   }
 
-  public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
-      SqlPara sqlPara) {
+  public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, SqlPara sqlPara) {
     String[] sqls = PageSqlKit.parsePageSql(sqlPara.getSql());
     assert sqls != null;
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, sqls[0], sqls[1], sqlPara.getPara());
   }
 
-  public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, String select,
-      String sqlExceptSelect) {
+  public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect) {
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
   }
 
-  public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select,
-      String sqlExceptSelect) {
+  public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect) {
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
   }
 
-  public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, String select,
-      String sqlExceptSelect, Object... paras) {
+  public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect, paras);
   }
 
-  public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select,
-      String sqlExceptSelect, Object... paras) {
+  public <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
@@ -1562,7 +1618,14 @@ public class DbPro {
         pst.addBatch();
         if (++counter >= batchSize) {
           counter = 0;
+          long start = System.currentTimeMillis();
           int[] r = pst.executeBatch();
+          ISqlStatementStat stat = config.getSqlStatementStat();
+          if (stat != null) {
+            long end = System.currentTimeMillis();
+            long elapsed = end - start;
+            stat.save(config.name, "batch", sql, paras, r.length, start, elapsed, config.writeSync);
+          }
           if (!isInTransaction)
             conn.commit();
           for (int i : r) {
@@ -1571,9 +1634,18 @@ public class DbPro {
         }
       }
       if (counter != 0) {
+        long start = System.currentTimeMillis();
         int[] r = pst.executeBatch();
-        if (!isInTransaction)
+        ISqlStatementStat stat = config.getSqlStatementStat();
+        if (stat != null) {
+          long end = System.currentTimeMillis();
+          long elapsed = end - start;
+          stat.save(config.name, "batch", sql, paras, r.length, start, elapsed, config.writeSync);
+        }
+        if (!isInTransaction) {
           conn.commit();
+        }
+
         for (int i : r) {
           result[pointer++] = i;
         }
@@ -1585,6 +1657,7 @@ public class DbPro {
 
   /**
    * Execute a batch of SQL INSERT, UPDATE, or DELETE queries.
+   * 
    * <pre>
    * Example:
    * String sql = "insert into user(name, cash) values(?, ?)";
@@ -1592,7 +1665,8 @@ public class DbPro {
    * </pre>
    *
    * @param sql   The SQL to execute.
-   * @param paras An array of query replacement parameters.  Each row in this array is one set of batch replacement values.
+   * @param paras An array of query replacement parameters. Each row in this array
+   *              is one set of batch replacement values.
    * @return The number of rows updated per statement
    */
   public int[] batch(String sql, Object[][] paras, int batchSize) {
@@ -1663,7 +1737,14 @@ public class DbPro {
         pst.addBatch();
         if (++counter >= batchSize) {
           counter = 0;
+          long start = System.currentTimeMillis();
           int[] r = pst.executeBatch();
+          ISqlStatementStat stat = config.getSqlStatementStat();
+          if (stat != null) {
+            long end = System.currentTimeMillis();
+            long elapsed = end - start;
+            stat.save(config.name, "batch", sql, list.toArray(), r.length, start, elapsed, config.writeSync);
+          }
           if (!isInTransaction)
             conn.commit();
           for (int i : r) {
@@ -1672,7 +1753,14 @@ public class DbPro {
         }
       }
       if (counter != 0) {
+        long start = System.currentTimeMillis();
         int[] r = pst.executeBatch();
+        ISqlStatementStat stat = config.getSqlStatementStat();
+        if (stat != null) {
+          long end = System.currentTimeMillis();
+          long elapsed = end - start;
+          stat.save(config.name, "batch", sql, list.toArray(), r.length, start, elapsed, config.writeSync);
+        }
         if (!isInTransaction)
           conn.commit();
         for (int i : r) {
@@ -1686,6 +1774,7 @@ public class DbPro {
 
   /**
    * Execute a batch of SQL INSERT, UPDATE, or DELETE queries.
+   * 
    * <pre>
    * Example:
    * String sql = "insert into user(name, cash) values(?, ?)";
@@ -1758,6 +1847,7 @@ public class DbPro {
 
   /**
    * Execute a batch of SQL INSERT, UPDATE, or DELETE queries.
+   * 
    * <pre>
    * Example:
    * int[] result = Db.use().batch(sqlList, 500);
@@ -1789,8 +1879,9 @@ public class DbPro {
   }
 
   /**
-   * Batch save models using the "insert into ..." sql generated by the first model in modelList.
-   * Ensure all the models can use the same sql as the first model.
+   * Batch save models using the "insert into ..." sql generated by the first
+   * model in modelList. Ensure all the models can use the same sql as the first
+   * model.
    */
   public int[] batchSave(List<? extends Model> modelList, int batchSize) {
     if (modelList == null || modelList.size() == 0) {
@@ -1801,7 +1892,8 @@ public class DbPro {
     Map<String, Object> attrs = model._getAttrs();
     int index = 0;
     StringBuilder columns = new StringBuilder();
-    // the same as the iterator in Dialect.forModelSave() to ensure the order of the attrs
+    // the same as the iterator in Dialect.forModelSave() to ensure the order of the
+    // attrs
     for (Entry<String, Object> e : attrs.entrySet()) {
       if (config.dialect.isOracle()) { // 支持 oracle 自增主键
         Object value = e.getValue();
@@ -1823,8 +1915,9 @@ public class DbPro {
   }
 
   /**
-   * Batch save records using the "insert into ..." sql generated by the first record in recordList.
-   * Ensure all the record can use the same sql as the first record.
+   * Batch save records using the "insert into ..." sql generated by the first
+   * record in recordList. Ensure all the record can use the same sql as the first
+   * record.
    *
    * @param tableName the table name
    */
@@ -1837,7 +1930,8 @@ public class DbPro {
     Map<String, Object> cols = record.getColumns();
     int index = 0;
     StringBuilder columns = new StringBuilder();
-    // the same as the iterator in Dialect.forDbSave() to ensure the order of the columns
+    // the same as the iterator in Dialect.forDbSave() to ensure the order of the
+    // columns
     for (Entry<String, Object> e : cols.entrySet()) {
       if (config.dialect.isOracle()) { // 支持 oracle 自增主键
         Object value = e.getValue();
@@ -1868,7 +1962,8 @@ public class DbPro {
     Map<String, Object> cols = record.getColumns();
     int index = 0;
     StringBuilder columns = new StringBuilder();
-    // the same as the iterator in Dialect.forDbSave() to ensure the order of the columns
+    // the same as the iterator in Dialect.forDbSave() to ensure the order of the
+    // columns
     for (Entry<String, Object> e : cols.entrySet()) {
       if (config.dialect.isOracle()) { // 支持 oracle 自增主键
         Object value = e.getValue();
@@ -1911,7 +2006,8 @@ public class DbPro {
     String[] pKeys = table.getPrimaryKey();
     Map<String, Object> attrs = model._getAttrs();
     List<String> attrNames = new ArrayList<String>();
-    // the same as the iterator in Dialect.forModelSave() to ensure the order of the attrs
+    // the same as the iterator in Dialect.forModelSave() to ensure the order of the
+    // attrs
     for (Entry<String, Object> e : attrs.entrySet()) {
       String attr = e.getKey();
       if (modifyFlag.contains(attr) && !config.dialect.isPrimaryKey(attr, pKeys) && table.hasColumnLabel(attr))
@@ -1931,11 +2027,12 @@ public class DbPro {
   }
 
   /**
-   * Batch update records using the columns names of the first record in recordList.
-   * Ensure all the records can use the same sql as the first record.
+   * Batch update records using the columns names of the first record in
+   * recordList. Ensure all the records can use the same sql as the first record.
    *
    * @param tableName  the table name
-   * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
+   * @param primaryKey the primary key of the table, composite primary key is
+   *                   separated by comma character: ","
    */
   public int[] batchUpdate(String tableName, String primaryKey, List<? extends Record> recordList, int batchSize) {
     if (recordList == null || recordList.size() == 0)
@@ -1954,7 +2051,8 @@ public class DbPro {
 
     Map<String, Object> cols = record.getColumns();
     List<String> colNames = new ArrayList<String>();
-    // the same as the iterator in Dialect.forDbUpdate() to ensure the order of the columns
+    // the same as the iterator in Dialect.forDbUpdate() to ensure the order of the
+    // columns
     for (Entry<String, Object> e : cols.entrySet()) {
       String col = e.getKey();
       if (modifyFlag.contains(col) && !config.dialect.isPrimaryKey(col, pKeys))
@@ -1972,8 +2070,9 @@ public class DbPro {
   }
 
   /**
-   * Batch update records with default primary key, using the columns names of the first record in recordList.
-   * Ensure all the records can use the same sql as the first record.
+   * Batch update records with default primary key, using the columns names of the
+   * first record in recordList. Ensure all the records can use the same sql as
+   * the first record.
    *
    * @param tableName the table name
    */
@@ -2058,6 +2157,7 @@ public class DbPro {
 
   /**
    * 迭代处理每一个查询出来的 Record 对象
+   * 
    * <pre>
    * 例子：
    * Db.each(record -> {
@@ -2075,9 +2175,16 @@ public class DbPro {
 
       try (PreparedStatement pst = conn.prepareStatement(sql)) {
         config.dialect.fillStatement(pst, paras);
-        ResultSet rs = pst.executeQuery();
-        config.dialect.eachRecord(config, rs, func);
-        DbKit.close(rs);
+        long start = System.currentTimeMillis();
+        try (ResultSet rs = pst.executeQuery()) {
+          config.dialect.eachRecord(config, rs, func);
+          ISqlStatementStat stat = config.getSqlStatementStat();
+          if (stat != null) {
+            long end = System.currentTimeMillis();
+            long elapsed = end - start;
+            stat.save(config.name, "batch", sql, paras, -1, start, elapsed, config.writeSync);
+          }
+        }
       }
 
     } catch (Exception e) {
