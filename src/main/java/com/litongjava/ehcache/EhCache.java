@@ -2,7 +2,6 @@ package com.litongjava.ehcache;
 
 import java.util.List;
 
-
 import lombok.extern.slf4j.Slf4j;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -12,12 +11,12 @@ import net.sf.ehcache.Element;
  * CacheKit. Useful tool box for EhCache.
  */
 @Slf4j
-public class CacheKit {
+public class EhCache {
 
   private static CacheManager cacheManager;
 
   static void init(CacheManager cacheManager) {
-    CacheKit.cacheManager = cacheManager;
+    EhCache.cacheManager = cacheManager;
   }
 
   public static CacheManager getCacheManager() {
@@ -27,7 +26,7 @@ public class CacheKit {
   static Cache getOrAddCache(String cacheName) {
     Cache cache = cacheManager.getCache(cacheName);
     if (cache == null) {
-      synchronized (CacheKit.class) {
+      synchronized (EhCache.class) {
         cache = cacheManager.getCache(cacheName);
         if (cache == null) {
           log.warn("Could not find cache config [" + cacheName + "], using default.");
@@ -42,6 +41,13 @@ public class CacheKit {
 
   public static void put(String cacheName, Object key, Object value) {
     getOrAddCache(cacheName).put(new Element(key, value));
+  }
+
+  public static void put(String cacheName, Object key, Object value, int ttl) {
+    Cache cache = getOrAddCache(cacheName);
+    Element element = new Element(key, value);
+    element.setTimeToLive(ttl);
+    cache.put(element);
   }
 
   @SuppressWarnings("unchecked")

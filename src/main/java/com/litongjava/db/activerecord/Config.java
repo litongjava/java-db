@@ -8,10 +8,10 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import com.jfinal.kit.StrKit;
+import com.litongjava.cache.ICache;
 import com.litongjava.db.activerecord.bean.DefaultRecordConvert;
 import com.litongjava.db.activerecord.bean.RecordConvert;
-import com.litongjava.db.activerecord.cache.EhCache;
-import com.litongjava.db.activerecord.cache.ICache;
+import com.litongjava.db.activerecord.cache.DefaultEhCache;
 import com.litongjava.db.activerecord.dialect.Dialect;
 import com.litongjava.db.activerecord.dialect.MysqlDialect;
 import com.litongjava.db.activerecord.sql.SqlKit;
@@ -43,7 +43,7 @@ public class Config {
 
   // For ActiveRecordPlugin only, dataSource can be null
   public Config(String name, DataSource dataSource, int transactionLevel) {
-    init(name, dataSource, new MysqlDialect(), false, false, transactionLevel, IContainerFactory.defaultContainerFactory, new EhCache());
+    init(name, dataSource, new MysqlDialect(), false, false, transactionLevel, IContainerFactory.defaultContainerFactory, new DefaultEhCache());
   }
 
   /**
@@ -103,7 +103,7 @@ public class Config {
    * Constructor with name, dataSource and dialect
    */
   public Config(String name, DataSource dataSource, Dialect dialect) {
-    this(name, dataSource, dialect, false, false, DbKit.DEFAULT_TRANSACTION_LEVEL, IContainerFactory.defaultContainerFactory, new EhCache());
+    this(name, dataSource, dialect, false, false, DbKit.DEFAULT_TRANSACTION_LEVEL, IContainerFactory.defaultContainerFactory, new DefaultEhCache());
   }
 
   private Config() {
@@ -146,7 +146,7 @@ public class Config {
     ret.devMode = false;
     ret.transactionLevel = DbKit.DEFAULT_TRANSACTION_LEVEL;
     ret.containerFactory = IContainerFactory.defaultContainerFactory;
-    ret.cache = new EhCache();
+    ret.cache = new DefaultEhCache();
     return ret;
   }
 

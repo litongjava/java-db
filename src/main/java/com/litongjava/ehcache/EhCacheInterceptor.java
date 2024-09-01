@@ -11,7 +11,7 @@ import com.litongjava.jfinal.aop.Invocation;
 /**
  * CacheInterceptor.
  */
-public class EcacheCacheInterceptor implements Interceptor {
+public class EhCacheInterceptor implements Interceptor {
 
   private static ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<String, ReentrantLock>(512);
 
@@ -31,12 +31,12 @@ public class EcacheCacheInterceptor implements Interceptor {
     CacheableModel cacheableModel = CacheableModel.buildCacheModel(inv, target);
     String cacheName = cacheableModel.getName();
     String cacheKey = cacheableModel.getKey();
-    Object cacheData = CacheKit.get(cacheName, cacheKey);
+    Object cacheData = EhCache.get(cacheName, cacheKey);
     if (cacheData == null) {
       Lock lock = getLock(cacheName);
       lock.lock(); // prevent cache snowslide
       try {
-        cacheData = CacheKit.get(cacheName, cacheKey);
+        cacheData = EhCache.get(cacheName, cacheKey);
         if (cacheData == null) {
           Object returnValue = inv.invoke();
           cacheMethodReturnValue(cacheName, cacheKey, returnValue);
@@ -52,6 +52,6 @@ public class EcacheCacheInterceptor implements Interceptor {
   }
 
   protected void cacheMethodReturnValue(String cacheName, String cacheKey, Object returnValue) {
-    CacheKit.put(cacheName, cacheKey, returnValue);
+    EhCache.put(cacheName, cacheKey, returnValue);
   }
 }

@@ -7,9 +7,9 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import com.jfinal.kit.StrKit;
+import com.litongjava.cache.ICache;
 import com.litongjava.db.IPlugin;
-import com.litongjava.db.activerecord.cache.EhCache;
-import com.litongjava.db.activerecord.cache.ICache;
+import com.litongjava.db.activerecord.cache.DefaultEhCache;
 import com.litongjava.db.activerecord.dialect.Dialect;
 import com.litongjava.db.activerecord.dialect.MysqlDialect;
 import com.litongjava.db.activerecord.sql.SqlKit;
@@ -268,7 +268,7 @@ public class ActiveRecordPlugin implements IPlugin {
    * @see #useAsDataTransfer(Dialect, IContainerFactory, ICache)
    */
   public static void useAsDataTransfer(IContainerFactory containerFactory) {
-    useAsDataTransfer(new com.litongjava.db.activerecord.dialect.MysqlDialect(), containerFactory, new EhCache());
+    useAsDataTransfer(new com.litongjava.db.activerecord.dialect.MysqlDialect(), containerFactory, new DefaultEhCache());
   }
 
   /**
@@ -277,7 +277,7 @@ public class ActiveRecordPlugin implements IPlugin {
    * @see #useAsDataTransfer(Dialect, IContainerFactory, ICache)
    */
   public static void useAsDataTransfer(Dialect dialect, IContainerFactory containerFactory) {
-    useAsDataTransfer(dialect, containerFactory, new EhCache());
+    useAsDataTransfer(dialect, containerFactory, new DefaultEhCache());
   }
 
   /**
@@ -286,7 +286,7 @@ public class ActiveRecordPlugin implements IPlugin {
    * @see #useAsDataTransfer(Dialect, IContainerFactory, ICache)
    */
   public static void useAsDataTransfer(Dialect dialect) {
-    useAsDataTransfer(dialect, IContainerFactory.defaultContainerFactory, new EhCache());
+    useAsDataTransfer(dialect, IContainerFactory.defaultContainerFactory, new DefaultEhCache());
   }
 
   /**
@@ -295,7 +295,7 @@ public class ActiveRecordPlugin implements IPlugin {
    * @see #useAsDataTransfer(Dialect, IContainerFactory, ICache)
    */
   public static void useAsDataTransfer() {
-    useAsDataTransfer(new MysqlDialect(), IContainerFactory.defaultContainerFactory, new EhCache());
+    useAsDataTransfer(new MysqlDialect(), IContainerFactory.defaultContainerFactory, new DefaultEhCache());
   }
 
   public Config getConfig() {

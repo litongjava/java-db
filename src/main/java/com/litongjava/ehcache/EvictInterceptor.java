@@ -15,10 +15,10 @@ public class EvictInterceptor implements Interceptor {
     // @CacheName 注解中的多个 cacheName 可用逗号分隔
     String[] cacheNames = getCacheName(inv).split(",");
     if (cacheNames.length == 1) {
-      CacheKit.removeAll(cacheNames[0].trim());
+      EhCache.removeAll(cacheNames[0].trim());
     } else {
       for (String cn : cacheNames) {
-        CacheKit.removeAll(cn.trim());
+        EhCache.removeAll(cn.trim());
       }
     }
   }

@@ -1,4 +1,4 @@
-package com.litongjava.db.activerecord.cache;
+package com.litongjava.cache;
 
 /**
  * ICache.
@@ -8,7 +8,10 @@ public interface ICache {
 
   void put(String cacheName, Object key, Object value);
 
+  void put(String cacheName, Object key, Object value, int ttl);
+
   void remove(String cacheName, Object key);
 
   void removeAll(String cacheName);
+
 }

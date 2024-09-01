@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.jfinal.kit.TypeKit;
-import com.litongjava.db.activerecord.cache.ICache;
+import com.litongjava.cache.ICache;
 
 /**
  * Model.

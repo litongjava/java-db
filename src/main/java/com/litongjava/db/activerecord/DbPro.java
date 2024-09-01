@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 import com.jfinal.kit.StrKit;
 import com.jfinal.kit.TimeKit;
-import com.litongjava.db.activerecord.cache.ICache;
+import com.litongjava.cache.ICache;
 import com.litongjava.db.activerecord.stat.ISqlStatementStat;
 
 import lombok.extern.slf4j.Slf4j;
@@ -1444,12 +1444,32 @@ public class DbPro {
     return result;
   }
 
+  public Record findFirstByCache(String cacheName, Object key, int ttl, String sql, Object... paras) {
+    ICache cache = config.getCache();
+    Record result = cache.get(cacheName, key);
+    if (result == null) {
+      result = findFirst(sql, paras);
+      cache.put(cacheName, key, result, ttl);
+    }
+    return result;
+  }
+
   public <T> T findFirstByCache(Class<T> clazz, String cacheName, Object key, String sql, Object... paras) {
     ICache cache = config.getCache();
     T result = cache.get(cacheName, key);
     if (result == null) {
       result = findFirst(clazz, sql, paras);
       cache.put(cacheName, key, result);
+    }
+    return result;
+  }
+
+  public <T> T findFirstByCache(Class<T> clazz, String cacheName, Object key, int ttl, String sql, Object... paras) {
+    ICache cache = config.getCache();
+    T result = cache.get(cacheName, key);
+    if (result == null) {
+      result = findFirst(clazz, sql, paras);
+      cache.put(cacheName, key, result, ttl);
     }
     return result;
   }
@@ -1461,8 +1481,16 @@ public class DbPro {
     return findFirstByCache(cacheName, key, sql, DbKit.NULL_PARA_ARRAY);
   }
 
+  public Record findFirstByCache(String cacheName, Object key, int ttl, String sql) {
+    return findFirstByCache(cacheName, key, ttl, sql, DbKit.NULL_PARA_ARRAY);
+  }
+
   public <T> T findFirstByCache(Class<T> clazz, String cacheName, Object key, String sql) {
     return findFirstByCache(clazz, cacheName, key, sql, DbKit.NULL_PARA_ARRAY);
+  }
+
+  public <T> T findFirstByCache(Class<T> clazz, String cacheName, Object key, int ttl, String sql) {
+    return findFirstByCache(clazz, cacheName, key, sql, ttl, DbKit.NULL_PARA_ARRAY);
   }
 
   public <T> Page<T> doPaginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
