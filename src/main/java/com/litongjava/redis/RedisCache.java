@@ -703,6 +703,15 @@ public class RedisCache {
     }
   }
 
+  public Long hdelRaw(String key, String... fields) {
+    Jedis jedis = getJedis();
+    try {
+      return jedis.hdel(key, fields);
+    } finally {
+      close(jedis);
+    }
+  }
+
   /**
    * 查看哈希表 key 中，给定域 field 是否存在。
    */
@@ -2029,4 +2038,5 @@ public class RedisCache {
       close(jedis);
     }
   }
+
 }
