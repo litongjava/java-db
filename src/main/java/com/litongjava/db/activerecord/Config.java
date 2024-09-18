@@ -212,8 +212,13 @@ public class Config {
       return conn;
     }
 
-    Connection connection = new SqlReporter(dataSource.getConnection()).getConnection();
-    return showSql ? connection : dataSource.getConnection();
+    Connection rawConnection = dataSource.getConnection();
+
+    if (showSql) {
+      return new SqlReporter(rawConnection).getConnection();
+    } else {
+      return rawConnection;
+    }
   }
 
   /**

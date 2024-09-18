@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.litongjava</groupId>
   <artifactId>java-db</artifactId>
-  <version>1.2.4</version>
+  <version>1.2.5</version>
   <packaging>jar</packaging>
   <name>Java Database</name>
   <description>Java Database</description>
@@ -26,7 +26,7 @@
     <dependency>
       <groupId>com.litongjava</groupId>
       <artifactId>tio-utils</artifactId>
-      <version>3.7.3.v20240916-RELEASE</version>
+      <version>3.7.3.v20240917-RELEASE</version>
     </dependency>
     <dependency>
       <groupId>it.sauronsoftware.cron4j</groupId>
