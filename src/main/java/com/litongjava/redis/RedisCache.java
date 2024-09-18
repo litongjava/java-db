@@ -1923,6 +1923,33 @@ public class RedisCache {
     return Long.parseLong(value);
   }
 
+  public Long hsetList(String key, String field, List<?> list) {
+    return call(jedis -> {
+      String jsonValue = JsonUtils.toJson(list);
+      return jedis.hset(key, field, jsonValue);
+    });
+  }
+
+  public Long hsetList(String key, String field, List<?> list, long seconds) {
+    return call(jedis -> {
+      String jsonValue = JsonUtils.toJson(list);
+      Long result = jedis.hset(key, field, jsonValue);
+      jedis.expire(key, seconds);
+      return result;
+    });
+  }
+
+  public <R> List<R> hgetList(String key, String field, Class<R> elementType) {
+    Function<Jedis, List<R>> function = (jedis) -> {
+      String str = jedis.hget(key, field);
+      if (str != null) {
+        return JsonUtils.parseArray(str, elementType);
+      }
+      return null;
+    };
+    return call(function);
+  }
+
   /**
    * Set {@code key} to hold the string {@code value} if {@code key} is absent.
    *
