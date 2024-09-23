@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.litongjava.model.page.Page;
+
 /**
  * Cross Package Invoking pattern for package activerecord.
  *

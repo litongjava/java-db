@@ -10,12 +10,12 @@ import javax.sql.DataSource;
 import com.jfinal.kit.StrKit;
 import com.litongjava.cache.ICache;
 import com.litongjava.db.activerecord.bean.DefaultRecordConvert;
-import com.litongjava.db.activerecord.bean.RecordConvert;
 import com.litongjava.db.activerecord.cache.DefaultEhCache;
 import com.litongjava.db.activerecord.dialect.Dialect;
 import com.litongjava.db.activerecord.dialect.MysqlDialect;
 import com.litongjava.db.activerecord.sql.SqlKit;
 import com.litongjava.db.activerecord.stat.ISqlStatementStat;
+import com.litongjava.record.RecordConvert;
 
 import lombok.extern.slf4j.Slf4j;
 

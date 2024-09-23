@@ -1,4 +1,4 @@
-package com.litongjava.db.activerecord.bean;
+package com.litongjava.record;
 
 import com.litongjava.db.activerecord.Record;
 

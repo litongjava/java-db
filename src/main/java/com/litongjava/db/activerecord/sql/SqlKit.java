@@ -9,7 +9,7 @@ import com.jfinal.kit.StrKit;
 import com.jfinal.template.Engine;
 import com.jfinal.template.Template;
 import com.jfinal.template.source.ISource;
-import com.litongjava.db.activerecord.SqlPara;
+import com.litongjava.db.SqlPara;
 
 /**
  * SqlKit

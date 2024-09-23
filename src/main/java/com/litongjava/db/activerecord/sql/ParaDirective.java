@@ -13,7 +13,7 @@ import com.jfinal.template.expr.ast.Id;
 import com.jfinal.template.io.Writer;
 import com.jfinal.template.stat.ParseException;
 import com.jfinal.template.stat.Scope;
-import com.litongjava.db.activerecord.SqlPara;
+import com.litongjava.db.SqlPara;
 
 /**
  * #para 指令用于在 sql 模板中根据参数名生成问号占位以及查询参数

@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import com.litongjava.db.activerecord.Record;
 import com.litongjava.db.annotation.ATableField;
 import com.litongjava.db.annotation.ATableName;
+import com.litongjava.record.RecordConvert;
 import com.litongjava.tio.utils.name.CamelNameUtils;
 
 public class DefaultRecordConvert implements RecordConvert {

@@ -6,6 +6,6 @@ package com.litongjava.redis;
  * Cache 对象使用 select(int) 方法临时切换数据库
  */
 @FunctionalInterface
-public interface ICallback<T> {
+public interface IRedisCallback<T> {
   T call(RedisCache cache);
 }

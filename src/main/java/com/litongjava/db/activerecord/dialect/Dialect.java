@@ -14,12 +14,12 @@ import java.util.regex.Pattern;
 import com.litongjava.db.activerecord.Config;
 import com.litongjava.db.activerecord.Model;
 import com.litongjava.db.activerecord.ModelBuilder;
-import com.litongjava.db.activerecord.Page;
 import com.litongjava.db.activerecord.Record;
 import com.litongjava.db.activerecord.RecordBuilder;
 import com.litongjava.db.activerecord.Table;
 import com.litongjava.db.activerecord.builder.KeepByteAndShortModelBuilder;
 import com.litongjava.db.activerecord.builder.KeepByteAndShortRecordBuilder;
+import com.litongjava.model.page.Page;
 
 /**
  * Dialect.

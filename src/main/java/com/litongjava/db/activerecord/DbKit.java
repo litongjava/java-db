@@ -172,6 +172,7 @@ public final class DbKit {
    * @return
    * @see ：https://jfinal.com/share/2629
    */
+  @SuppressWarnings("unchecked")
   public static List<Integer> batchListUpdate(List<? extends Model> modelList, int batchSize, String db) {
     if (modelList == null || modelList.size() == 0)
       return new ArrayList<>();
@@ -245,6 +246,7 @@ public final class DbKit {
    * @return
    * @see ：https://jfinal.com/share/2629
    */
+  @SuppressWarnings("unchecked")
   public static List<Integer> batchListSave(List<? extends Model> modelList, int batchSize, String db) {
     if (modelList == null || modelList.size() == 0)
       return new ArrayList<>();
@@ -286,6 +288,7 @@ public final class DbKit {
     return batchListSave(modelList, DB_BATCH_COUNT, db);
   }
 
+  @SuppressWarnings("unchecked")
   public static List<Integer> batchListSave(String tableName, List<? extends Record> recordList, int batchSize, String db) {
     if (recordList == null || recordList.size() == 0)
       return new ArrayList<>();

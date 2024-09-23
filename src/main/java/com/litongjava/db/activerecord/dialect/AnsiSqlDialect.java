@@ -16,11 +16,11 @@ import com.litongjava.db.activerecord.ActiveRecordException;
 import com.litongjava.db.activerecord.CPI;
 import com.litongjava.db.activerecord.Model;
 import com.litongjava.db.activerecord.ModelBuilder;
-import com.litongjava.db.activerecord.Page;
 import com.litongjava.db.activerecord.Record;
 import com.litongjava.db.activerecord.Table;
 import com.litongjava.db.activerecord.builder.TimestampProcessedModelBuilder;
 import com.litongjava.db.activerecord.builder.TimestampProcessedRecordBuilder;
+import com.litongjava.model.page.Page;
 import com.litongjava.tio.utils.json.Json;
 
 /**
@@ -200,7 +200,7 @@ public class AnsiSqlDialect extends Dialect {
     return true;
   }
 
-  @SuppressWarnings("rawtypes")
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   public Page<Record> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql,
       String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
     // String totalRowSql = "select count(*) " + replaceOrderBy(sqlExceptSelect);

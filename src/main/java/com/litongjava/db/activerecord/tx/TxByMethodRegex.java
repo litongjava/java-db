@@ -7,9 +7,9 @@ import com.jfinal.kit.StrKit;
 import com.litongjava.db.activerecord.Config;
 import com.litongjava.db.activerecord.Db;
 import com.litongjava.db.activerecord.DbKit;
-import com.litongjava.db.activerecord.IAtom;
 import com.litongjava.jfinal.aop.Interceptor;
 import com.litongjava.jfinal.aop.Invocation;
+import com.litongjava.model.db.IAtom;
 
 /**
  * TxByMethodRegex.
