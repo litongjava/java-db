@@ -456,6 +456,13 @@ public class Db {
     return MAIN.queryInt(sql, paras);
   }
 
+  public static int queryColumnById(String tableName, String column, Object id) {
+    if (replicas != null) {
+      return useReplica().queryColumnById(tableName, column, id);
+    }
+    return MAIN.queryColumnById(tableName, column, id);
+  }
+
   public static Integer queryInt(String sql) {
     if (replicas != null) {
       return useReplica().queryInt(sql);
@@ -893,7 +900,7 @@ public class Db {
    * @param idValue
    * @return
    */
-  public static Record findColumnsById(String tableName, String columns, int idValue) {
+  public static Record findColumnsById(String tableName, String columns, Object idValue) {
     if (replicas != null) {
       return useReplica().findColumnsById(tableName, columns, idValue);
     }
@@ -2001,4 +2008,5 @@ public class Db {
     }
     return MAIN.query(sql, params);
   }
+
 }

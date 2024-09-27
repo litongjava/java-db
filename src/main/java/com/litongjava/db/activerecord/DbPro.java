@@ -39,6 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class DbPro {
 
+  private String queryColumnByField = "select %s from %s where %s=?";
+
   protected final Config config;
 
   public DbPro() {
@@ -156,6 +158,15 @@ public class DbPro {
       return temp;
     }
     return null;
+  }
+
+  public <T> T queryColumnById(String tableName, String column, Object id) {
+    return queryColumnByField(tableName, column, "id", id);
+  }
+
+  public <T> T queryColumnByField(String tableName, String column, String field, Object value) {
+    String sql = String.format(queryColumnByField, column, tableName, field);
+    return Db.queryColumn(sql, value);
   }
 
   public String queryStr(String sql, Object... paras) {
@@ -2271,4 +2282,5 @@ public class DbPro {
     stringBuffer.append("SELECT count(*) from ").append(table).append(";");
     return Db.queryLong(stringBuffer.toString());
   }
+
 }
