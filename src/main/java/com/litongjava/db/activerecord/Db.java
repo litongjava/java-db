@@ -463,6 +463,14 @@ public class Db {
     return MAIN.queryColumnById(tableName, column, id);
   }
 
+  public static <T> T queryColumnByField(String tableName, String column, String field, Object value) {
+
+    if (replicas != null) {
+      return useReplica().queryColumnByField(tableName, column, field, value);
+    }
+    return MAIN.queryColumnByField(tableName, column, field, value);
+  }
+
   public static Integer queryInt(String sql) {
     if (replicas != null) {
       return useReplica().queryInt(sql);
