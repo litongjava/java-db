@@ -69,7 +69,7 @@ public class SqlTemplates {
     }
     String sql = sqlTemplates.get(sqlId);
     if (sql == null) {
-      throw new IllegalArgumentException("SQL ID not found+" + sql);
+      throw new IllegalArgumentException("SQL ID not found:" + sqlId);
     }
     return sql;
   }
