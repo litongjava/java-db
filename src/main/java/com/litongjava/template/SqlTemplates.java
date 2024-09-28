@@ -35,8 +35,7 @@ public class SqlTemplates {
     }
 
     List<String> lines;
-    try (InputStream inputStream = resource.openStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+    try (InputStream inputStream = resource.openStream(); BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
       lines = reader.lines().collect(Collectors.toList());
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -70,7 +69,7 @@ public class SqlTemplates {
     }
     String sql = sqlTemplates.get(sqlId);
     if (sql == null) {
-      throw new IllegalArgumentException("SQL ID not found");
+      throw new IllegalArgumentException("SQL ID not found+" + sql);
     }
     return sql;
   }
