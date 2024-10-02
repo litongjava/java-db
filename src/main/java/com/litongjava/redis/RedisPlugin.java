@@ -120,7 +120,7 @@ public class RedisPlugin implements IPlugin {
       keyNamingPolicy = IKeyNamingPolicy.defaultKeyNamingPolicy;
     }
 
-    RedisCache cache = new RedisCache(cacheName, jedisPool, serializer, keyNamingPolicy);
+    RedisDb cache = new RedisDb(cacheName, jedisPool, serializer, keyNamingPolicy);
     Redis.addCache(cache);
 
     isStarted = true;
@@ -128,7 +128,7 @@ public class RedisPlugin implements IPlugin {
   }
 
   public boolean stop() {
-    RedisCache cache = Redis.removeCache(cacheName);
+    RedisDb cache = Redis.removeCache(cacheName);
     if (cache == Redis.mainCache) {
       Redis.mainCache = null;
     }

@@ -18,11 +18,11 @@ import redis.clients.jedis.Jedis;
  */
 public class Redis {
 
-  static RedisCache mainCache = null;
+  static RedisDb mainCache = null;
 
-  private static final ConcurrentHashMap<String, RedisCache> cacheMap = new ConcurrentHashMap<String, RedisCache>(32, 0.5F);
+  private static final ConcurrentHashMap<String, RedisDb> cacheMap = new ConcurrentHashMap<String, RedisDb>(32, 0.5F);
 
-  public static void addCache(RedisCache cache) {
+  public static void addCache(RedisDb cache) {
     if (cache == null)
       throw new IllegalArgumentException("cache can not be null");
     if (cacheMap.containsKey(cache.getName()))
@@ -33,7 +33,7 @@ public class Redis {
       mainCache = cache;
   }
 
-  public static RedisCache removeCache(String cacheName) {
+  public static RedisDb removeCache(String cacheName) {
     return cacheMap.remove(cacheName);
   }
 
@@ -44,18 +44,18 @@ public class Redis {
     if (StrKit.isBlank(cacheName))
       throw new IllegalArgumentException("cacheName can not be blank");
     cacheName = cacheName.trim();
-    RedisCache cache = cacheMap.get(cacheName);
+    RedisDb cache = cacheMap.get(cacheName);
     if (cache == null)
       throw new IllegalArgumentException("the cache not exists: " + cacheName);
 
     Redis.mainCache = cache;
   }
 
-  public static RedisCache use() {
+  public static RedisDb use() {
     return mainCache;
   }
 
-  public static RedisCache use(String cacheName) {
+  public static RedisDb use(String cacheName) {
     return cacheMap.get(cacheName);
   }
 
@@ -96,7 +96,7 @@ public class Redis {
     return callback(use(cacheName), callback);
   }
 
-  private static <T> T callback(RedisCache cache, IRedisCallback<T> callback) {
+  private static <T> T callback(RedisDb cache, IRedisCallback<T> callback) {
     Jedis jedis = cache.getThreadLocalJedis();
     boolean notThreadLocalJedis = (jedis == null);
     if (notThreadLocalJedis) {

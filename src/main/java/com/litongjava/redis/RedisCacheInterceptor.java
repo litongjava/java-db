@@ -17,7 +17,7 @@ public class RedisCacheInterceptor implements Interceptor {
 
   private static ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<String, ReentrantLock>(512);
 
-  protected RedisCache getCache() {
+  protected RedisDb getCache() {
     return Redis.use();
   }
 
@@ -33,7 +33,7 @@ public class RedisCacheInterceptor implements Interceptor {
   }
 
   final public void intercept(Invocation inv) {
-    RedisCache cache = getCache();
+    RedisDb cache = getCache();
     Jedis jedis = cache.getThreadLocalJedis();
 
     if (jedis != null) {
@@ -51,7 +51,7 @@ public class RedisCacheInterceptor implements Interceptor {
 
   }
 
-  private void putIfNotExists(Invocation inv, RedisCache cache, Jedis jedis) {
+  private void putIfNotExists(Invocation inv, RedisDb cache, Jedis jedis) {
     Object target = inv.getTarget();
     CacheableModel cacheableModel = CacheableModel.buildCacheModel(inv, target);
     String redisKey = cacheableModel.getName() + "_" + cacheableModel.getKey();

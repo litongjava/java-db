@@ -34,7 +34,7 @@ import redis.clients.jedis.util.SafeEncoder;
  * 注意：不要提供 strlen、append、setrange、getrange，经测试这类操作字符串的方法在序列化模式下无法工作 因为 String
  * 序列化后的 value 值为会多出来一些额外的字符
  */
-public class RedisCache {
+public class RedisDb {
 
   protected String name;
   protected JedisPool jedisPool;
@@ -65,11 +65,11 @@ public class RedisCache {
     }
   }
 
-  protected RedisCache() {
+  protected RedisDb() {
 
   }
 
-  public RedisCache(String name, JedisPool jedisPool, ISerializer serializer, IKeyNamingPolicy keyNamingPolicy) {
+  public RedisDb(String name, JedisPool jedisPool, ISerializer serializer, IKeyNamingPolicy keyNamingPolicy) {
     this.name = name;
     this.jedisPool = jedisPool;
     this.serializer = serializer;
@@ -1913,7 +1913,12 @@ public class RedisCache {
       return jedis.get(key);
     };
     String value = call(function);
-    return Integer.parseInt(value);
+    if (value != null) {
+      return Integer.parseInt(value);
+    } else {
+      return null;
+    }
+
   }
 
   public String setLong(String key, long value) {
@@ -1929,7 +1934,11 @@ public class RedisCache {
       return jedis.get(key);
     };
     String value = call(function);
-    return Long.parseLong(value);
+    if (value != null) {
+      return Long.parseLong(value);
+    } else {
+      return null;
+    }
   }
 
   public Long hsetList(String key, String field, List<?> list) {

@@ -7,5 +7,5 @@ package com.litongjava.redis;
  */
 @FunctionalInterface
 public interface IRedisCallback<T> {
-  T call(RedisCache cache);
+  T call(RedisDb cache);
 }

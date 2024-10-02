@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.litongjava.redis.RedisCache;
+import com.litongjava.redis.RedisDb;
 import com.litongjava.redis.Redis;
 import com.litongjava.redis.serializer.ISerializer;
 
@@ -14,7 +14,7 @@ import redis.clients.jedis.Jedis;
 
 public class SaTokenDaoRedis implements SaTokenDao {
 
-  protected RedisCache redis;
+  protected RedisDb redis;
   protected ISerializer serializer;
   /**
    * 标记：是否已初始化成功

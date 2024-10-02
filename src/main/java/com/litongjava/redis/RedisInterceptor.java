@@ -16,12 +16,12 @@ public class RedisInterceptor implements Interceptor {
    * 通过继承 RedisInterceptor 类并覆盖此方法，可以指定
    * 当前线程所使用的 cache
    */
-  protected RedisCache getCache() {
+  protected RedisDb getCache() {
     return Redis.use();
   }
 
   public void intercept(Invocation inv) {
-    RedisCache cache = getCache();
+    RedisDb cache = getCache();
     Jedis jedis = cache.getThreadLocalJedis();
     if (jedis != null) {
       inv.invoke();
