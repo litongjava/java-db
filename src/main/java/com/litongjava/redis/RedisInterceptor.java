@@ -1,7 +1,7 @@
 package com.litongjava.redis;
 
-import com.litongjava.jfinal.aop.Interceptor;
-import com.litongjava.jfinal.aop.Invocation;
+import com.litongjava.jfinal.aop.AopInterceptor;
+import com.litongjava.jfinal.aop.AopInvocation;
 
 import redis.clients.jedis.Jedis;
 
@@ -10,7 +10,7 @@ import redis.clients.jedis.Jedis;
  * 目前只支持主缓存 mainCache，若想更多支持，参考此拦截器创建新的拦截器
  * 改一下Redis.use() 为 Redis.use(otherCache) 即可
  */
-public class RedisInterceptor implements Interceptor {
+public class RedisInterceptor implements AopInterceptor {
 
   /**
    * 通过继承 RedisInterceptor 类并覆盖此方法，可以指定
@@ -20,7 +20,7 @@ public class RedisInterceptor implements Interceptor {
     return Redis.use();
   }
 
-  public void intercept(Invocation inv) {
+  public void intercept(AopInvocation inv) {
     RedisDb cache = getCache();
     Jedis jedis = cache.getThreadLocalJedis();
     if (jedis != null) {

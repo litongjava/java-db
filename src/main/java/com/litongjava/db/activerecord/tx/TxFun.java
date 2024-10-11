@@ -3,7 +3,7 @@ package com.litongjava.db.activerecord.tx;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import com.litongjava.jfinal.aop.Invocation;
+import com.litongjava.jfinal.aop.AopInvocation;
 
 /**
  * 支持定制事务行为，否则 Tx 拦截器只会在抛出异常时回滚事务
@@ -32,7 +32,7 @@ import com.litongjava.jfinal.aop.Invocation;
  */
 @FunctionalInterface
 public interface TxFun {
-    void call(Invocation inv, Connection conn) throws SQLException;
+    void call(AopInvocation inv, Connection conn) throws SQLException;
 }
 
 

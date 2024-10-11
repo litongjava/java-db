@@ -5,15 +5,15 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.litongjava.cache.CacheableModel;
-import com.litongjava.jfinal.aop.Interceptor;
-import com.litongjava.jfinal.aop.Invocation;
+import com.litongjava.jfinal.aop.AopInterceptor;
+import com.litongjava.jfinal.aop.AopInvocation;
 
 import redis.clients.jedis.Jedis;
 
 /**
  * CacheInterceptor.
  */
-public class RedisCacheInterceptor implements Interceptor {
+public class RedisCacheInterceptor implements AopInterceptor {
 
   private static ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<String, ReentrantLock>(512);
 
@@ -32,7 +32,7 @@ public class RedisCacheInterceptor implements Interceptor {
     return previousLock == null ? lock : previousLock;
   }
 
-  final public void intercept(Invocation inv) {
+  final public void intercept(AopInvocation inv) {
     RedisDb cache = getCache();
     Jedis jedis = cache.getThreadLocalJedis();
 
@@ -51,7 +51,7 @@ public class RedisCacheInterceptor implements Interceptor {
 
   }
 
-  private void putIfNotExists(Invocation inv, RedisDb cache, Jedis jedis) {
+  private void putIfNotExists(AopInvocation inv, RedisDb cache, Jedis jedis) {
     Object target = inv.getTarget();
     CacheableModel cacheableModel = CacheableModel.buildCacheModel(inv, target);
     String redisKey = cacheableModel.getName() + "_" + cacheableModel.getKey();

@@ -7,8 +7,8 @@ import com.litongjava.db.activerecord.ActiveRecordException;
 import com.litongjava.db.activerecord.Config;
 import com.litongjava.db.activerecord.DbKit;
 import com.litongjava.db.activerecord.NestedTransactionHelpException;
-import com.litongjava.jfinal.aop.Interceptor;
-import com.litongjava.jfinal.aop.Invocation;
+import com.litongjava.jfinal.aop.AopInterceptor;
+import com.litongjava.jfinal.aop.AopInvocation;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
  * Example: @Before(Tx.class)
  */
 @Slf4j
-public class Tx implements Interceptor {
+public class Tx implements AopInterceptor {
 
 	private static TxFun txFun = null;
 
@@ -32,7 +32,7 @@ public class Tx implements Interceptor {
 		return Tx.txFun;
 	}
 
-	public static Config getConfigWithTxConfig(Invocation inv) {
+	public static Config getConfigWithTxConfig(AopInvocation inv) {
 		TxConfig txConfig = inv.getMethod().getAnnotation(TxConfig.class);
 		if (txConfig == null)
 			txConfig = inv.getTarget().getClass().getAnnotation(TxConfig.class);
@@ -50,7 +50,7 @@ public class Tx implements Interceptor {
 		return config.getTransactionLevel();
 	}
 
-	public void intercept(Invocation inv) {
+	public void intercept(AopInvocation inv) {
 		Config config = getConfigWithTxConfig(inv);
 		if (config == null)
 			config = DbKit.getConfig();

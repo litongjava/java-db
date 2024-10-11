@@ -3,8 +3,8 @@ package com.litongjava.db.activerecord;
 
 import java.sql.Connection;
 
-import com.litongjava.jfinal.aop.Interceptor;
-import com.litongjava.jfinal.aop.Invocation;
+import com.litongjava.jfinal.aop.AopInterceptor;
+import com.litongjava.jfinal.aop.AopInvocation;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,9 +13,9 @@ import lombok.extern.slf4j.Slf4j;
  * warning: can not use this interceptor with transaction feature like Tx, Db.tx(...)
  */
 @Slf4j
-public class OneConnectionPerThread implements Interceptor {
+public class OneConnectionPerThread implements AopInterceptor {
 	
-	public void intercept(Invocation inv) {
+	public void intercept(AopInvocation inv) {
 		Connection conn = DbKit.config.getThreadLocalConnection();
 		if (conn != null) {
 			inv.invoke();

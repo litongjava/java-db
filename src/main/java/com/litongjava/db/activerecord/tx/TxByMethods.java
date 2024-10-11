@@ -7,14 +7,14 @@ import java.util.Set;
 import com.litongjava.db.activerecord.Config;
 import com.litongjava.db.activerecord.Db;
 import com.litongjava.db.activerecord.DbKit;
-import com.litongjava.jfinal.aop.Interceptor;
-import com.litongjava.jfinal.aop.Invocation;
+import com.litongjava.jfinal.aop.AopInterceptor;
+import com.litongjava.jfinal.aop.AopInvocation;
 import com.litongjava.model.db.IAtom;
 
 /**
  * TxByMethods
  */
-public class TxByMethods implements Interceptor {
+public class TxByMethods implements AopInterceptor {
 	
 	private Set<String> methodSet = new HashSet<String>();
 	
@@ -26,7 +26,7 @@ public class TxByMethods implements Interceptor {
 			methodSet.add(method.trim());
 	}
 	
-	public void intercept(final Invocation inv) {
+	public void intercept(final AopInvocation inv) {
 		Config config = Tx.getConfigWithTxConfig(inv);
 		if (config == null)
 			config = DbKit.getConfig();

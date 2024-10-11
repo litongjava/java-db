@@ -1,7 +1,7 @@
 package com.litongjava.cache;
 
 import com.jfinal.kit.StrKit;
-import com.litongjava.jfinal.aop.Invocation;
+import com.litongjava.jfinal.aop.AopInvocation;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +21,7 @@ public class CacheableModel {
    * @param target
    * @return
    */
-  public static CacheableModel buildCacheModel(Invocation inv, Object target) {
+  public static CacheableModel buildCacheModel(AopInvocation inv, Object target) {
     Cacheable cacheable = inv.getMethod().getAnnotation(Cacheable.class);
     String cacheName = null;
     String cacheKey = null;
@@ -73,7 +73,7 @@ public class CacheableModel {
    * @param inv
    * @return
    */
-  public static String buildCacheKey(Invocation inv) {
+  public static String buildCacheKey(AopInvocation inv) {
     StringBuilder sb = new StringBuilder(inv.getMethodName());
     Object[] args = inv.getArgs();
     for (Object object : args) {

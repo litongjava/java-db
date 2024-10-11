@@ -5,13 +5,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.litongjava.cache.CacheableModel;
-import com.litongjava.jfinal.aop.Interceptor;
-import com.litongjava.jfinal.aop.Invocation;
+import com.litongjava.jfinal.aop.AopInterceptor;
+import com.litongjava.jfinal.aop.AopInvocation;
 
 /**
  * CacheInterceptor.
  */
-public class EhCacheInterceptor implements Interceptor {
+public class EhCacheInterceptor implements AopInterceptor {
 
   private static ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<String, ReentrantLock>(512);
 
@@ -26,7 +26,7 @@ public class EhCacheInterceptor implements Interceptor {
     return previousLock == null ? lock : previousLock;
   }
 
-  final public void intercept(Invocation inv) {
+  final public void intercept(AopInvocation inv) {
     Object target = inv.getTarget();
     CacheableModel cacheableModel = CacheableModel.buildCacheModel(inv, target);
     String cacheName = cacheableModel.getName();

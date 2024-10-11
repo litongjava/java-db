@@ -7,15 +7,15 @@ import com.jfinal.kit.StrKit;
 import com.litongjava.db.activerecord.Config;
 import com.litongjava.db.activerecord.Db;
 import com.litongjava.db.activerecord.DbKit;
-import com.litongjava.jfinal.aop.Interceptor;
-import com.litongjava.jfinal.aop.Invocation;
+import com.litongjava.jfinal.aop.AopInterceptor;
+import com.litongjava.jfinal.aop.AopInvocation;
 import com.litongjava.model.db.IAtom;
 
 /**
  * TxByMethodRegex.
  * The regular expression match the method name of the target.
  */
-public class TxByMethodRegex implements Interceptor {
+public class TxByMethodRegex implements AopInterceptor {
 	
 	private Pattern pattern;
 	
@@ -30,7 +30,7 @@ public class TxByMethodRegex implements Interceptor {
 		pattern = caseSensitive ? Pattern.compile(regex) : Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 	}
 	
-	public void intercept(final Invocation inv) {
+	public void intercept(final AopInvocation inv) {
 		Config config = Tx.getConfigWithTxConfig(inv);
 		if (config == null)
 			config = DbKit.getConfig();

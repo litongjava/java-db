@@ -1,15 +1,15 @@
 package com.litongjava.ehcache;
 
 import com.litongjava.cache.Cacheable;
-import com.litongjava.jfinal.aop.Interceptor;
-import com.litongjava.jfinal.aop.Invocation;
+import com.litongjava.jfinal.aop.AopInterceptor;
+import com.litongjava.jfinal.aop.AopInvocation;
 
 /**
  * EvictInterceptor.
  */
-public class EvictInterceptor implements Interceptor {
+public class EvictInterceptor implements AopInterceptor {
 
-  public void intercept(Invocation inv) {
+  public void intercept(AopInvocation inv) {
     inv.invoke();
 
     // @CacheName 注解中的多个 cacheName 可用逗号分隔
@@ -26,7 +26,7 @@ public class EvictInterceptor implements Interceptor {
   /**
    * 获取 @CacheName 注解配置的 cacheName，注解可配置在方法和类之上
    */
-  protected String getCacheName(Invocation inv) {
+  protected String getCacheName(AopInvocation inv) {
     Cacheable cacheName = inv.getMethod().getAnnotation(Cacheable.class);
     if (cacheName != null) {
       return cacheName.value();
