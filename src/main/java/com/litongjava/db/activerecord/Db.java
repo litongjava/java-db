@@ -384,6 +384,19 @@ public class Db {
   }
 
   /**
+   * @param <T>
+   * @param sql
+   * @return
+   */
+  public static <T> List<T> query(SqlPara sqlPara) {
+    if (replicas != null) {
+      return useReplica().query(sqlPara);
+    }
+
+    return MAIN.query(sqlPara);
+  }
+
+  /**
    * Execute sql query and return the first result. I recommend add "limit 1" in
    * your sql.
    * 
@@ -759,6 +772,13 @@ public class Db {
       return useReplica().findAll(tableName);
     }
     return MAIN.findAll(tableName);
+  }
+
+  public static List<Record> findIn(String tableName, String primayKey, Object... paras) {
+    if (replicas != null) {
+      return useReplica().findIn(tableName, primayKey, paras);
+    }
+    return MAIN.findIn(tableName, primayKey, paras);
   }
 
   /**

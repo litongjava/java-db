@@ -113,6 +113,10 @@ public class DbPro {
     return query(sql, DbKit.NULL_PARA_ARRAY);
   }
 
+  public <T> List<T> query(SqlPara sqlPara) {
+    return query(sqlPara.getSql(), sqlPara.getPara());
+  }
+
   /**
    * Execute sql query and return the first result. I recommend add "limit 1" in
    * your sql.
@@ -524,6 +528,19 @@ public class DbPro {
   public <T> List<T> findAll(Class<T> clazz, String tableName) {
     String sql = config.dialect.forFindAll(tableName);
     return find(clazz, sql, DbKit.NULL_PARA_ARRAY);
+  }
+
+  public List<Record> findIn(String tableName, String primayKey, Object... paras) {
+
+    StringBuilder ids = new StringBuilder();
+    for (int i = 0; i < paras.length; i++) {
+      ids.append("?");
+      if (i < paras.length - 1) {
+        ids.append(", ");
+      }
+    }
+    String sql = String.format("SELECT * FROM %s WHERE id IN (" + ids.toString() + ")", tableName);
+    return find(sql, paras);
   }
 
   public List<Record> findColumnsAll(String tableName, String columns) {
