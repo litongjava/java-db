@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.litongjava</groupId>
   <artifactId>java-db</artifactId>
-  <version>1.3.4</version>
+  <version>1.3.5</version>
   <packaging>jar</packaging>
   <name>Java Database</name>
   <description>Java Database</description>
@@ -15,19 +15,28 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <logback-version>1.4.11</logback-version>
     <lombok-version>1.18.30</lombok-version>
+    <java-model.version>1.1.2</java-model.version>
+    <tio.version>3.7.3.v20241008-RELEASE</tio.version>
   </properties>
   <dependencies>
+    <dependency>
+      <groupId>com.litongjava</groupId>
+      <artifactId>java-model</artifactId>
+      <version>${java-model.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.litongjava</groupId>
+      <artifactId>tio-utils</artifactId>
+      <version>${tio.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.litongjava</groupId>
       <artifactId>jfinal-aop</artifactId>
       <version>1.3.3</version>
     </dependency>
 
-    <dependency>
-      <groupId>com.litongjava</groupId>
-      <artifactId>tio-utils</artifactId>
-      <version>3.7.3.v20241005-RELEASE</version>
-    </dependency>
+
     <dependency>
       <groupId>it.sauronsoftware.cron4j</groupId>
       <artifactId>cron4j</artifactId>
