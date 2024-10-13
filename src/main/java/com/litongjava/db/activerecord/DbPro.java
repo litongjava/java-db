@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 import com.jfinal.kit.StrKit;
 import com.jfinal.kit.TimeKit;
-import com.litongjava.cache.ICache;
+import com.litongjava.cache.IDbCache;
 import com.litongjava.db.SqlPara;
 import com.litongjava.db.activerecord.stat.ISqlStatementStat;
 import com.litongjava.model.db.IAtom;
@@ -1425,7 +1425,7 @@ public class DbPro {
    * @see #find(String, Object...)
    */
   public List<Record> findByCache(String cacheName, Object key, String sql, Object... paras) {
-    ICache cache = config.getCache();
+    IDbCache cache = config.getCache();
     List<Record> result = cache.get(cacheName, key);
     if (result == null) {
       result = find(sql, paras);
@@ -1435,7 +1435,7 @@ public class DbPro {
   }
 
   public <T> List<T> findByCache(Class<T> clazz, String cacheName, Object key, String sql, Object... paras) {
-    ICache cache = config.getCache();
+    IDbCache cache = config.getCache();
     List<T> result = cache.get(cacheName, key);
     if (result == null) {
       result = find(clazz, sql, paras);
@@ -1467,7 +1467,7 @@ public class DbPro {
    * @see #findFirst(String, Object...)
    */
   public Record findFirstByCache(String cacheName, Object key, String sql, Object... paras) {
-    ICache cache = config.getCache();
+    IDbCache cache = config.getCache();
     Record result = cache.get(cacheName, key);
     if (result == null) {
       result = findFirst(sql, paras);
@@ -1477,7 +1477,7 @@ public class DbPro {
   }
 
   public Record findFirstByCache(String cacheName, Object key, int ttl, String sql, Object... paras) {
-    ICache cache = config.getCache();
+    IDbCache cache = config.getCache();
     Record result = cache.get(cacheName, key);
     if (result == null) {
       result = findFirst(sql, paras);
@@ -1487,7 +1487,7 @@ public class DbPro {
   }
 
   public <T> T findFirstByCache(Class<T> clazz, String cacheName, Object key, String sql, Object... paras) {
-    ICache cache = config.getCache();
+    IDbCache cache = config.getCache();
     T result = cache.get(cacheName, key);
     if (result == null) {
       result = findFirst(clazz, sql, paras);
@@ -1497,7 +1497,7 @@ public class DbPro {
   }
 
   public <T> T findFirstByCache(Class<T> clazz, String cacheName, Object key, int ttl, String sql, Object... paras) {
-    ICache cache = config.getCache();
+    IDbCache cache = config.getCache();
     T result = cache.get(cacheName, key);
     if (result == null) {
       result = findFirst(clazz, sql, paras);
@@ -1526,7 +1526,7 @@ public class DbPro {
   }
 
   public <T> Page<T> doPaginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
-    ICache cache = config.getCache();
+    IDbCache cache = config.getCache();
     Page<T> result = cache.get(cacheName, key);
     if (result == null) {
       result = doPaginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
@@ -1536,7 +1536,7 @@ public class DbPro {
   }
 
   public Page<Record> doPaginateByCache(String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
-    ICache cache = config.getCache();
+    IDbCache cache = config.getCache();
     Page<Record> result = cache.get(cacheName, key);
     if (result == null) {
       result = doPaginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
@@ -1591,7 +1591,7 @@ public class DbPro {
   }
 
   private Page<Record> doPaginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
-    ICache cache = config.getCache();
+    IDbCache cache = config.getCache();
     Page<Record> result = cache.get(cacheName, key);
     if (result == null) {
       result = doPaginateByFullSql(pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
@@ -1610,7 +1610,7 @@ public class DbPro {
 
   private <T> Page<T> doPaginateByCacheByFullSql(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql,
       Object... paras) {
-    ICache cache = config.getCache();
+    IDbCache cache = config.getCache();
     Page<T> result = cache.get(cacheName, key);
     if (result == null) {
       result = doPaginateByFullSql(clazz, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);

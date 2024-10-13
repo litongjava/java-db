@@ -8,7 +8,7 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import com.jfinal.kit.StrKit;
-import com.litongjava.cache.ICache;
+import com.litongjava.cache.IDbCache;
 import com.litongjava.db.activerecord.bean.DefaultRecordConvert;
 import com.litongjava.db.activerecord.cache.DefaultEhCache;
 import com.litongjava.db.activerecord.dialect.Dialect;
@@ -32,7 +32,7 @@ public class Config {
   int transactionLevel;
   IContainerFactory containerFactory;
   IDbProFactory dbProFactory = IDbProFactory.defaultDbProFactory;
-  ICache cache;
+  IDbCache cache;
 
   SqlKit sqlKit;
 
@@ -58,14 +58,14 @@ public class Config {
    * @param containerFactory the containerFactory
    * @param cache            the cache
    */
-  public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel, IContainerFactory containerFactory, ICache cache) {
+  public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel, IContainerFactory containerFactory, IDbCache cache) {
     if (dataSource == null) {
       throw new IllegalArgumentException("DataSource can not be null");
     }
     init(name, dataSource, dialect, showSql, devMode, transactionLevel, containerFactory, cache);
   }
 
-  private void init(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel, IContainerFactory containerFactory, ICache cache) {
+  private void init(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel, IContainerFactory containerFactory, IDbCache cache) {
     if (StrKit.isBlank(name)) {
       throw new IllegalArgumentException("Config name can not be blank");
     }
@@ -162,7 +162,7 @@ public class Config {
     return dialect;
   }
 
-  public ICache getCache() {
+  public IDbCache getCache() {
     return cache;
   }
 

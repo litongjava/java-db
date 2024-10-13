@@ -7,7 +7,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import com.jfinal.kit.StrKit;
-import com.litongjava.cache.ICache;
+import com.litongjava.cache.IDbCache;
 import com.litongjava.db.IPlugin;
 import com.litongjava.db.activerecord.cache.DefaultEhCache;
 import com.litongjava.db.activerecord.dialect.Dialect;
@@ -128,7 +128,7 @@ public class ActiveRecordPlugin implements IPlugin {
     return this;
   }
 
-  public ActiveRecordPlugin setCache(ICache cache) {
+  public ActiveRecordPlugin setCache(IDbCache cache) {
     if (cache == null) {
       throw new IllegalArgumentException("cache can not be null");
     }
@@ -244,7 +244,7 @@ public class ActiveRecordPlugin implements IPlugin {
    *     以免程序出现不一致行为
    * </pre>
    */
-  public static void useAsDataTransfer(Dialect dialect, IContainerFactory containerFactory, ICache cache) {
+  public static void useAsDataTransfer(Dialect dialect, IContainerFactory containerFactory, IDbCache cache) {
     if (dialect == null) {
       throw new IllegalArgumentException("dialect can not be null");
     }
@@ -265,7 +265,7 @@ public class ActiveRecordPlugin implements IPlugin {
   /**
    * 分布式场景下指定 IContainerFactory，并默认使用 MysqlDialect、EhCache
    * 
-   * @see #useAsDataTransfer(Dialect, IContainerFactory, ICache)
+   * @see #useAsDataTransfer(Dialect, IContainerFactory, IDbCache)
    */
   public static void useAsDataTransfer(IContainerFactory containerFactory) {
     useAsDataTransfer(new com.litongjava.db.activerecord.dialect.MysqlDialect(), containerFactory, new DefaultEhCache());
@@ -274,7 +274,7 @@ public class ActiveRecordPlugin implements IPlugin {
   /**
    * 分布式场景下指定 Dialect、IContainerFactory，并默认使用 EhCache
    * 
-   * @see #useAsDataTransfer(Dialect, IContainerFactory, ICache)
+   * @see #useAsDataTransfer(Dialect, IContainerFactory, IDbCache)
    */
   public static void useAsDataTransfer(Dialect dialect, IContainerFactory containerFactory) {
     useAsDataTransfer(dialect, containerFactory, new DefaultEhCache());
@@ -283,7 +283,7 @@ public class ActiveRecordPlugin implements IPlugin {
   /**
    * 分布式场景下指定 Dialect、 并默认使用 IContainerFactory.defaultContainerFactory、EhCache
    * 
-   * @see #useAsDataTransfer(Dialect, IContainerFactory, ICache)
+   * @see #useAsDataTransfer(Dialect, IContainerFactory, IDbCache)
    */
   public static void useAsDataTransfer(Dialect dialect) {
     useAsDataTransfer(dialect, IContainerFactory.defaultContainerFactory, new DefaultEhCache());
@@ -292,7 +292,7 @@ public class ActiveRecordPlugin implements IPlugin {
   /**
    * 分布式场景下默认使用 MysqlDialect、 IContainerFactory.defaultContainerFactory、EhCache
    * 
-   * @see #useAsDataTransfer(Dialect, IContainerFactory, ICache)
+   * @see #useAsDataTransfer(Dialect, IContainerFactory, IDbCache)
    */
   public static void useAsDataTransfer() {
     useAsDataTransfer(new MysqlDialect(), IContainerFactory.defaultContainerFactory, new DefaultEhCache());

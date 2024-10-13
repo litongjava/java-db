@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.jfinal.kit.TypeKit;
-import com.litongjava.cache.ICache;
+import com.litongjava.cache.IDbCache;
 import com.litongjava.db.SqlPara;
 import com.litongjava.model.db.IRow;
 import com.litongjava.model.page.Page;
@@ -991,7 +991,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
 	 */
 	public List<M> findByCache(String cacheName, Object key, String sql, Object... paras) {
 		Config config = _getConfig();
-		ICache cache = config.getCache();
+		IDbCache cache = config.getCache();
 		List<M> result = cache.get(cacheName, key);
 		if (result == null) {
 			result = find(config, sql, paras);
@@ -1016,7 +1016,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
 	 * @param paras the parameters of sql
 	 */
 	public M findFirstByCache(String cacheName, Object key, String sql, Object... paras) {
-		ICache cache = _getConfig().getCache();
+		IDbCache cache = _getConfig().getCache();
 		M result = cache.get(cacheName, key);
 		if (result == null) {
 			result = findFirst(sql, paras);
@@ -1055,7 +1055,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
 	}
 
 	protected Page<M> doPaginateByCache(String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
-		ICache cache = _getConfig().getCache();
+		IDbCache cache = _getConfig().getCache();
 		Page<M> result = cache.get(cacheName, key);
 		if (result == null) {
 			result = doPaginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);

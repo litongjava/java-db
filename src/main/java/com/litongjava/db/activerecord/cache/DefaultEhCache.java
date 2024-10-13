@@ -1,12 +1,12 @@
 package com.litongjava.db.activerecord.cache;
 
-import com.litongjava.cache.ICache;
+import com.litongjava.cache.IDbCache;
 import com.litongjava.ehcache.EhCache;
 
 /**
  * EhCache.
  */
-public class DefaultEhCache implements ICache {
+public class DefaultEhCache implements IDbCache {
 
   @SuppressWarnings("unchecked")
   public <T> T get(String cacheName, Object key) {
