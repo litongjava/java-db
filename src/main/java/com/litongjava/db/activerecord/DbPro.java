@@ -98,10 +98,12 @@ public class DbPro {
   }
 
   public <T> List<T> query(String sql, Object... paras) {
-    try (Connection conn = config.getConnection()) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
       return query(config, conn, sql, paras);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
+    } finally {
+      config.close(conn);
     }
   }
 
@@ -355,7 +357,7 @@ public class DbPro {
   /**
    * Execute sql update
    */
-  protected int update(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+  protected int update(Config config, Connection conn, String sql, Object... paras) {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
       long start = System.currentTimeMillis();
@@ -367,6 +369,8 @@ public class DbPro {
         stat.save(config.name, "update", sql, paras, result, start, elapsed, config.writeSync);
       }
       return result;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -385,8 +389,6 @@ public class DbPro {
     try {
       conn = config.getConnection();
       return update(config, conn, sql, paras);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }
@@ -400,7 +402,7 @@ public class DbPro {
     return update(sql, DbKit.NULL_PARA_ARRAY);
   }
 
-  protected List<Record> findJsonField(Config config, Connection conn, String sql, String[] jsonFields, Object... paras) throws SQLException {
+  protected List<Record> findJsonField(Config config, Connection conn, String sql, String[] jsonFields, Object... paras) {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
       List<Record> result = null;
@@ -415,6 +417,8 @@ public class DbPro {
         }
       }
       return result;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -437,7 +441,7 @@ public class DbPro {
       throw new RuntimeException(e);
     }
   }
-  
+
   protected List<Record> find(Config config, Connection conn, String sql, List paras) {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
@@ -505,14 +509,12 @@ public class DbPro {
       config.close(conn);
     }
   }
-  
+
   public List<Record> findJsonField(String sql, String[] jsonFields, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
       return findJsonField(config, conn, sql, jsonFields, paras);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }
@@ -523,18 +525,18 @@ public class DbPro {
     try {
       conn = config.getConnection();
       return findJsonField(config, conn, sql, jsonFields, paras);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }
   }
 
   public <T> List<T> find(Class<T> clazz, String sql, Object... paras) {
-    try (Connection conn = config.getConnection();) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
       return find(clazz, config, conn, sql, paras);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e);
+    } finally {
+      config.close(conn);
     }
   }
 
@@ -586,7 +588,7 @@ public class DbPro {
     sql = sql + " WHERE " + primayKey + " IN (" + ids.toString() + ")";
     return find(sql, paras);
   }
-  
+
   public List<Record> findColumnsIn(String tableName, String columns, String primayKey, List paras) {
     StringBuilder ids = new StringBuilder();
     for (int i = 0; i < paras.size(); i++) {
@@ -994,13 +996,15 @@ public class DbPro {
 
   protected Page<Record> doPaginateJsonFields(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, String[] jsonFields, Object... paras) {
 
-    try (Connection conn = config.getConnection()) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
       String totalRowSql = config.dialect.forPaginateTotalRow(select, sqlExceptSelect, null);
       StringBuilder findSql = new StringBuilder();
       findSql.append(select).append(' ').append(sqlExceptSelect);
       return doPaginateByFullSqlWithJsonFields(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, jsonFields, paras);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
+    } finally {
+      config.close(conn);
     }
   }
 
@@ -1012,8 +1016,6 @@ public class DbPro {
       StringBuilder findSql = new StringBuilder();
       findSql.append(select).append(' ').append(sqlExceptSelect);
       return doPaginateByFullSql(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }
@@ -1027,8 +1029,6 @@ public class DbPro {
       StringBuilder findSql = new StringBuilder();
       findSql.append(select).append(' ').append(sqlExceptSelect);
       return doPaginateByFullSql(clazz, config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }
@@ -1046,18 +1046,20 @@ public class DbPro {
     }
     // --------
     List<Record> list = null;
-    try {
-      list = findJsonField(config, conn, sql, jsonFields, paras);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    list = findJsonField(config, conn, sql, jsonFields, paras);
     page.setList(list);
     return page;
   }
 
-  protected Page<Record> doPaginateByFullSql(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras)
-      throws SQLException {
-    Page<Record> page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+  protected Page<Record> doPaginateByFullSql(Config config, Connection conn, int pageNumber, int pageSize,
+      //
+      Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) {
+    Page<Record> page = null;
+    try {
+      page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
     // --------
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
     List<Record> list = find(config, conn, sql, paras);
@@ -1065,9 +1067,15 @@ public class DbPro {
     return page;
   }
 
-  public <T> Page<T> doPaginateByFullSql(Class<T> clazz, Config config2, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object[] paras)
-      throws SQLException {
-    Page<T> page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+  public <T> Page<T> doPaginateByFullSql(Class<T> clazz, Config config2, Connection conn, int pageNumber,
+      //
+      int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object[] paras) {
+    Page<T> page;
+    try {
+      page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
     // find with sql
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
     List<T> list = find(clazz, config, conn, sql, paras);
@@ -1088,8 +1096,6 @@ public class DbPro {
       conn = config.getConnection();
       StringBuilder findSqlBuf = new StringBuilder().append(findSql);
       return doPaginateByFullSql(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSqlBuf, paras);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }
@@ -1101,8 +1107,6 @@ public class DbPro {
       conn = config.getConnection();
       StringBuilder findSqlBuf = new StringBuilder().append(findSql);
       return doPaginateByFullSql(clazz, config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSqlBuf, paras);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }
@@ -1190,12 +1194,13 @@ public class DbPro {
    * @param record     the record will be saved
    */
   public boolean save(String tableName, String primaryKey, Record record) {
-    try (Connection conn = config.getConnection();) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
       return save(config, conn, tableName, primaryKey, record);
-    } catch (SQLException e) {
-      e.printStackTrace();
+    } finally {
+      config.close(conn);
     }
-    return false;
   }
 
   public boolean save(String tableName, String primaryKey, Record record, String[] jsonFields) {
@@ -1225,7 +1230,7 @@ public class DbPro {
     return save(tableName, config.dialect.getDefaultPrimaryKey(), record, jsonFields);
   }
 
-  protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
+  protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record) {
     if (record.modifyFlag == null || record.modifyFlag.isEmpty()) {
       return false;
     }
@@ -1255,7 +1260,9 @@ public class DbPro {
     return false;
   }
 
-  protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record, String[] jsonFields) throws SQLException {
+  protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record,
+      //
+      String[] jsonFields) {
     if (record.modifyFlag == null || record.modifyFlag.isEmpty()) {
       return false;
     }
@@ -1303,8 +1310,6 @@ public class DbPro {
     try {
       conn = config.getConnection();
       return update(config, conn, tableName, primaryKey, record);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }
@@ -1315,8 +1320,6 @@ public class DbPro {
     try {
       conn = config.getConnection();
       return update(config, conn, tableName, primaryKey, record, jsonFields);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }
@@ -1355,7 +1358,7 @@ public class DbPro {
       conn = config.getConnection();
       return callback.call(conn);
     } catch (Exception e) {
-      throw new ActiveRecordException(e);
+      throw new RuntimeException(e);
     } finally {
       config.close(conn);
     }
@@ -1383,7 +1386,6 @@ public class DbPro {
         throw new ActiveRecordException(e);
       }
     }
-
     Boolean autoCommit = null;
     try {
       conn = config.getConnection();
@@ -2285,7 +2287,6 @@ public class DbPro {
     Connection conn = null;
     try {
       conn = config.getConnection();
-
       try (PreparedStatement pst = conn.prepareStatement(sql)) {
         config.dialect.fillStatement(pst, paras);
         long start = System.currentTimeMillis();
@@ -2352,5 +2353,4 @@ public class DbPro {
     stringBuffer.append("SELECT count(*) from ").append(table).append(";");
     return Db.queryLong(stringBuffer.toString());
   }
-
 }

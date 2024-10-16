@@ -292,12 +292,13 @@ public class Config {
 
   public void close(Connection conn) {
     if (threadLocal.get() == null) // in transaction if conn in threadlocal
-      if (conn != null)
+      if (conn != null) {
         try {
           conn.close();
         } catch (SQLException e) {
           throw new ActiveRecordException(e);
         }
+      }
   }
 
   public RecordConvert getRecordConvert() {
