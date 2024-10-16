@@ -340,7 +340,22 @@ public class PostgreSqlDialect extends Dialect {
 
   @Override
   public String forDbFindColumns(String tableName, String columns) {
-    return DialectUtils.forDbFindColumns(tableName, columns);
+    StringBuilder sql = new StringBuilder("select ");
+    columns = columns.trim();
+    if ("*".equals(columns)) {
+      sql.append('*');
+    } else {
+      String[] arr = columns.split(",");
+      for (int i = 0; i < arr.length; i++) {
+        if (i > 0) {
+          sql.append(',');
+        }
+        sql.append('"').append(arr[i].trim()).append('"');
+      }
+    }
+
+    sql.append(" from \"").append(tableName).append("\"");
+    return sql.toString();
   }
 
   @Override

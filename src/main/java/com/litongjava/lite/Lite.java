@@ -86,7 +86,26 @@ public class Lite {
     } catch (SQLException e) {
       e.printStackTrace();
     }
+  }
 
+  public static void saveSqlStatementStat(String name, String sqlType, String sql, @SuppressWarnings("rawtypes") List paras, int result, long startTimeMillis, long elapsed) {
+    String insertSQL = "INSERT INTO " + sql_statement_stat + " (id, name, sqlType, sql, paras, rows, startTimeMillis, elapsed) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    try (Connection conn = DriverManager.getConnection(DB_URL); PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
+
+      long id = SnowflakeIdUtils.id();
+      pstmt.setLong(1, id);
+      pstmt.setString(2, name);
+      pstmt.setString(3, sqlType);
+      pstmt.setString(4, sql);
+      pstmt.setString(5, paras != null ? paras.toString() : "");
+      pstmt.setInt(6, result);
+      pstmt.setLong(7, startTimeMillis);
+      pstmt.setLong(8, elapsed);
+
+      pstmt.executeUpdate();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
 
   public static List<Map<String, Object>> querySqlStatementStats() {

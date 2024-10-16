@@ -206,14 +206,18 @@ public class Config {
   /**
    * Get Connection. Support transaction if Connection in ThreadLocal
    */
-  public Connection getConnection() throws SQLException {
+  public Connection getConnection() {
     Connection conn = threadLocal.get();
     if (conn != null) {
       return conn;
     }
 
-    Connection rawConnection = dataSource.getConnection();
-
+    Connection rawConnection;
+    try {
+      rawConnection = dataSource.getConnection();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
     if (showSql) {
       return new SqlReporter(rawConnection).getConnection();
     } else {

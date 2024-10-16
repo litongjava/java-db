@@ -1,5 +1,6 @@
 package com.litongjava.db.activerecord.dialect;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -43,8 +44,7 @@ public abstract class Dialect {
 
   public abstract void forModelSave(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras);
 
-  public abstract void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
-      List<Object> paras);
+  public abstract void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras);
 
   // Methods for DbPro. Do not delete the String[] pKeys parameter, the element of pKeys needs to trim()
   public abstract String forDbFindById(String tableName, String[] pKeys);
@@ -55,20 +55,15 @@ public abstract class Dialect {
 
   public abstract String forDbDeleteById(String tableName, String[] pKeys);
 
-  public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras,
-      String[] jsonFields);
+  public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields);
 
-  public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql,
-      List<Object> paras);
+  public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras);
 
-  public abstract void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql,
-      List<Object> paras);
+  public abstract void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras);
 
-  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras);
+  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras);
 
-  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras, String[] jsonFields);
+  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields);
 
   public String forFindAll(String tableName) {
     return "select * from " + tableName;
@@ -139,14 +134,12 @@ public abstract class Dialect {
   }
 
   @SuppressWarnings("rawtypes")
-  public <T> List<T> buildModelList(ResultSet rs, Class<? extends Model> modelClass)
-      throws SQLException, ReflectiveOperationException {
+  public <T> List<T> buildModelList(ResultSet rs, Class<? extends Model> modelClass) throws SQLException, ReflectiveOperationException {
     return modelBuilder.build(rs, modelClass);
   }
 
   @SuppressWarnings("rawtypes")
-  public <T> void eachModel(ResultSet rs, Class<? extends Model> modelClass, Function<T, Boolean> func)
-      throws SQLException, ReflectiveOperationException {
+  public <T> void eachModel(ResultSet rs, Class<? extends Model> modelClass, Function<T, Boolean> func) throws SQLException, ReflectiveOperationException {
     modelBuilder.build(rs, modelClass, func);
   }
 
@@ -154,8 +147,7 @@ public abstract class Dialect {
     return recordBuilder.build(config, rs);
   }
 
-  public List<Record> buildRecordListWithJsonFields(Config config, ResultSet rs, String[] jsonFields)
-      throws SQLException {
+  public List<Record> buildRecordListWithJsonFields(Config config, ResultSet rs, String[] jsonFields) throws SQLException {
     return recordBuilder.buildJsonFields(config, rs, jsonFields);
   }
 
@@ -231,8 +223,7 @@ public abstract class Dialect {
     return false;
   }
 
-  public <T> Page<T> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql,
-      String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
+  public <T> Page<T> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
     throw new RuntimeException("You should implements this method in " + getClass().getName());
   }
 
@@ -241,8 +232,8 @@ public abstract class Dialect {
   }
 
   @SuppressWarnings("rawtypes")
-  public Page takeOverModelPaginate(Connection conn, Class<? extends Model> modelClass, int pageNumber, int pageSize,
-      Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws Exception {
+  public Page takeOverModelPaginate(Connection conn, Class<? extends Model> modelClass, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras)
+      throws Exception {
     throw new RuntimeException("You should implements this method in " + getClass().getName());
   }
 
@@ -273,9 +264,7 @@ public abstract class Dialect {
 
   protected static class Holder {
     // "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*";
-    private static final Pattern ORDER_BY_PATTERN = Pattern.compile(
-        "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*",
-        Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    private static final Pattern ORDER_BY_PATTERN = Pattern.compile("order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
   }
 
   public String replaceOrderBy(String sql) {
@@ -283,7 +272,7 @@ public abstract class Dialect {
   }
 
   /**
-   * fillStatement 时处理日期类型
+   * fillStatement 时处理日期类型和更多类型
    */
   protected void fillStatementHandleDateType(PreparedStatement pst, List<Object> paras) throws SQLException {
     for (int i = 0, size = paras.size(); i < size; i++) {
@@ -298,8 +287,24 @@ public abstract class Dialect {
           java.util.Date d = (java.util.Date) value;
           pst.setTimestamp(i + 1, new java.sql.Timestamp(d.getTime()));
         }
+      } else if (value instanceof Long) {
+        pst.setLong(i + 1, (Long) value);
+      } else if (value instanceof Integer) {
+        pst.setInt(i + 1, (Integer) value);
+      } else if (value instanceof Double) {
+        pst.setDouble(i + 1, (Double) value);
+      } else if (value instanceof Float) {
+        pst.setFloat(i + 1, (Float) value);
+      } else if (value instanceof BigDecimal) {
+        pst.setBigDecimal(i + 1, (BigDecimal) value);
+      } else if (value instanceof Boolean) {
+        pst.setBoolean(i + 1, (Boolean) value);
+      } else if (value instanceof java.time.LocalDate) {
+        pst.setDate(i + 1, java.sql.Date.valueOf((java.time.LocalDate) value));
+      } else if (value instanceof java.time.LocalDateTime) {
+        pst.setTimestamp(i + 1, java.sql.Timestamp.valueOf((java.time.LocalDateTime) value));
       } else {
-        pst.setObject(i + 1, value);
+        pst.setObject(i + 1, value); // Fallback to default handling
       }
     }
   }

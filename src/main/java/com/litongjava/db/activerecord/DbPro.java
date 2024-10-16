@@ -418,7 +418,7 @@ public class DbPro {
     }
   }
 
-  protected List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+  protected List<Record> find(Config config, Connection conn, String sql, Object... paras) {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
       List<Record> result = null;
@@ -433,6 +433,28 @@ public class DbPro {
         }
       }
       return result;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
+  protected List<Record> find(Config config, Connection conn, String sql, List paras) {
+    try (PreparedStatement pst = conn.prepareStatement(sql)) {
+      config.dialect.fillStatement(pst, paras);
+      List<Record> result = null;
+      long start = System.currentTimeMillis();
+      try (ResultSet rs = pst.executeQuery()) {
+        result = config.dialect.buildRecordList(config, rs); // RecordBuilder.build(config, rs);
+        ISqlStatementStat stat = config.getSqlStatementStat();
+        if (stat != null) {
+          long end = System.currentTimeMillis();
+          long elapsed = end - start;
+          stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
+        }
+      }
+      return result;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -469,13 +491,21 @@ public class DbPro {
     try {
       conn = config.getConnection();
       return find(config, conn, sql, paras);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }
   }
 
+  public List<Record> find(String sql, List paras) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
+      return find(config, conn, sql, paras);
+    } finally {
+      config.close(conn);
+    }
+  }
+  
   public List<Record> findJsonField(String sql, String[] jsonFields, Object... paras) {
     Connection conn = null;
     try {
@@ -539,7 +569,35 @@ public class DbPro {
         ids.append(", ");
       }
     }
-    String sql = String.format("SELECT * FROM %s WHERE id IN (" + ids.toString() + ")", tableName);
+    String sql = String.format("SELECT * FROM %s WHERE " + primayKey + " IN (" + ids.toString() + ")", tableName);
+    return find(sql, paras);
+  }
+
+  public List<Record> findColumnsIn(String tableName, String columns, String primayKey, Object... paras) {
+    StringBuilder ids = new StringBuilder();
+    for (int i = 0; i < paras.length; i++) {
+      ids.append("?");
+      if (i < paras.length - 1) {
+        ids.append(", ");
+      }
+    }
+
+    String sql = config.dialect.forDbFindColumns(tableName, columns);
+    sql = sql + " WHERE " + primayKey + " IN (" + ids.toString() + ")";
+    return find(sql, paras);
+  }
+  
+  public List<Record> findColumnsIn(String tableName, String columns, String primayKey, List paras) {
+    StringBuilder ids = new StringBuilder();
+    for (int i = 0; i < paras.size(); i++) {
+      ids.append("?");
+      if (i < paras.size() - 1) {
+        ids.append(", ");
+      }
+    }
+
+    String sql = config.dialect.forDbFindColumns(tableName, columns);
+    sql = sql + " WHERE " + primayKey + " IN (" + ids.toString() + ")";
     return find(sql, paras);
   }
 
@@ -1132,15 +1190,12 @@ public class DbPro {
    * @param record     the record will be saved
    */
   public boolean save(String tableName, String primaryKey, Record record) {
-    Connection conn = null;
-    try {
-      conn = config.getConnection();
+    try (Connection conn = config.getConnection();) {
       return save(config, conn, tableName, primaryKey, record);
     } catch (SQLException e) {
-      throw new ActiveRecordException(e);
-    } finally {
-      config.close(conn);
+      e.printStackTrace();
     }
+    return false;
   }
 
   public boolean save(String tableName, String primaryKey, Record record, String[] jsonFields) {
@@ -1148,8 +1203,6 @@ public class DbPro {
     try {
       conn = config.getConnection();
       return save(config, conn, tableName, primaryKey, record, jsonFields);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
     } finally {
       config.close(conn);
     }

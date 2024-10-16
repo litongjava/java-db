@@ -781,6 +781,20 @@ public class Db {
     return MAIN.findIn(tableName, primayKey, paras);
   }
 
+  public static List<Record> findColumnsIn(String tableName, String columns, String primayKey, Object... paras) {
+    if (replicas != null) {
+      return useReplica().findColumnsIn(tableName, columns, primayKey, paras);
+    }
+    return MAIN.findColumnsIn(tableName, columns, primayKey, paras);
+  }
+
+  public static List<Record> findColumnsIn(String tableName, String columns, String primayKey, List paras) {
+    if (replicas != null) {
+      return useReplica().findColumnsIn(tableName, columns, primayKey, paras);
+    }
+    return MAIN.findColumnsIn(tableName, columns, primayKey, paras);
+  }
+
   /**
    * 
    * @param <T>
