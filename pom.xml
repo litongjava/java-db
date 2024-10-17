@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.litongjava</groupId>
   <artifactId>java-db</artifactId>
-  <version>1.3.7</version>
+  <version>1.3.8</version>
   <packaging>jar</packaging>
   <name>Java Database</name>
   <description>Java Database</description>
@@ -36,7 +36,11 @@
       <version>1.3.3</version>
       <scope>provided</scope>
     </dependency>
-
+    <dependency>
+      <groupId>com.jfinal</groupId>
+      <artifactId>enjoy</artifactId>
+      <version>5.1.3</version>
+    </dependency>
 
     <dependency>
       <groupId>it.sauronsoftware.cron4j</groupId>
