@@ -9,8 +9,8 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import com.jfinal.kit.StrKit;
-import com.litongjava.db.IPlugin;
 import com.litongjava.db.activerecord.IDataSourceProvider;
+import com.litongjava.plugin.IPlugin;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import lombok.extern.slf4j.Slf4j;

@@ -3,7 +3,7 @@ package com.litongjava.redis;
 import java.util.function.Consumer;
 
 import com.jfinal.kit.StrKit;
-import com.litongjava.db.IPlugin;
+import com.litongjava.plugin.IPlugin;
 import com.litongjava.redis.serializer.FstSerializer;
 import com.litongjava.redis.serializer.ISerializer;
 

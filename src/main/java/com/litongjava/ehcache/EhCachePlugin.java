@@ -3,7 +3,7 @@ package com.litongjava.ehcache;
 import java.io.InputStream;
 import java.net.URL;
 
-import com.litongjava.db.IPlugin;
+import com.litongjava.plugin.IPlugin;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.config.Configuration;

@@ -12,10 +12,6 @@ import com.litongjava.model.db.IBean;
 @SuppressWarnings("serial")
 #end
 public abstract class #(tableMeta.baseModelName)<M extends #(tableMeta.baseModelName)<M>> extends Model<M> implements IBean {
-#for(cm : tableMeta.columnMetas)
-  #set(argName = javaKeyword.contains(cm.attrName) ? '_' + cm.attrName : cm.attrName)
-  // private #(cm.javaType) #(argName)
-#end
 
 #set(b = generateChainSetter)
 #for(cm : tableMeta.columnMetas)

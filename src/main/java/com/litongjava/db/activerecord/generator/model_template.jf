@@ -7,11 +7,14 @@ import #(baseModelPackageName).#(tableMeta.baseModelName);
  */
 public class #(tableMeta.modelName) extends #(tableMeta.baseModelName)<#(tableMeta.modelName)> {
   private static final long serialVersionUID = 1L;
-  
 	#if (generateDaoInModel)
 	public static final #(tableMeta.modelName) dao = new #(tableMeta.modelName)().dao();
 	#else
 	
 	#end
+#for(cm : tableMeta.columnMetas)
+  #set(argName = javaKeyword.contains(cm.attrName) ? '_' + cm.attrName : cm.attrName)
+  // private #(cm.javaType) #(argName)
+#end
 }
 

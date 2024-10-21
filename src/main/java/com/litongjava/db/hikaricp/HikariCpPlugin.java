@@ -3,8 +3,8 @@ package com.litongjava.db.hikaricp;
 import javax.sql.DataSource;
 
 import com.jfinal.kit.StrKit;
-import com.litongjava.db.IPlugin;
 import com.litongjava.db.activerecord.IDataSourceProvider;
+import com.litongjava.plugin.IPlugin;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 

@@ -9,8 +9,8 @@ import javax.sql.DataSource;
 import com.alibaba.druid.filter.Filter;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.jfinal.kit.StrKit;
-import com.litongjava.db.IPlugin;
 import com.litongjava.db.activerecord.IDataSourceProvider;
+import com.litongjava.plugin.IPlugin;
 
 /**
  * DruidPlugin.

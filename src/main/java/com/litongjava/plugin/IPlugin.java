@@ -1,4 +1,4 @@
-package com.litongjava.db;
+package com.litongjava.plugin;
 
 /**
  * IPlugin

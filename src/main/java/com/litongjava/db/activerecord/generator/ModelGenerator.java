@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;
+
+import com.jfinal.kit.JavaKeyword;
 import com.jfinal.kit.Kv;
 import com.jfinal.kit.StrKit;
 import com.jfinal.template.Engine;
@@ -21,6 +23,7 @@ public class ModelGenerator {
 	protected String baseModelPackageName;
 	protected String modelOutputDir;
 	protected boolean generateDaoInModel = false;
+	protected JavaKeyword javaKeyword = JavaKeyword.me;
 	
 	public ModelGenerator(String modelPackageName, String baseModelPackageName, String modelOutputDir) {
 		if (StrKit.isBlank(modelPackageName)) {
@@ -50,6 +53,7 @@ public class ModelGenerator {
 		engine = new Engine();
 		engine.setToClassPathSourceFactory();
 		engine.addSharedMethod(new StrKit());
+		engine.addSharedObject("javaKeyword", javaKeyword);
 	}
 	
 	/**

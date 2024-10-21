@@ -8,12 +8,12 @@ import javax.sql.DataSource;
 
 import com.jfinal.kit.StrKit;
 import com.litongjava.cache.IDbCache;
-import com.litongjava.db.IPlugin;
 import com.litongjava.db.activerecord.cache.DefaultEhCache;
 import com.litongjava.db.activerecord.dialect.Dialect;
 import com.litongjava.db.activerecord.dialect.MysqlDialect;
 import com.litongjava.db.activerecord.sql.SqlKit;
 import com.litongjava.db.activerecord.stat.ISqlStatementStat;
+import com.litongjava.plugin.IPlugin;
 
 /**
  * ActiveRecord plugin. <br>
