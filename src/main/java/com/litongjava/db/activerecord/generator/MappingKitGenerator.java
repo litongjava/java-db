@@ -15,7 +15,7 @@ import com.jfinal.template.Engine;
 public class MappingKitGenerator {
 	
 	protected Engine engine;
-	protected String template = "/com/litongjava/jfinal/plugin/activerecord/generator/mapping_kit_template.jf";
+	protected String template = "/com/litongjava/db/activerecord/generator/mapping_kit_template.jf";
 	
 	protected String mappingKitPackageName;
 	protected String mappingKitOutputDir;

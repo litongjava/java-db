@@ -247,7 +247,7 @@ public class Generator {
 	/**
 	 * 设置用于生成 BaseModel 的模板文件，模板引擎将在 class path 与 jar 包内寻找模板文件
 	 *
-	 * 默认模板为："/com/jfinal/plugin/activerecord/generator/base_model_template.jf"
+	 * 默认模板为："/com/litongjava/db/activerecord/generator/base_model_template.jf"
 	 */
 	public void setBaseModelTemplate(String baseModelTemplate) {
 		baseModelGenerator.setTemplate(baseModelTemplate);
@@ -300,7 +300,7 @@ public class Generator {
 	/**
 	 * 设置用于生成 Model 的模板文件，模板引擎将在 class path 与 jar 包内寻找模板文件
 	 *
-	 * 默认模板为："/com/jfinal/plugin/activerecord/generator/model_template.jf"
+	 * 默认模板为："/com/litongjava/db/activerecord/generator/model_template.jf"
 	 */
 	public void setModelTemplate(String modelTemplate) {
 		if (modelGenerator != null) {
@@ -327,7 +327,7 @@ public class Generator {
 	/**
 	 * 设置用于生成 MappingKit 的模板文件，模板引擎将在 class path 与 jar 包内寻找模板文件
 	 *
-	 * 默认模板为："/com/jfinal/plugin/activerecord/generator/mapping_kit_template.jf"
+	 * 默认模板为："/com/litongjava/db/activerecord/generator/mapping_kit_template.jf"
 	 */
 	public void setMappingKitTemplate(String mappingKitTemplate) {
 		if (this.mappingKitGenerator != null) {
