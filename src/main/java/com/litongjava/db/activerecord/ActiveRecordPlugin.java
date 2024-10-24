@@ -15,12 +15,15 @@ import com.litongjava.db.activerecord.sql.SqlKit;
 import com.litongjava.db.activerecord.stat.ISqlStatementStat;
 import com.litongjava.plugin.IPlugin;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * ActiveRecord plugin. <br>
  * ActiveRecord plugin not support mysql type year, you can use int instead of
  * year. Mysql error message for type year when insert a record: Data truncated
  * for column 'xxx' at row 1
  */
+@Slf4j
 public class ActiveRecordPlugin implements IPlugin {
 
   protected TableBuilder tableBuilder = new TableBuilder();
@@ -223,6 +226,7 @@ public class ActiveRecordPlugin implements IPlugin {
     tableBuilder.build(tableList, config);
     DbKit.addConfig(config);
     isStarted = true;
+    log.info("start sucessfully {}",config.getName());
     return true;
   }
 
