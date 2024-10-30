@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.litongjava</groupId>
   <artifactId>java-db</artifactId>
-  <version>1.4.2</version>
+  <version>1.4.3</version>
   <packaging>jar</packaging>
   <name>Java Database</name>
   <description>Java Database</description>
@@ -57,7 +57,7 @@
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>3.6.3</version>
+      <version>4.3.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

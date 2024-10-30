@@ -21,10 +21,10 @@ import com.litongjava.tio.utils.json.JsonUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
@@ -1322,7 +1322,7 @@ public class RedisDb {
   public Set zrange(Object key, long start, long end) {
     Jedis jedis = getJedis();
     try {
-      Set<byte[]> data = jedis.zrange(keyToBytes(key), start, end);
+      List<byte[]> data = jedis.zrange(keyToBytes(key), start, end);
       Set<Object> result = new LinkedHashSet<Object>(); // 有序集合必须 LinkedHashSet
       valueSetFromBytesSet(data, result);
       return result;
@@ -1340,7 +1340,7 @@ public class RedisDb {
   public Set zrevrange(Object key, long start, long end) {
     Jedis jedis = getJedis();
     try {
-      Set<byte[]> data = jedis.zrevrange(keyToBytes(key), start, end);
+      List<byte[]> data = jedis.zrevrange(keyToBytes(key), start, end);
       Set<Object> result = new LinkedHashSet<Object>(); // 有序集合必须 LinkedHashSet
       valueSetFromBytesSet(data, result);
       return result;
@@ -1357,7 +1357,7 @@ public class RedisDb {
   public Set zrangeByScore(Object key, double min, double max) {
     Jedis jedis = getJedis();
     try {
-      Set<byte[]> data = jedis.zrangeByScore(keyToBytes(key), min, max);
+      List<byte[]> data = jedis.zrangeByScore(keyToBytes(key), min, max);
       Set<Object> result = new LinkedHashSet<Object>(); // 有序集合必须 LinkedHashSet
       valueSetFromBytesSet(data, result);
       return result;
@@ -1638,6 +1638,12 @@ public class RedisDb {
   }
 
   protected void valueSetFromBytesSet(Set<byte[]> data, Set<Object> result) {
+    for (byte[] valueBytes : data) {
+      result.add(valueFromBytes(valueBytes));
+    }
+  }
+
+  protected void valueSetFromBytesSet(List<byte[]> data, Set<Object> result) {
     for (byte[] valueBytes : data) {
       result.add(valueFromBytes(valueBytes));
     }
