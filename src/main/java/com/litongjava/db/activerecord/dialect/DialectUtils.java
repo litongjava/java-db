@@ -57,8 +57,7 @@ public class DialectUtils {
     return sql;
   }
 
-  public static void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql,
-      List<Object> paras) {
+  public static void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys); // important
 
@@ -84,8 +83,12 @@ public class DialectUtils {
     String[] split = fields.split(",");
     if (split.length > 0) {
       stringBuffer.append(" where ");
-      for (String field : split) {
+      for (int i = 0; i < split.length; i++) {
+        String field = split[i];
         stringBuffer.append('`').append(field.trim()).append('`').append("= ?");
+        if (i < split.length - 1) {
+          stringBuffer.append(" AND ");
+        }
       }
     }
     return stringBuffer.toString();

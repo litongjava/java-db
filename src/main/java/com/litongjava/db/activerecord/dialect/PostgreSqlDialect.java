@@ -365,8 +365,11 @@ public class PostgreSqlDialect extends Dialect {
     String[] split = fields.split(",");
     if (split.length > 0) {
       stringBuffer.append(" where ");
-      for (String field : split) {
-        stringBuffer.append('\"').append(field.trim()).append('\"').append("= ?");
+      for (int i = 0; i < split.length; i++) {
+        stringBuffer.append('\"').append(split[i].trim()).append('\"').append("= ?");
+        if (i < split.length - 1) {
+          stringBuffer.append(" AND ");
+        }
       }
     }
     return stringBuffer.toString();
