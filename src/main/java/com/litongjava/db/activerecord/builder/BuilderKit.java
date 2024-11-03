@@ -85,9 +85,12 @@ public class BuilderKit {
   }
 
   public static Object parseJsonField(String stringValue) {
-    if (stringValue.startsWith("[") && stringValue.endsWith("]")) {
+    if (stringValue.startsWith("[{") && stringValue.endsWith("}]")) {
       List<Map<String, Object>> lists = Json.getJson().parseToListMap(stringValue, String.class, Object.class);
       return lists;
+    } else if (stringValue.startsWith("[") && stringValue.endsWith("]")) {
+      return Json.getJson().parseArray(stringValue);
+
     } else if (stringValue.startsWith("{") && stringValue.endsWith("}")) {
       Map<String, Object> map = Json.getJson().parseToMap(stringValue, String.class, Object.class);
       return map;
