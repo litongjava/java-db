@@ -469,7 +469,7 @@ public class Db {
     return MAIN.queryInt(sql, paras);
   }
 
-  public static int queryColumnById(String tableName, String column, Object id) {
+  public static <T> T queryColumnById(String tableName, String column, Object id) {
     if (replicas != null) {
       return useReplica().queryColumnById(tableName, column, id);
     }

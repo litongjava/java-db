@@ -182,10 +182,12 @@ public class RedisPlugin implements IPlugin {
     jedisPoolConfig.setTestWhileIdle(testWhileIdle);
   }
 
+  @SuppressWarnings("deprecation")
   public void setMinEvictableIdleTimeMillis(int minEvictableIdleTimeMillis) {
     jedisPoolConfig.setMinEvictableIdleTimeMillis(minEvictableIdleTimeMillis);
   }
 
+  @SuppressWarnings("deprecation")
   public void setTimeBetweenEvictionRunsMillis(int timeBetweenEvictionRunsMillis) {
     jedisPoolConfig.setTimeBetweenEvictionRunsMillis(timeBetweenEvictionRunsMillis);
   }
