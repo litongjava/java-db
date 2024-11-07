@@ -89,11 +89,11 @@ public class DbPro {
           stat.save(config.name, "query", sql, paras, result.size(), start, elapsed, config.writeSync);
         }
       } catch (SQLException e) {
-        throw new RuntimeException(e);
+        throw new RuntimeException(sql, e);
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(sql, e);
     }
   }
 
@@ -370,7 +370,7 @@ public class DbPro {
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(sql, e);
     }
   }
 
@@ -418,7 +418,7 @@ public class DbPro {
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(sql, e);
     }
   }
 
@@ -438,7 +438,7 @@ public class DbPro {
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(sql, e);
     }
   }
 
@@ -458,7 +458,7 @@ public class DbPro {
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(sql, e);
     }
   }
 
@@ -477,7 +477,7 @@ public class DbPro {
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(sql, e);
     }
 
     List<T> collect = new ArrayList<>(result.size());
@@ -1042,7 +1042,7 @@ public class DbPro {
     try {
       page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(sql, e);
     }
     // --------
     List<Record> list = null;
@@ -1058,7 +1058,7 @@ public class DbPro {
     try {
       page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(totalRowSql, e);
     }
     // --------
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
@@ -1074,7 +1074,7 @@ public class DbPro {
     try {
       page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(findSql.toString(), e);
     }
     // find with sql
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
@@ -1149,7 +1149,7 @@ public class DbPro {
       record.clearModifyFlag();
       return result >= 1;
     } catch (SQLException e) {
-      throw new ActiveRecordException(e);
+      throw new ActiveRecordException(sqlString, e);
     }
   }
 
@@ -1173,7 +1173,7 @@ public class DbPro {
       }
       config.dialect.getRecordGeneratedKey(pst, record, pKeys);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(sqlString, e);
     }
     record.clearModifyFlag();
     return result >= 1;
