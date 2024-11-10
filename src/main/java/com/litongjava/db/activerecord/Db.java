@@ -1806,6 +1806,10 @@ public class Db {
     return MAIN.batchSave(tableName, recordList, batchSize);
   }
 
+  public static int[] batchSave(String tableName, String[] jsonFields, List<Record> recordList, int batchSize) {
+    return MAIN.batchSave(tableName, jsonFields, recordList, batchSize);
+  }
+
   public static int[] batchDelete(String tableName, List<? extends Record> recordList, int batchSize) {
     return MAIN.batchDelete(tableName, recordList, batchSize);
   }

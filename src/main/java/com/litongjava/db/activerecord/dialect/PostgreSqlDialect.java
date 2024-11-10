@@ -436,7 +436,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
-  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
+  public void transformJsonFields(Record record, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
         Object object = record.get(f);
@@ -458,6 +458,33 @@ public class PostgreSqlDialect extends Dialect {
         }
       }
     }
-    this.forDbSave(tableName, pKeys, record, sql, paras);
+  }
+
+  @Override
+  public void transformJsonFields(List<Record> recordList, String[] jsonFields) {
+    if (jsonFields != null && jsonFields.length > 0) {
+      for (String f : jsonFields) {
+        for (Record record : recordList) {
+          Object object = record.get(f);
+          if (object != null) {
+            PGobject pGobject = new PGobject();
+            pGobject.setType("json");
+            String jsonString = null;
+            if (object instanceof String) {
+              jsonString = (String) object;
+            } else {
+              jsonString = Json.getJson().toJson(object);
+            }
+            try {
+              pGobject.setValue(jsonString);
+              record.set(f, pGobject);
+            } catch (SQLException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
+      }
+
+    }
   }
 }

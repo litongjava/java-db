@@ -226,7 +226,7 @@ public class ActiveRecordPlugin implements IPlugin {
     tableBuilder.build(tableList, config);
     DbKit.addConfig(config);
     isStarted = true;
-    log.info("start sucessfully {}",config.getName());
+    log.info("{} start sucessfully",config.getName());
     return true;
   }
 

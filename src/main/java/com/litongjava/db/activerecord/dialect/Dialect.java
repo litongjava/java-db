@@ -55,8 +55,6 @@ public abstract class Dialect {
 
   public abstract String forDbDeleteById(String tableName, String[] pKeys);
 
-  public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields);
-
   public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras);
 
   public abstract void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras);
@@ -64,6 +62,12 @@ public abstract class Dialect {
   public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras);
 
   public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields);
+
+  public abstract String forExistsByFields(String tableName, String fields);
+
+  public abstract void transformJsonFields(Record record, String[] jsonFields);
+
+  public abstract void transformJsonFields(List<Record> modelOrRecordList, String[] jsonFields);
 
   public String forFindAll(String tableName) {
     return "select * from " + tableName;
@@ -345,7 +349,5 @@ public abstract class Dialect {
   public void trimPrimaryKeys(String[] pKeys) {
     DialectUtils.trimPrimaryKeys(pKeys);
   }
-
-  public abstract String forExistsByFields(String tableName, String fields);
 
 }

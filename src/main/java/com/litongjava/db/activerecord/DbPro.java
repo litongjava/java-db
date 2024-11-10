@@ -1157,7 +1157,9 @@ public class DbPro {
     String[] pKeys = primaryKey.split(",");
     List<Object> paras = new ArrayList<Object>();
     StringBuilder sql = new StringBuilder();
-    config.dialect.forDbSave(tableName, pKeys, record, sql, paras, jsonFields);
+    config.dialect.forDbSave(tableName, pKeys, record, sql, paras);
+
+    config.dialect.transformJsonFields(record, jsonFields);
 
     int result = 0;
     String sqlString = sql.toString();
@@ -1805,7 +1807,7 @@ public class DbPro {
     }
   }
 
-  protected int[] batch(Config config, Connection conn, String sql, String columns, List list, int batchSize) throws SQLException {
+  protected int[] batch(Config config, Connection conn, String sql, String columns, List list, int batchSize) {
     if (list == null || list.size() == 0) {
       return new int[0];
     }
@@ -1822,38 +1824,71 @@ public class DbPro {
     boolean isModel = element instanceof Model;
 
     String[] columnArray = columns.split(",");
-    for (int i = 0; i < columnArray.length; i++)
+    for (int i = 0; i < columnArray.length; i++) {
       columnArray[i] = columnArray[i].trim();
+    }
 
     boolean isInTransaction = config.isInTransaction();
     int counter = 0;
     int pointer = 0;
     int size = list.size();
     int[] result = new int[size];
-    try (PreparedStatement pst = conn.prepareStatement(sql)) {
+    PreparedStatement pst = null;
+    try {
+      pst = conn.prepareStatement(sql);
+    } catch (SQLException e) {
+      throw new RuntimeException(sql, e);
+    }
+    try {
       for (Object o : list) {
         Map map = isModel ? ((Model) o)._getAttrs() : ((Record) o).getColumns();
         for (int j = 0; j < columnArray.length; j++) {
-          Object value = map.get(columnArray[j]);
+          String fields = columnArray[j];
+          Object value = map.get(fields);
           if (value instanceof java.util.Date) {
             if (value instanceof java.sql.Date) {
-              pst.setDate(j + 1, (java.sql.Date) value);
+              try {
+                pst.setDate(j + 1, (java.sql.Date) value);
+              } catch (SQLException e) {
+                throw new RuntimeException(fields + "=" + value.toString(), e);
+              }
             } else if (value instanceof java.sql.Timestamp) {
-              pst.setTimestamp(j + 1, (java.sql.Timestamp) value);
+              try {
+                pst.setTimestamp(j + 1, (java.sql.Timestamp) value);
+              } catch (SQLException e) {
+                throw new RuntimeException(fields + "=" + value.toString(), e);
+              }
             } else {
               // Oracle、SqlServer 中的 TIMESTAMP、DATE 支持 new Date() 给值
               java.util.Date d = (java.util.Date) value;
-              pst.setTimestamp(j + 1, new java.sql.Timestamp(d.getTime()));
+              try {
+                pst.setTimestamp(j + 1, new java.sql.Timestamp(d.getTime()));
+              } catch (SQLException e) {
+                throw new RuntimeException(fields + "=" + value.toString(), e);
+              }
             }
           } else {
-            pst.setObject(j + 1, value);
+            try {
+              pst.setObject(j + 1, value);
+            } catch (SQLException e) {
+              throw new RuntimeException(fields + "=" + value.toString(), e);
+            }
           }
         }
-        pst.addBatch();
+        try {
+          pst.addBatch();
+        } catch (SQLException e) {
+          throw new RuntimeException(sql, e);
+        }
         if (++counter >= batchSize) {
           counter = 0;
           long start = System.currentTimeMillis();
-          int[] r = pst.executeBatch();
+          int[] r = null;
+          try {
+            r = pst.executeBatch();
+          } catch (SQLException e1) {
+            e1.printStackTrace();
+          }
           ISqlStatementStat stat = config.getSqlStatementStat();
           if (stat != null) {
             long end = System.currentTimeMillis();
@@ -1861,7 +1896,11 @@ public class DbPro {
             stat.save(config.name, "batch", sql, list.toArray(), r.length, start, elapsed, config.writeSync);
           }
           if (!isInTransaction)
-            conn.commit();
+            try {
+              conn.commit();
+            } catch (SQLException e) {
+              throw new RuntimeException(sql, e);
+            }
           for (int i : r) {
             result[pointer++] = i;
           }
@@ -1869,7 +1908,12 @@ public class DbPro {
       }
       if (counter != 0) {
         long start = System.currentTimeMillis();
-        int[] r = pst.executeBatch();
+        int[] r = null;
+        try {
+          r = pst.executeBatch();
+        } catch (SQLException e) {
+          throw new RuntimeException(sql, e);
+        }
         ISqlStatementStat stat = config.getSqlStatementStat();
         if (stat != null) {
           long end = System.currentTimeMillis();
@@ -1877,13 +1921,25 @@ public class DbPro {
           stat.save(config.name, "batch", sql, list.toArray(), r.length, start, elapsed, config.writeSync);
         }
         if (!isInTransaction)
-          conn.commit();
+          try {
+            conn.commit();
+          } catch (SQLException e) {
+            throw new RuntimeException(sql, e);
+          }
         for (int i : r) {
           result[pointer++] = i;
         }
       }
 
       return result;
+    } finally {
+      if (pst != null) {
+        try {
+          pst.close();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
     }
   }
 
@@ -1907,11 +1963,38 @@ public class DbPro {
     Boolean autoCommit = null;
     try {
       conn = config.getConnection();
-      autoCommit = conn.getAutoCommit();
-      conn.setAutoCommit(false);
+      try {
+        autoCommit = conn.getAutoCommit();
+        conn.setAutoCommit(false);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+
       return batch(config, conn, sql, columns, modelOrRecordList, batchSize);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
+    } finally {
+      if (autoCommit != null)
+        try {
+          conn.setAutoCommit(autoCommit);
+        } catch (Exception e) {
+          log.error(e.getMessage(), e);
+        }
+      config.close(conn);
+    }
+  }
+
+  public int[] batch(String sql, String columns, String[] jsonFields, List<Record> modelOrRecordList, int batchSize) {
+    Connection conn = null;
+    Boolean autoCommit = null;
+    try {
+      conn = config.getConnection();
+      try {
+        autoCommit = conn.getAutoCommit();
+        conn.setAutoCommit(false);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+      config.dialect.transformJsonFields(modelOrRecordList, jsonFields);
+      return batch(config, conn, sql, columns, modelOrRecordList, batchSize);
     } finally {
       if (autoCommit != null)
         try {
@@ -2066,6 +2149,38 @@ public class DbPro {
     List<Object> parasNoUse = new ArrayList<Object>();
     config.dialect.forDbSave(tableName, pKeysNoUse, record, sql, parasNoUse);
     return batch(sql.toString(), columns.toString(), recordList, batchSize);
+  }
+
+  public int[] batchSave(String tableName, String[] jsonFields, List<Record> recordList, int batchSize) {
+    if (recordList == null || recordList.size() == 0) {
+      return new int[0];
+    }
+
+    Record record = recordList.get(0);
+    Map<String, Object> cols = record.getColumns();
+    int index = 0;
+    StringBuilder columns = new StringBuilder();
+    // the same as the iterator in Dialect.forDbSave() to ensure the order of the
+    // columns
+    for (Entry<String, Object> e : cols.entrySet()) {
+      if (config.dialect.isOracle()) { // 支持 oracle 自增主键
+        Object value = e.getValue();
+        if (value instanceof String && ((String) value).endsWith(".nextval")) {
+          continue;
+        }
+      }
+
+      if (index++ > 0) {
+        columns.append(',');
+      }
+      columns.append(e.getKey());
+    }
+
+    String[] pKeysNoUse = new String[0];
+    StringBuilder sql = new StringBuilder();
+    List<Object> parasNoUse = new ArrayList<Object>();
+    config.dialect.forDbSave(tableName, pKeysNoUse, record, sql, parasNoUse);
+    return batch(sql.toString(), columns.toString(), jsonFields, recordList, batchSize);
   }
 
   public int[] batchDelete(String tableName, List<? extends Record> recordList, int batchSize) {
@@ -2353,4 +2468,5 @@ public class DbPro {
     stringBuffer.append("SELECT count(*) from ").append(table).append(";");
     return Db.queryLong(stringBuffer.toString());
   }
+
 }

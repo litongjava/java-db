@@ -72,8 +72,7 @@ public class AnsiSqlDialect extends Dialect {
     return sql.toString();
   }
 
-  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
-      List<Object> paras) {
+  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras) {
     sql.append("update ").append(table.getName()).append(" set ");
     String[] pKeys = table.getPrimaryKey();
     for (Entry<String, Object> e : attrs.entrySet()) {
@@ -159,8 +158,7 @@ public class AnsiSqlDialect extends Dialect {
     sql.append(temp.toString()).append(')');
   }
 
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -192,8 +190,7 @@ public class AnsiSqlDialect extends Dialect {
    * SELECT * FROM subject t1 WHERE (SELECT count(*) FROM subject t2 WHERE t2.id < t1.id AND t2.key = '123') > = 10 AND (SELECT count(*) FROM subject t2 WHERE t2.id < t1.id AND t2.key = '123') < 20 AND t1.key = '123'
    */
   public String forPaginate(int pageNumber, int pageSize, StringBuilder findSql) {
-    throw new ActiveRecordException(
-        "Your should not invoke this method because takeOverDbPaginate(...) will take over it.");
+    throw new ActiveRecordException("Your should not invoke this method because takeOverDbPaginate(...) will take over it.");
   }
 
   public boolean isTakeOverDbPaginate() {
@@ -201,8 +198,7 @@ public class AnsiSqlDialect extends Dialect {
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public Page<Record> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql,
-      String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
+  public Page<Record> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
     // String totalRowSql = "select count(*) " + replaceOrderBy(sqlExceptSelect);
     List result = CPI.query(conn, totalRowSql, paras);
     int size = result.size();
@@ -230,8 +226,7 @@ public class AnsiSqlDialect extends Dialect {
 
     // StringBuilder sql = new StringBuilder();
     // sql.append(select).append(" ").append(sqlExceptSelect);
-    PreparedStatement pst = conn.prepareStatement(findSql.toString(), ResultSet.TYPE_FORWARD_ONLY,
-        ResultSet.CONCUR_READ_ONLY);
+    PreparedStatement pst = conn.prepareStatement(findSql.toString(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
     for (int i = 0; i < paras.length; i++) {
       pst.setObject(i + 1, paras[i]);
     }
@@ -296,8 +291,8 @@ public class AnsiSqlDialect extends Dialect {
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public Page<? extends Model> takeOverModelPaginate(Connection conn, Class<? extends Model> modelClass, int pageNumber,
-      int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws Exception {
+  public Page<? extends Model> takeOverModelPaginate(Connection conn, Class<? extends Model> modelClass, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql,
+      Object... paras) throws Exception {
     // String totalRowSql = "select count(*) " + replaceOrderBy(sqlExceptSelect);
     List result = CPI.query(conn, totalRowSql, paras);
     int size = result.size();
@@ -326,8 +321,7 @@ public class AnsiSqlDialect extends Dialect {
     // --------
     // StringBuilder sql = new StringBuilder();
     // sql.append(select).append(" ").append(sqlExceptSelect);
-    PreparedStatement pst = conn.prepareStatement(findSql.toString(), ResultSet.TYPE_FORWARD_ONLY,
-        ResultSet.CONCUR_READ_ONLY);
+    PreparedStatement pst = conn.prepareStatement(findSql.toString(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
     for (int i = 0; i < paras.length; i++) {
       pst.setObject(i + 1, paras[i]);
     }
@@ -350,8 +344,7 @@ public class AnsiSqlDialect extends Dialect {
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public final <T> List<T> buildModel(ResultSet rs, Class<? extends Model> modelClass, int pageSize)
-      throws SQLException, ReflectiveOperationException {
+  public final <T> List<T> buildModel(ResultSet rs, Class<? extends Model> modelClass, int pageSize) throws SQLException, ReflectiveOperationException {
     List<T> result = new ArrayList<T>();
     ResultSetMetaData rsmd = rs.getMetaData();
     int columnCount = rsmd.getColumnCount();
@@ -410,8 +403,7 @@ public class AnsiSqlDialect extends Dialect {
   }
 
   @Override
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras, String[] jsonFields) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
     if (jsonFields != null) {
       for (String f : jsonFields) {
         record.set(f, Json.getJson().toJson(record.get(f)));
@@ -421,9 +413,8 @@ public class AnsiSqlDialect extends Dialect {
   }
 
   @Override
-  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras,
-      String[] jsonFields) {
-    if (jsonFields != null) {
+  public void transformJsonFields(Record record, String[] jsonFields) {
+    if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
         Object object = record.get(f);
         if (object != null) {
@@ -433,6 +424,20 @@ public class AnsiSqlDialect extends Dialect {
 
       }
     }
-    this.forDbSave(tableName, pKeys, record, sql, paras);
+  }
+
+  @Override
+  public void transformJsonFields(List<Record> recordList, String[] jsonFields) {
+    if (jsonFields != null && jsonFields.length > 0) {
+      for (String f : jsonFields) {
+        for (Record record : recordList) {
+          Object object = record.get(f);
+          if (object != null) {
+            String value = Json.getJson().toJson(object);
+            record.set(f, value);
+          }
+        }
+      }
+    }
   }
 }

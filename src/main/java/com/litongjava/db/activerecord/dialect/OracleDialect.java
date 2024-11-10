@@ -69,8 +69,7 @@ public class OracleDialect extends Dialect {
     return sql.toString();
   }
 
-  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
-      List<Object> paras) {
+  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras) {
     sql.append("update ").append(table.getName()).append(" set ");
     String[] pKeys = table.getPrimaryKey();
     for (Entry<String, Object> e : attrs.entrySet()) {
@@ -164,8 +163,7 @@ public class OracleDialect extends Dialect {
     sql.append(temp.toString()).append(')');
   }
 
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -241,21 +239,19 @@ public class OracleDialect extends Dialect {
   }
 
   @Override
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras, String[] jsonFields) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
     if (jsonFields != null) {
       for (String f : jsonFields) {
         record.set(f, Json.getJson().toJson(record.get(f)));
       }
     }
     forDbUpdate(tableName, pKeys, ids, record, sql, paras);
-    
+
   }
-  
+
   @Override
-  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras,
-      String[] jsonFields) {
-    if (jsonFields != null) {
+  public void transformJsonFields(Record record, String[] jsonFields) {
+    if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
         Object object = record.get(f);
         if (object != null) {
@@ -265,6 +261,19 @@ public class OracleDialect extends Dialect {
 
       }
     }
-    this.forDbSave(tableName, pKeys, record, sql, paras);
+  }
+  @Override
+  public void transformJsonFields(List<Record> recordList, String[] jsonFields) {
+    if (jsonFields != null && jsonFields.length > 0) {
+      for (String f : jsonFields) {
+        for (Record record : recordList) {
+          Object object = record.get(f);
+          if (object != null) {
+            String value = Json.getJson().toJson(object);
+            record.set(f, value);
+          }
+        }
+      }
+    }
   }
 }

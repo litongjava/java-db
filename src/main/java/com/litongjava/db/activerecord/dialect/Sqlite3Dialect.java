@@ -221,10 +221,9 @@ public class Sqlite3Dialect extends Dialect {
     }
     forDbUpdate(tableName, pKeys, ids, record, sql, paras);
   }
-  
+
   @Override
-  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras,
-      String[] jsonFields) {
+  public void transformJsonFields(Record record, String[] jsonFields) {
     if (jsonFields != null) {
       for (String f : jsonFields) {
         Object object = record.get(f);
@@ -235,6 +234,20 @@ public class Sqlite3Dialect extends Dialect {
 
       }
     }
-    this.forDbSave(tableName, pKeys, record, sql, paras);
+  }
+  
+  @Override
+  public void transformJsonFields(List<Record> recordList, String[] jsonFields) {
+    if (jsonFields != null && jsonFields.length > 0) {
+      for (String f : jsonFields) {
+        for (Record record : recordList) {
+          Object object = record.get(f);
+          if (object != null) {
+            String value = Json.getJson().toJson(object);
+            record.set(f, value);
+          }
+        }
+      }
+    }
   }
 }
