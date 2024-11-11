@@ -45,7 +45,7 @@ public class DbPro {
 
   public DbPro() {
     if (DbKit.config == null) {
-      throw new RuntimeException("The main config is null, initialize ActiveRecordPlugin first");
+      throw new ActiveRecordException("The main config is null, initialize ActiveRecordPlugin first");
     }
     this.config = DbKit.config;
   }
@@ -89,11 +89,11 @@ public class DbPro {
           stat.save(config.name, "query", sql, paras, result.size(), start, elapsed, config.writeSync);
         }
       } catch (SQLException e) {
-        throw new RuntimeException(e.getMessage() + " " + sql, e);
+        throw new ActiveRecordException(e.getMessage() + " " + sql, e);
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sql, e);
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
     }
   }
 
@@ -370,7 +370,7 @@ public class DbPro {
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sql, e);
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
     }
   }
 
@@ -418,7 +418,7 @@ public class DbPro {
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sql, e);
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
     }
   }
 
@@ -427,12 +427,12 @@ public class DbPro {
     try {
       pst = conn.prepareStatement(sql);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new ActiveRecordException(e);
     }
     try {
       config.dialect.fillStatement(pst, paras);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new ActiveRecordException(e);
     }
 
     List<Record> result = null;
@@ -441,25 +441,25 @@ public class DbPro {
     try {
       rs = pst.executeQuery();
     } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sql, e);
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
     }
     try {
       result = config.dialect.buildRecordList(config, rs);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new ActiveRecordException(e);
     } finally {
       if (rs != null) {
         try {
           rs.close();
         } catch (SQLException e) {
-          throw new RuntimeException(e);
+          throw new ActiveRecordException(e);
         }
       }
       if (pst != null) {
         try {
           pst.close();
         } catch (SQLException e) {
-          throw new RuntimeException(e);
+          throw new ActiveRecordException(e);
         }
       }
     }
@@ -482,12 +482,12 @@ public class DbPro {
     try {
       pst = conn.prepareStatement(sqlBuffer.toString());
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new ActiveRecordException(e);
     }
     try {
       config.dialect.fillStatement(pst, paras);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new ActiveRecordException(e);
     }
 
     List<Record> result = null;
@@ -496,25 +496,25 @@ public class DbPro {
     try {
       rs = pst.executeQuery();
     } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sqlBuffer.toString(), e);
+      throw new ActiveRecordException(e.getMessage() + " " + sqlBuffer.toString(), e);
     }
     try {
       result = config.dialect.buildRecordList(config, rs);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new ActiveRecordException(e);
     } finally {
       if (rs != null) {
         try {
           rs.close();
         } catch (SQLException e) {
-          throw new RuntimeException(e);
+          throw new ActiveRecordException(e);
         }
       }
       if (pst != null) {
         try {
           pst.close();
         } catch (SQLException e) {
-          throw new RuntimeException(e);
+          throw new ActiveRecordException(e);
         }
       }
     }
@@ -545,7 +545,7 @@ public class DbPro {
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sql, e);
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
     }
   }
 
@@ -564,7 +564,7 @@ public class DbPro {
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sql, e);
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
     }
 
     List<T> collect = new ArrayList<>(result.size());
@@ -1160,7 +1160,7 @@ public class DbPro {
     try {
       page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sql, e);
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
     }
     // --------
     List<Record> list = null;
@@ -1176,7 +1176,7 @@ public class DbPro {
     try {
       page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     } catch (SQLException e) {
-      throw new RuntimeException(totalRowSql, e);
+      throw new ActiveRecordException(totalRowSql, e);
     }
     // --------
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
@@ -1192,7 +1192,7 @@ public class DbPro {
     try {
       page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     } catch (SQLException e) {
-      throw new RuntimeException(findSql.toString(), e);
+      throw new ActiveRecordException(findSql.toString(), e);
     }
     // find with sql
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
@@ -1258,20 +1258,20 @@ public class DbPro {
       try {
         pst = conn.prepareStatement(sqlString, pKeys);
       } catch (SQLException e) {
-        throw new RuntimeException(e);
+        throw new ActiveRecordException(e);
       }
     } else {
       try {
         pst = conn.prepareStatement(sqlString, Statement.RETURN_GENERATED_KEYS);
       } catch (SQLException e) {
-        throw new RuntimeException(e);
+        throw new ActiveRecordException(e);
       }
     }
 
     try {
       config.dialect.fillStatement(pst, paras);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new ActiveRecordException(e);
     }
 
     long start = System.currentTimeMillis();
@@ -1280,7 +1280,7 @@ public class DbPro {
       result = pst.executeUpdate();
       config.dialect.getRecordGeneratedKey(pst, record, pKeys);
     } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sqlString + " " + paras.toString(), e);
+      throw new ActiveRecordException(e.getMessage() + " " + sqlString + " " + paras.toString(), e);
     } finally {
       if (pst != null) {
         try {
@@ -1323,7 +1323,7 @@ public class DbPro {
       }
       config.dialect.getRecordGeneratedKey(pst, record, pKeys);
     } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sqlString, e);
+      throw new ActiveRecordException(e.getMessage() + " " + sqlString, e);
     }
     record.clearModifyFlag();
     return result >= 1;
@@ -1508,7 +1508,7 @@ public class DbPro {
       conn = config.getConnection();
       return callback.call(conn);
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }
@@ -1565,7 +1565,7 @@ public class DbPro {
         } catch (Exception e1) {
           log.error(e1.getMessage(), e1);
         }
-      throw t instanceof RuntimeException ? (RuntimeException) t : new ActiveRecordException(t);
+      throw t instanceof ActiveRecordException ? (ActiveRecordException) t : new ActiveRecordException(t);
     } finally {
       try {
         if (conn != null) {
@@ -1985,7 +1985,7 @@ public class DbPro {
     try {
       pst = conn.prepareStatement(sql);
     } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sql, e);
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
     }
     try {
       for (Object o : list) {
@@ -1998,13 +1998,13 @@ public class DbPro {
               try {
                 pst.setDate(j + 1, (java.sql.Date) value);
               } catch (SQLException e) {
-                throw new RuntimeException(fields + "=" + value.toString(), e);
+                throw new ActiveRecordException(fields + "=" + value.toString(), e);
               }
             } else if (value instanceof java.sql.Timestamp) {
               try {
                 pst.setTimestamp(j + 1, (java.sql.Timestamp) value);
               } catch (SQLException e) {
-                throw new RuntimeException(fields + "=" + value.toString(), e);
+                throw new ActiveRecordException(fields + "=" + value.toString(), e);
               }
             } else {
               // Oracle、SqlServer 中的 TIMESTAMP、DATE 支持 new Date() 给值
@@ -2012,21 +2012,21 @@ public class DbPro {
               try {
                 pst.setTimestamp(j + 1, new java.sql.Timestamp(d.getTime()));
               } catch (SQLException e) {
-                throw new RuntimeException(fields + "=" + value.toString(), e);
+                throw new ActiveRecordException(fields + "=" + value.toString(), e);
               }
             }
           } else {
             try {
               pst.setObject(j + 1, value);
             } catch (SQLException e) {
-              throw new RuntimeException(fields + "=" + value.toString(), e);
+              throw new ActiveRecordException(fields + "=" + value.toString(), e);
             }
           }
         }
         try {
           pst.addBatch();
         } catch (SQLException e) {
-          throw new RuntimeException(e.getMessage() + " " + sql, e);
+          throw new ActiveRecordException(e.getMessage() + " " + sql, e);
         }
         if (++counter >= batchSize) {
           counter = 0;
@@ -2047,7 +2047,7 @@ public class DbPro {
             try {
               conn.commit();
             } catch (SQLException e) {
-              throw new RuntimeException(e.getMessage() + " " + sql, e);
+              throw new ActiveRecordException(e.getMessage() + " " + sql, e);
             }
           for (int i : r) {
             result[pointer++] = i;
@@ -2060,7 +2060,7 @@ public class DbPro {
         try {
           r = pst.executeBatch();
         } catch (SQLException e) {
-          throw new RuntimeException(e.getMessage() + " " + sql, e);
+          throw new ActiveRecordException(e.getMessage() + " " + sql, e);
         }
         ISqlStatementStat stat = config.getSqlStatementStat();
         if (stat != null) {
@@ -2072,7 +2072,7 @@ public class DbPro {
           try {
             conn.commit();
           } catch (SQLException e) {
-            throw new RuntimeException(e.getMessage() + " " + sql, e);
+            throw new ActiveRecordException(e.getMessage() + " " + sql, e);
           }
         for (int i : r) {
           result[pointer++] = i;
@@ -2115,7 +2115,7 @@ public class DbPro {
         autoCommit = conn.getAutoCommit();
         conn.setAutoCommit(false);
       } catch (SQLException e) {
-        throw new RuntimeException(e);
+        throw new ActiveRecordException(e);
       }
 
       return batch(config, conn, sql, columns, modelOrRecordList, batchSize);
@@ -2139,7 +2139,7 @@ public class DbPro {
         autoCommit = conn.getAutoCommit();
         conn.setAutoCommit(false);
       } catch (SQLException e) {
-        throw new RuntimeException(e);
+        throw new ActiveRecordException(e);
       }
       config.dialect.transformJsonFields(modelOrRecordList, jsonFields);
       return batch(config, conn, sql, columns, modelOrRecordList, batchSize);
