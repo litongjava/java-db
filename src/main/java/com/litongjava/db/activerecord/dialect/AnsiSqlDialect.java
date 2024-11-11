@@ -444,4 +444,30 @@ public class AnsiSqlDialect extends Dialect {
       }
     }
   }
+
+  @Override
+  public StringBuffer forDbFind(String tableName, String columns, Record record, List<Object> paras) {
+    StringBuffer sql = new StringBuffer();
+    tableName = tableName.trim();
+
+    // 使用 ANSI SQL 标准，直接拼接表名和列名，不加特殊引用符号
+    sql.append("select ").append(columns).append(" from ").append(tableName);
+
+    if (!record.getColumns().isEmpty()) {
+      sql.append(" where ");
+      boolean first = true;
+
+      for (Entry<String, Object> e : record.getColumns().entrySet()) {
+        if (!first) {
+          sql.append(" and ");
+        } else {
+          first = false;
+        }
+        sql.append(e.getKey()).append(" = ?");
+        paras.add(e.getValue());
+      }
+    }
+    return sql;
+  }
+
 }

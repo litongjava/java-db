@@ -61,8 +61,7 @@ public class Sqlite3Dialect extends Dialect {
     return sql.toString();
   }
 
-  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
-      List<Object> paras) {
+  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras) {
     sql.append("update ").append(table.getName()).append(" set ");
     String[] pKeys = table.getPrimaryKey();
     for (Entry<String, Object> e : attrs.entrySet()) {
@@ -148,8 +147,7 @@ public class Sqlite3Dialect extends Dialect {
     sql.append(temp.toString()).append(')');
   }
 
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -199,25 +197,24 @@ public class Sqlite3Dialect extends Dialect {
   public String forDbFindColumnsById(String tableName, String columns, String[] pKeys) {
     return DialectUtils.forDbFindColumnsById(tableName, columns, pKeys);
   }
-  
+
   @Override
   public String forDbFindColumns(String tableName, String columns) {
     return DialectUtils.forDbFindColumns(tableName, columns);
   }
-  
+
   @Override
   public void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
-    DialectUtils.forDbDelete(tableName,pKeys,record,sql,paras);
+    DialectUtils.forDbDelete(tableName, pKeys, record, sql, paras);
   }
-  
+
   @Override
   public String forExistsByFields(String tableName, String fields) {
     return DialectUtils.forExistsByFields(tableName, fields);
   }
 
   @Override
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql,
-      List<Object> paras, String[] jsonFields) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
     if (jsonFields != null) {
       for (String f : jsonFields) {
         record.set(f, Json.getJson().toJson(record.get(f)));
@@ -239,7 +236,7 @@ public class Sqlite3Dialect extends Dialect {
       }
     }
   }
-  
+
   @Override
   public void transformJsonFields(List<Record> recordList, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
@@ -253,5 +250,28 @@ public class Sqlite3Dialect extends Dialect {
         }
       }
     }
+  }
+
+  @Override
+  public StringBuffer forDbFind(String tableName, String columns, Record record, List<Object> paras) {
+    StringBuffer sql = new StringBuffer();
+    tableName = tableName.trim();
+    sql.append("select ").append(columns).append(" from \"").append(tableName).append("\"");
+
+    if (!record.getColumns().isEmpty()) {
+      sql.append(" where ");
+      boolean first = true;
+
+      for (Entry<String, Object> e : record.getColumns().entrySet()) {
+        if (!first) {
+          sql.append(" and ");
+        } else {
+          first = false;
+        }
+        sql.append('"').append(e.getKey()).append("\" = ?");
+        paras.add(e.getValue());
+      }
+    }
+    return sql;
   }
 }

@@ -742,6 +742,20 @@ public class Db {
     return MAIN.find(sql, paras);
   }
 
+  public static List<Record> find(String tableName, Record record) {
+    if (replicas != null) {
+      return useReplica().find(tableName, record);
+    }
+    return MAIN.find(tableName, record);
+  }
+
+  public static List<Record> find(String tableName, String columns, Record record) {
+    if (replicas != null) {
+      return useReplica().find(tableName, columns, record);
+    }
+    return MAIN.find(tableName, columns, record);
+  }
+
   public static List<Record> findWithJsonField(String sql, String[] jsonFields, Object... paras) {
     if (replicas != null) {
       return useReplica().findWithJsonField(sql, jsonFields, paras);
@@ -849,6 +863,13 @@ public class Db {
       return useReplica().findFirst(sql, paras);
     }
     return MAIN.findFirst(sql, paras);
+  }
+
+  public static Record findFirst(String tableName, Record record) {
+    if (replicas != null) {
+      return useReplica().findFirst(tableName, record);
+    }
+    return MAIN.findFirst(tableName, record);
   }
 
   /**

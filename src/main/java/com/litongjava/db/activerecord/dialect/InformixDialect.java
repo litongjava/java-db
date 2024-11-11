@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.litongjava.db.activerecord.CPI;
@@ -252,4 +253,28 @@ public class InformixDialect extends Dialect {
       }
     }
   }
+
+  @Override
+  public StringBuffer forDbFind(String tableName, String columns, Record record, List<Object> paras) {
+    StringBuffer sql = new StringBuffer();
+    tableName = tableName.trim();
+    sql.append("select ").append(columns).append(" from ").append(tableName);
+
+    if (!record.getColumns().isEmpty()) {
+      sql.append(" where ");
+      boolean first = true;
+
+      for (Entry<String, Object> e : record.getColumns().entrySet()) {
+        if (!first) {
+          sql.append(" and ");
+        } else {
+          first = false;
+        }
+        sql.append(e.getKey()).append(" = ?");
+        paras.add(e.getValue());
+      }
+    }
+    return sql;
+  }
+
 }

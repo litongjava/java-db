@@ -318,6 +318,11 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     return new Record().setColumns(_getAttrs());
   }
 
+  public M fromRecord(Record record) {
+    this._setAttrs(record.getColumns());
+    return (M) this;
+  }
+
   /**
    * Get attribute of any mysql type
    */
@@ -637,23 +642,35 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   /**
    * Delete model.
    */
-  public boolean delete() {
+  public boolean deleteById() {
     Table table = _getTable();
     String[] pKeys = table.getPrimaryKey();
     if (pKeys.length == 1) { // 优化：主键大概率只有一个
       Object id = attrs.get(pKeys[0]);
-      if (id == null)
+      if (id == null) {
         throw new ActiveRecordException("Primary key " + pKeys[0] + " can not be null");
+      }
       return deleteById(table, id);
     }
 
     Object[] ids = new Object[pKeys.length];
     for (int i = 0; i < pKeys.length; i++) {
       ids[i] = attrs.get(pKeys[i]);
-      if (ids[i] == null)
+      if (ids[i] == null) {
         throw new ActiveRecordException("Primary key " + pKeys[i] + " can not be null");
+      }
+
     }
     return deleteById(table, ids);
+  }
+
+  /**
+   * Delete model.
+   */
+  public boolean delete() {
+    Table table = _getTable();
+    Record record = this.toRecord();
+    return Db.delete(table.getName(), record);
   }
 
   /**
@@ -808,6 +825,12 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    */
   public M findFirst(String sql) {
     return findFirst(sql, NULL_PARA_ARRAY);
+  }
+
+  public M findFirst() {
+    Table table = _getTable();
+    Record r = Db.findFirst(table.getName(), toRecord());
+    return fromRecord(r);
   }
 
   /**

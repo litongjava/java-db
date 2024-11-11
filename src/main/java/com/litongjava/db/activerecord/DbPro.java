@@ -423,23 +423,110 @@ public class DbPro {
   }
 
   protected List<Record> find(Config config, Connection conn, String sql, Object... paras) {
-    try (PreparedStatement pst = conn.prepareStatement(sql)) {
+    PreparedStatement pst;
+    try {
+      pst = conn.prepareStatement(sql);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+    try {
       config.dialect.fillStatement(pst, paras);
-      List<Record> result = null;
-      long start = System.currentTimeMillis();
-      try (ResultSet rs = pst.executeQuery()) {
-        result = config.dialect.buildRecordList(config, rs); // RecordBuilder.build(config, rs);
-        ISqlStatementStat stat = config.getSqlStatementStat();
-        if (stat != null) {
-          long end = System.currentTimeMillis();
-          long elapsed = end - start;
-          stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
-        }
-      }
-      return result;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    List<Record> result = null;
+    ResultSet rs;
+    long start = System.currentTimeMillis();
+    try {
+      rs = pst.executeQuery();
     } catch (SQLException e) {
       throw new RuntimeException(e.getMessage() + " " + sql, e);
     }
+    try {
+      result = config.dialect.buildRecordList(config, rs);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    } finally {
+      if (rs != null) {
+        try {
+          rs.close();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      if (pst != null) {
+        try {
+          pst.close();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+
+    ISqlStatementStat stat = config.getSqlStatementStat();
+    if (stat != null) {
+      long end = System.currentTimeMillis();
+      long elapsed = end - start;
+      stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
+    }
+    return result;
+
+  }
+
+  protected List<Record> find(Config config, Connection conn, String tableName, String columns, Record record) {
+    List<Object> paras = new ArrayList<>();
+
+    StringBuffer sqlBuffer = config.dialect.forDbFind(tableName, columns, record, paras);
+    PreparedStatement pst;
+    try {
+      pst = conn.prepareStatement(sqlBuffer.toString());
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+    try {
+      config.dialect.fillStatement(pst, paras);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    List<Record> result = null;
+    ResultSet rs;
+    long start = System.currentTimeMillis();
+    try {
+      rs = pst.executeQuery();
+    } catch (SQLException e) {
+      throw new RuntimeException(e.getMessage() + " " + sqlBuffer.toString(), e);
+    }
+    try {
+      result = config.dialect.buildRecordList(config, rs);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    } finally {
+      if (rs != null) {
+        try {
+          rs.close();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      if (pst != null) {
+        try {
+          pst.close();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+
+    ISqlStatementStat stat = config.getSqlStatementStat();
+    if (stat != null) {
+      long end = System.currentTimeMillis();
+      long elapsed = end - start;
+      stat.save(config.name, "find", sqlBuffer.toString(), paras, result.size(), start, elapsed, config.writeSync);
+    }
+    return result;
+
   }
 
   protected List<Record> find(Config config, Connection conn, String sql, List paras) {
@@ -495,6 +582,26 @@ public class DbPro {
     try {
       conn = config.getConnection();
       return find(config, conn, sql, paras);
+    } finally {
+      config.close(conn);
+    }
+  }
+
+  public List<Record> find(String tableName, Record record) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
+      return find(config, conn, tableName, "*", record);
+    } finally {
+      config.close(conn);
+    }
+  }
+
+  public List<Record> find(String tableName, String columns, Record record) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
+      return find(config, conn, tableName, columns, record);
     } finally {
       config.close(conn);
     }
@@ -631,6 +738,16 @@ public class DbPro {
     return result.size() > 0 ? result.get(0) : null;
   }
 
+  public Record findFirst(String tableName, Record record) {
+    List<Record> result = find(tableName, "*", record);
+    return result.size() > 0 ? result.get(0) : null;
+  }
+
+  public Record findFirst(String tableName, String columns, Record record) {
+    List<Record> result = find(tableName, columns, record);
+    return result.size() > 0 ? result.get(0) : null;
+  }
+
   public Record findFirstJsonField(String sql, String[] jsonFields, Object... paras) {
     // List<Record> result = find(sql, jsonFields, paras);
     List<Record> result = findJsonField(sql, jsonFields, paras);
@@ -723,8 +840,9 @@ public class DbPro {
 
   public List<Record> findWithPrimaryKey(String tableName, String primaryKey, Object... idValues) {
     String[] pKeys = primaryKey.split(",");
-    if (pKeys.length != idValues.length)
+    if (pKeys.length != idValues.length) {
       throw new IllegalArgumentException("primary key number must equals id value number");
+    }
 
     String sql = config.dialect.forDbFindById(tableName, pKeys);
     List<Record> result = find(sql, idValues);

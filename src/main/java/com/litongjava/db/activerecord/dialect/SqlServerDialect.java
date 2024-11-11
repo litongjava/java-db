@@ -206,6 +206,7 @@ public class SqlServerDialect extends Dialect {
       fillPst(pst, i, paras[i]);
     }
   }
+
   @Override
   public String forDbFindColumnsById(String tableName, String columns, String[] pKeys) {
     return DialectUtils.forDbFindColumnsById(tableName, columns, pKeys);
@@ -250,7 +251,7 @@ public class SqlServerDialect extends Dialect {
       }
     }
   }
-  
+
   @Override
   public void transformJsonFields(List<Record> recordList, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
@@ -264,5 +265,28 @@ public class SqlServerDialect extends Dialect {
         }
       }
     }
+  }
+
+  @Override
+  public StringBuffer forDbFind(String tableName, String columns, Record record, List<Object> paras) {
+    StringBuffer sql = new StringBuffer();
+    tableName = tableName.trim();
+    sql.append("select ").append(columns).append(" from [").append(tableName).append("]");
+
+    if (!record.getColumns().isEmpty()) {
+      sql.append(" where ");
+      boolean first = true;
+
+      for (Entry<String, Object> e : record.getColumns().entrySet()) {
+        if (!first) {
+          sql.append(" and ");
+        } else {
+          first = false;
+        }
+        sql.append('[').append(e.getKey()).append("] = ?");
+        paras.add(e.getValue());
+      }
+    }
+    return sql;
   }
 }

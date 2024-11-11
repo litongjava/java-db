@@ -58,6 +58,8 @@ public abstract class Dialect {
 
   public abstract String forDbDeleteById(String tableName, String[] pKeys);
 
+  public abstract StringBuffer forDbFind(String tableName, String columns, Record record, List<Object> paras);
+
   public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras);
 
   public abstract void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras);

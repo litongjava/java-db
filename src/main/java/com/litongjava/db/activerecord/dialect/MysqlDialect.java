@@ -144,6 +144,29 @@ public class MysqlDialect extends Dialect {
   }
 
   @Override
+  public StringBuffer forDbFind(String tableName, String columns, Record record, List<Object> paras) {
+    StringBuffer sql = new StringBuffer();
+    tableName = tableName.trim();
+    sql.append("select ").append(columns).append(" from `").append(tableName).append("`");
+
+    if (!record.getColumns().isEmpty()) {
+      sql.append(" where ");
+      boolean first = true;
+
+      for (Entry<String, Object> e : record.getColumns().entrySet()) {
+        if (!first) {
+          sql.append(" and ");
+        } else {
+          first = false;
+        }
+        sql.append('`').append(e.getKey()).append("` = ?");
+        paras.add(e.getValue());
+      }
+    }
+    return sql;
+  }
+
+  @Override
   public void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
     DialectUtils.forDbDelete(tableName, pKeys, record, sql, paras);
   }
@@ -284,4 +307,5 @@ public class MysqlDialect extends Dialect {
       pst.setObject(i + 1, json);
     }
   }
+
 }
