@@ -1,14 +1,20 @@
 package com.litongjava.db.activerecord.dialect;
 
+import java.math.BigDecimal;
+import java.sql.Array;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 
 import com.litongjava.db.activerecord.CPI;
 import com.litongjava.db.activerecord.Record;
 import com.litongjava.db.activerecord.Table;
 import com.litongjava.tio.utils.json.Json;
+import com.litongjava.tio.utils.json.JsonUtils;
 
 /**
  * MysqlDialect.
@@ -214,6 +220,7 @@ public class MysqlDialect extends Dialect {
       }
     }
   }
+
   @Override
   public void transformJsonFields(List<Record> recordList, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
@@ -226,6 +233,55 @@ public class MysqlDialect extends Dialect {
           }
         }
       }
+    }
+  }
+
+  public void fillPst(PreparedStatement pst, int i, Object value) throws SQLException {
+    if (value instanceof String) {
+      pst.setString(i + 1, (String) value);
+    } else if (value instanceof java.util.Date) {
+      if (value instanceof java.sql.Date) {
+        pst.setDate(i + 1, (java.sql.Date) value);
+      } else if (value instanceof java.sql.Timestamp) {
+        pst.setTimestamp(i + 1, (java.sql.Timestamp) value);
+      } else {
+        // Oracle, SQL Server TIMESTAMP/DATE support new Date()
+        java.util.Date d = (java.util.Date) value;
+        pst.setTimestamp(i + 1, new java.sql.Timestamp(d.getTime()));
+      }
+    } else if (value instanceof Long) {
+      pst.setLong(i + 1, (Long) value);
+    } else if (value instanceof Integer) {
+      pst.setInt(i + 1, (Integer) value);
+    } else if (value instanceof Short) {
+      pst.setShort(i + 1, (Short) value);
+    } else if (value instanceof Byte) {
+      pst.setByte(i + 1, (Byte) value);
+    } else if (value instanceof Double) {
+      pst.setDouble(i + 1, (Double) value);
+    } else if (value instanceof Float) {
+      pst.setFloat(i + 1, (Float) value);
+    } else if (value instanceof BigDecimal) {
+      pst.setBigDecimal(i + 1, (BigDecimal) value);
+    } else if (value instanceof Boolean) {
+      pst.setBoolean(i + 1, (Boolean) value);
+    } else if (value instanceof java.time.LocalDate) {
+      pst.setDate(i + 1, java.sql.Date.valueOf((java.time.LocalDate) value));
+    } else if (value instanceof java.time.LocalDateTime) {
+      pst.setTimestamp(i + 1, java.sql.Timestamp.valueOf((java.time.LocalDateTime) value));
+    } else if (value instanceof byte[]) {
+      pst.setBytes(i + 1, (byte[]) value);
+    } else if (value instanceof UUID) {
+      pst.setObject(i + 1, value, java.sql.Types.OTHER);
+    } else if (value instanceof Enum<?>) {
+      pst.setString(i + 1, ((Enum<?>) value).name());
+    } else if (value instanceof List<?>) {
+      // Assuming list of strings; adjust type as needed
+      Array sqlArray = pst.getConnection().createArrayOf("text", ((List<?>) value).toArray());
+      pst.setArray(i + 1, sqlArray);
+    } else {
+      String json = JsonUtils.toJson(value);
+      pst.setObject(i + 1, json);
     }
   }
 }

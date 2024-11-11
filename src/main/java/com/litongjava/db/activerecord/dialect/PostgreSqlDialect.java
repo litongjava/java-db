@@ -1,15 +1,17 @@
 package com.litongjava.db.activerecord.dialect;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 
 import org.postgresql.util.PGobject;
 
@@ -20,6 +22,7 @@ import com.litongjava.db.activerecord.Table;
 import com.litongjava.db.activerecord.builder.TimestampProcessedModelBuilder;
 import com.litongjava.db.activerecord.builder.TimestampProcessedRecordBuilder;
 import com.litongjava.tio.utils.json.Json;
+import com.litongjava.tio.utils.json.JsonUtils;
 
 /**
  * PostgreSqlDialect.
@@ -228,41 +231,15 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   public void fillStatement(PreparedStatement pst, List<Object> paras) throws SQLException {
-    fillStatementHandleDateType(pst, paras);
+    for (int i = 0, size = paras.size(); i < size; i++) {
+      Object value = paras.get(i);
+      fillPst(pst, i, value);
+    }
   }
 
   public void fillStatement(PreparedStatement pst, Object... paras) throws SQLException {
-    fillStatementHandleDateType(pst, paras);
-  }
-
-  protected void fillStatementHandleDateType(PreparedStatement pst, Object... paras) throws SQLException {
     for (int i = 0, size = paras.length; i < size; i++) {
-      Object value = paras[i];
-      if (value instanceof java.util.Date) {
-        if (value instanceof java.sql.Date) {
-          pst.setDate(i + 1, (java.sql.Date) value);
-        } else if (value instanceof java.sql.Timestamp) {
-          pst.setTimestamp(i + 1, (java.sql.Timestamp) value);
-        } else {
-          // Oracle、SqlServer 中的 TIMESTAMP、DATE 支持 new Date() 给值
-          java.util.Date d = (java.util.Date) value;
-          pst.setTimestamp(i + 1, new java.sql.Timestamp(d.getTime()));
-        }
-      } else if (value instanceof PGobject) {
-        pst.setObject(i + 1, value);
-      } else {
-        if (value instanceof String) {
-          String jsonValue = (String) value;
-          if (jsonValue.startsWith("{") || jsonValue.startsWith("[")) {
-            // add support for json
-            pst.setObject(i + 1, value, Types.OTHER);
-          } else {
-            pst.setObject(i + 1, value);
-          }
-        } else {
-          pst.setObject(i + 1, value);
-        }
-      }
+      fillPst(pst, i, paras[i]);
     }
   }
 
@@ -487,4 +464,58 @@ public class PostgreSqlDialect extends Dialect {
 
     }
   }
+
+  public void fillPst(PreparedStatement pst, int i, Object value) throws SQLException {
+    if (value instanceof String) {
+      pst.setString(i + 1, (String) value);
+    } else if (value instanceof java.util.Date) {
+      if (value instanceof java.sql.Date) {
+        pst.setDate(i + 1, (java.sql.Date) value);
+      } else if (value instanceof java.sql.Timestamp) {
+        pst.setTimestamp(i + 1, (java.sql.Timestamp) value);
+      } else {
+        // Oracle, SQL Server TIMESTAMP/DATE support new Date()
+        java.util.Date d = (java.util.Date) value;
+        pst.setTimestamp(i + 1, new java.sql.Timestamp(d.getTime()));
+      }
+    } else if (value instanceof Long) {
+      pst.setLong(i + 1, (Long) value);
+    } else if (value instanceof Integer) {
+      pst.setInt(i + 1, (Integer) value);
+    } else if (value instanceof Short) {
+      pst.setShort(i + 1, (Short) value);
+    } else if (value instanceof Byte) {
+      pst.setByte(i + 1, (Byte) value);
+    } else if (value instanceof Double) {
+      pst.setDouble(i + 1, (Double) value);
+    } else if (value instanceof Float) {
+      pst.setFloat(i + 1, (Float) value);
+    } else if (value instanceof BigDecimal) {
+      pst.setBigDecimal(i + 1, (BigDecimal) value);
+    } else if (value instanceof Boolean) {
+      pst.setBoolean(i + 1, (Boolean) value);
+    } else if (value instanceof java.time.LocalDate) {
+      pst.setDate(i + 1, java.sql.Date.valueOf((java.time.LocalDate) value));
+    } else if (value instanceof java.time.LocalDateTime) {
+      pst.setTimestamp(i + 1, java.sql.Timestamp.valueOf((java.time.LocalDateTime) value));
+    } else if (value instanceof byte[]) {
+      pst.setBytes(i + 1, (byte[]) value);
+    } else if (value instanceof UUID) {
+      pst.setObject(i + 1, value, java.sql.Types.OTHER);
+    } else if (value instanceof Enum<?>) {
+      pst.setString(i + 1, ((Enum<?>) value).name());
+    } else if (value instanceof List<?>) {
+      // Assuming list of strings; adjust type as needed
+      Array sqlArray = pst.getConnection().createArrayOf("text", ((List<?>) value).toArray());
+      pst.setArray(i + 1, sqlArray);
+    } else {
+      // Assume it's an entity, convert to JSON and store as jsonb
+      String json = JsonUtils.toJson(value);
+      PGobject pgObject = new PGobject();
+      pgObject.setType("jsonb");
+      pgObject.setValue(json);
+      pst.setObject(i + 1, pgObject);
+    }
+  }
+
 }

@@ -196,13 +196,16 @@ public class SqlServerDialect extends Dialect {
   }
 
   public void fillStatement(PreparedStatement pst, List<Object> paras) throws SQLException {
-    fillStatementHandleDateType(pst, paras);
+    for (int i = 0, size = paras.size(); i < size; i++) {
+      fillPst(pst, i, paras.get(i));
+    }
   }
 
   public void fillStatement(PreparedStatement pst, Object... paras) throws SQLException {
-    fillStatementHandleDateType(pst, paras);
+    for (int i = 0, size = paras.length; i < size; i++) {
+      fillPst(pst, i, paras[i]);
+    }
   }
-
   @Override
   public String forDbFindColumnsById(String tableName, String columns, String[] pKeys) {
     return DialectUtils.forDbFindColumnsById(tableName, columns, pKeys);

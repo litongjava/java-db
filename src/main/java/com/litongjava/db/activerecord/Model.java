@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -589,29 +590,48 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     StringBuilder sql = new StringBuilder();
     List<Object> paras = new ArrayList<Object>();
     config.dialect.forModelSave(table, attrs, sql, paras);
-    // if (paras.size() == 0)	return false;	// The sql "insert into tableName() values()" works fine, so delete this line
 
     // --------
     Connection conn = null;
     PreparedStatement pst = null;
     int result = 0;
-    try {
-      conn = config.getConnection();
-      if (config.dialect.isOracle()) {
+    conn = config.getConnection();
+    if (config.dialect.isOracle()) {
+      try {
         pst = conn.prepareStatement(sql.toString(), table.getPrimaryKey());
-      } else {
-        pst = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
+      } catch (SQLException e) {
+        throw new RuntimeException(sql.toString(), e);
       }
+    } else {
+      try {
+        pst = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
+      } catch (SQLException e) {
+        throw new RuntimeException(sql.toString(), e);
+      }
+    }
+
+    try {
       config.dialect.fillStatement(pst, paras);
+    } catch (SQLException e) {
+      throw new RuntimeException(paras.toString(), e);
+    }
+
+    result = 0;
+    try {
       result = pst.executeUpdate();
-      config.dialect.getModelGeneratedKey(this, pst, table);
-      clearModifyFlag();
-      return result >= 1;
     } catch (Exception e) {
       throw new ActiveRecordException(sql.toString(), e);
+    }
+
+    try {
+      config.dialect.getModelGeneratedKey(this, pst, table);
+    } catch (SQLException e) {
+      throw new RuntimeException(paras.toString(), e);
     } finally {
       config.close(pst, conn);
     }
+    clearModifyFlag();
+    return result >= 1;
   }
 
   /**
