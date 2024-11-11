@@ -600,13 +600,13 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
       try {
         pst = conn.prepareStatement(sql.toString(), table.getPrimaryKey());
       } catch (SQLException e) {
-        throw new RuntimeException(sql.toString(), e);
+        throw new RuntimeException(e.getMessage() + " " + sql.toString(), e);
       }
     } else {
       try {
         pst = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
       } catch (SQLException e) {
-        throw new RuntimeException(sql.toString(), e);
+        throw new RuntimeException(e.getMessage() + " " + sql.toString(), e);
       }
     }
 
@@ -620,7 +620,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     try {
       result = pst.executeUpdate();
     } catch (Exception e) {
-      throw new ActiveRecordException(sql.toString(), e);
+      throw new RuntimeException(e.getMessage() + " " + sql.toString(), e);
     }
 
     try {

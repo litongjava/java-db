@@ -89,11 +89,11 @@ public class DbPro {
           stat.save(config.name, "query", sql, paras, result.size(), start, elapsed, config.writeSync);
         }
       } catch (SQLException e) {
-        throw new RuntimeException(sql, e);
+        throw new RuntimeException(e.getMessage() + " " + sql, e);
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(sql, e);
+      throw new RuntimeException(e.getMessage() + " " + sql, e);
     }
   }
 
@@ -370,7 +370,7 @@ public class DbPro {
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(sql, e);
+      throw new RuntimeException(e.getMessage() + " " + sql, e);
     }
   }
 
@@ -418,7 +418,7 @@ public class DbPro {
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(sql, e);
+      throw new RuntimeException(e.getMessage() + " " + sql, e);
     }
   }
 
@@ -438,7 +438,7 @@ public class DbPro {
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(sql, e);
+      throw new RuntimeException(e.getMessage() + " " + sql, e);
     }
   }
 
@@ -458,7 +458,7 @@ public class DbPro {
       }
       return result;
     } catch (SQLException e) {
-      throw new RuntimeException(sql, e);
+      throw new RuntimeException(e.getMessage() + " " + sql, e);
     }
   }
 
@@ -477,7 +477,7 @@ public class DbPro {
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException(sql, e);
+      throw new RuntimeException(e.getMessage() + " " + sql, e);
     }
 
     List<T> collect = new ArrayList<>(result.size());
@@ -1042,7 +1042,7 @@ public class DbPro {
     try {
       page = countPage(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     } catch (SQLException e) {
-      throw new RuntimeException(sql, e);
+      throw new RuntimeException(e.getMessage() + " " + sql, e);
     }
     // --------
     List<Record> list = null;
@@ -1149,7 +1149,7 @@ public class DbPro {
       record.clearModifyFlag();
       return result >= 1;
     } catch (SQLException e) {
-      throw new ActiveRecordException(sqlString, e);
+      throw new RuntimeException(e.getMessage() + " " + sqlString, e);
     }
   }
 
@@ -1175,7 +1175,7 @@ public class DbPro {
       }
       config.dialect.getRecordGeneratedKey(pst, record, pKeys);
     } catch (SQLException e) {
-      throw new RuntimeException(sqlString, e);
+      throw new RuntimeException(e.getMessage() + " " + sqlString, e);
     }
     record.clearModifyFlag();
     return result >= 1;
@@ -1837,7 +1837,7 @@ public class DbPro {
     try {
       pst = conn.prepareStatement(sql);
     } catch (SQLException e) {
-      throw new RuntimeException(sql, e);
+      throw new RuntimeException(e.getMessage() + " " + sql, e);
     }
     try {
       for (Object o : list) {
@@ -1878,7 +1878,7 @@ public class DbPro {
         try {
           pst.addBatch();
         } catch (SQLException e) {
-          throw new RuntimeException(sql, e);
+          throw new RuntimeException(e.getMessage() + " " + sql, e);
         }
         if (++counter >= batchSize) {
           counter = 0;
@@ -1899,7 +1899,7 @@ public class DbPro {
             try {
               conn.commit();
             } catch (SQLException e) {
-              throw new RuntimeException(sql, e);
+              throw new RuntimeException(e.getMessage() + " " + sql, e);
             }
           for (int i : r) {
             result[pointer++] = i;
@@ -1912,7 +1912,7 @@ public class DbPro {
         try {
           r = pst.executeBatch();
         } catch (SQLException e) {
-          throw new RuntimeException(sql, e);
+          throw new RuntimeException(e.getMessage() + " " + sql, e);
         }
         ISqlStatementStat stat = config.getSqlStatementStat();
         if (stat != null) {
@@ -1924,7 +1924,7 @@ public class DbPro {
           try {
             conn.commit();
           } catch (SQLException e) {
-            throw new RuntimeException(sql, e);
+            throw new RuntimeException(e.getMessage() + " " + sql, e);
           }
         for (int i : r) {
           result[pointer++] = i;
