@@ -21,5 +21,15 @@ public class #(tableMeta.modelName) extends #(tableMeta.baseModelName)<#(tableMe
   #set(argName = javaKeyword.contains(cm.attrName) ? '_' + cm.attrName : cm.attrName)
   // private #(cm.javaType) #(argName)
 #end
+
+  @Override
+  protected String _getPrimaryKey() {
+    return primaryKey;
+  }
+
+  @Override
+  protected String _getTableName() {
+    return tableName;
+  }
 }
 
