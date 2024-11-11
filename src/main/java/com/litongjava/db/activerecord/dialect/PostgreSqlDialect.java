@@ -509,7 +509,7 @@ public class PostgreSqlDialect extends Dialect {
       Array sqlArray = pst.getConnection().createArrayOf("text", ((List<?>) value).toArray());
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof PGobject) {
-      pst.setObject(i, value);
+      pst.setObject(i + 1, value);
     } else {
       // Assume it's an entity, convert to JSON and store as jsonb
       String json = JsonUtils.toJson(value);

@@ -1135,22 +1135,52 @@ public class DbPro {
     config.dialect.forDbSave(tableName, pKeys, record, sql, paras);
 
     String sqlString = sql.toString();
-    try (PreparedStatement pst = config.dialect.isOracle() ? conn.prepareStatement(sqlString, pKeys) : conn.prepareStatement(sqlString, Statement.RETURN_GENERATED_KEYS)) {
-      config.dialect.fillStatement(pst, paras);
-      long start = System.currentTimeMillis();
-      int result = pst.executeUpdate();
-      ISqlStatementStat stat = config.getSqlStatementStat();
-      if (stat != null) {
-        long end = System.currentTimeMillis();
-        long elapsed = end - start;
-        stat.save(config.name, "save", sqlString, paras.toArray(), result, start, elapsed, config.writeSync);
+    PreparedStatement pst = null;
+    if (config.dialect.isOracle()) {
+      try {
+        pst = conn.prepareStatement(sqlString, pKeys);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
       }
-      config.dialect.getRecordGeneratedKey(pst, record, pKeys);
-      record.clearModifyFlag();
-      return result >= 1;
-    } catch (SQLException e) {
-      throw new RuntimeException(e.getMessage() + " " + sqlString, e);
+    } else {
+      try {
+        pst = conn.prepareStatement(sqlString, Statement.RETURN_GENERATED_KEYS);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
     }
+
+    try {
+      config.dialect.fillStatement(pst, paras);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    long start = System.currentTimeMillis();
+    int result = 0;
+    try {
+      result = pst.executeUpdate();
+      config.dialect.getRecordGeneratedKey(pst, record, pKeys);
+    } catch (SQLException e) {
+      throw new RuntimeException(e.getMessage() + " " + sqlString + " " + paras.toString(), e);
+    } finally {
+      if (pst != null) {
+        try {
+          pst.close();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+
+    ISqlStatementStat stat = config.getSqlStatementStat();
+    if (stat != null) {
+      long end = System.currentTimeMillis();
+      long elapsed = end - start;
+      stat.save(config.name, "save", sqlString, paras.toArray(), result, start, elapsed, config.writeSync);
+    }
+    record.clearModifyFlag();
+    return result >= 1;
   }
 
   protected boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record, String[] jsonFields) {
