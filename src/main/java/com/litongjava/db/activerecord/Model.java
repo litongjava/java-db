@@ -22,6 +22,7 @@ import java.util.function.Function;
 import com.jfinal.kit.TypeKit;
 import com.litongjava.cache.IDbCache;
 import com.litongjava.db.SqlPara;
+import com.litongjava.db.activerecord.stat.ISqlStatementStat;
 import com.litongjava.model.db.IRow;
 import com.litongjava.model.page.Page;
 
@@ -763,14 +764,118 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * 警告：传入的 Connection 参数需要由传入者在 try finally 块中自行
    *      关闭掉，否则将出现 Connection 资源不能及时回收的问题
    */
-  protected List<M> find(Config config, Connection conn, String sql, Object... paras) throws Exception {
-    try (PreparedStatement pst = conn.prepareStatement(sql)) {
-      config.dialect.fillStatement(pst, paras);
-      ResultSet rs = pst.executeQuery();
-      List<M> result = config.dialect.buildModelList(rs, _getUsefulClass()); // ModelBuilder.build(rs, getUsefulClass());
-      DbKit.close(rs);
-      return result;
+  protected List<M> find(Config config, Connection conn, String sql, Object... paras) {
+    PreparedStatement pst = null;
+    try {
+      pst = conn.prepareStatement(sql);
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
     }
+    try {
+      config.dialect.fillStatement(pst, paras);
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
+    }
+    ResultSet rs = null;
+    try {
+      rs = pst.executeQuery();
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
+    }
+    List<M> result = null;
+    try {
+      result = config.dialect.buildModelList(rs, _getUsefulClass());
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
+    } catch (ReflectiveOperationException e) {
+      throw new ActiveRecordException(e);
+    } finally {
+      try {
+        DbKit.close(rs);
+      } catch (SQLException e) {
+        throw new ActiveRecordException(e);
+      }
+
+      try {
+        DbKit.close(pst);
+      } catch (SQLException e) {
+        throw new ActiveRecordException(e);
+      }
+    }
+
+    return result;
+  }
+
+  public List<M> find() {
+    Config config = _getConfig();
+    Table table = _getTable();
+    return find(config, table.getName(), toRecord());
+  }
+
+  public List<M> find(Config config, String tableName, Record record) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
+      return find(config, conn, tableName, "*", record);
+    } finally {
+      config.close(conn);
+    }
+  }
+
+  protected List<M> find(Config config, Connection conn, String tableName, String columns, Record record) {
+    List<Object> paras = new ArrayList<>();
+
+    StringBuffer sqlBuffer = config.dialect.forDbFind(tableName, columns, record, paras);
+    PreparedStatement pst;
+    try {
+      pst = conn.prepareStatement(sqlBuffer.toString());
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
+    }
+    try {
+      config.dialect.fillStatement(pst, paras);
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
+    }
+
+    List<M> result = null;
+    ResultSet rs;
+    long start = System.currentTimeMillis();
+    try {
+      rs = pst.executeQuery();
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage() + " " + sqlBuffer.toString(), e);
+    }
+    try {
+      result = config.dialect.buildModelList(rs, _getUsefulClass());
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
+    } catch (ReflectiveOperationException e) {
+      throw new ActiveRecordException(e);
+    } finally {
+      if (rs != null) {
+        try {
+          rs.close();
+        } catch (SQLException e) {
+          throw new ActiveRecordException(e);
+        }
+      }
+      if (pst != null) {
+        try {
+          pst.close();
+        } catch (SQLException e) {
+          throw new ActiveRecordException(e);
+        }
+      }
+    }
+
+    ISqlStatementStat stat = config.getSqlStatementStat();
+    if (stat != null) {
+      long end = System.currentTimeMillis();
+      long elapsed = end - start;
+      stat.save(config.name, "find", sqlBuffer.toString(), paras, result.size(), start, elapsed, config.writeSync);
+    }
+    return result;
   }
 
   protected List<M> find(Config config, String sql, Object... paras) {

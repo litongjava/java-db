@@ -22,12 +22,12 @@ public class ModelBuilder {
 
   public static final ModelBuilder me = new ModelBuilder();
 
-  @SuppressWarnings({"rawtypes"})
+  @SuppressWarnings({ "rawtypes" })
   public <T> List<T> build(ResultSet rs, Class<? extends Model> modelClass) throws SQLException, ReflectiveOperationException {
     return build(rs, modelClass, null);
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   public <T> List<T> build(ResultSet rs, Class<? extends Model> modelClass, Function<T, Boolean> func) throws SQLException, ReflectiveOperationException {
     List<T> result = new ArrayList<T>();
     ResultSetMetaData rsmd = rs.getMetaData();
@@ -85,7 +85,7 @@ public class ModelBuilder {
       is = blob.getBinaryStream();
       if (is == null)
         return null;
-      byte[] data = new byte[(int) blob.length()];    // byte[] data = new byte[is.available()];
+      byte[] data = new byte[(int) blob.length()]; // byte[] data = new byte[is.available()];
       if (data.length == 0)
         return null;
       is.read(data);
@@ -128,7 +128,6 @@ public class ModelBuilder {
     }
   }
 
-
   public Object handleArray(Array array) {
     // 获取数组的 Java 表示形式
     Object arrayObj = null;
@@ -142,71 +141,60 @@ public class ModelBuilder {
       }
     }
     return arrayObj;
-//
-//    if (arrayObj != null && arrayObj instanceof Object[]) {
-//      Integer[] intArray = Arrays.copyOf((Object[]) arrayObj, ((Object[]) arrayObj).length, Integer[].class);
-//
-//			return Arrays.stream(intArray).collect(Collectors.toList());
-//    }
-//
-//    return null; // 如果数据无法处理或遇到异常，返回null或相应的错误结果
   }
 
+  /** backup before use columnType
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  static final <T> List<T> build(ResultSet rs, Class<? extends Model> modelClass) throws SQLException, ReflectiveOperationException {
+  	List<T> result = new ArrayList<T>();
+  	ResultSetMetaData rsmd = rs.getMetaData();
+  	int columnCount = rsmd.getColumnCount();
+  	String[] labelNames = getLabelNames(rsmd, columnCount);
+  	while (rs.next()) {
+  		Model<?> ar = modelClass.newInstance();
+  		Map<String, Object> attrs = ar.getAttrs();
+  		for (int i=1; i<=columnCount; i++) {
+  			Object attrValue = rs.getObject(i);
+  			attrs.put(labelNames[i], attrValue);
+  		}
+  		result.add((T)ar);
+  	}
+  	return result;
+  }
+  
+  private static final String[] getLabelNames(ResultSetMetaData rsmd, int columnCount) throws SQLException {
+  	String[] result = new String[columnCount + 1];
+  	for (int i=1; i<=columnCount; i++)
+  		result[i] = rsmd.getColumnLabel(i);
+  	return result;
+  }
+  */
 
-	
-	/* backup before use columnType
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	static final <T> List<T> build(ResultSet rs, Class<? extends Model> modelClass) throws SQLException, ReflectiveOperationException {
-		List<T> result = new ArrayList<T>();
-		ResultSetMetaData rsmd = rs.getMetaData();
-		int columnCount = rsmd.getColumnCount();
-		String[] labelNames = getLabelNames(rsmd, columnCount);
-		while (rs.next()) {
-			Model<?> ar = modelClass.newInstance();
-			Map<String, Object> attrs = ar.getAttrs();
-			for (int i=1; i<=columnCount; i++) {
-				Object attrValue = rs.getObject(i);
-				attrs.put(labelNames[i], attrValue);
-			}
-			result.add((T)ar);
-		}
-		return result;
-	}
-	
-	private static final String[] getLabelNames(ResultSetMetaData rsmd, int columnCount) throws SQLException {
-		String[] result = new String[columnCount + 1];
-		for (int i=1; i<=columnCount; i++)
-			result[i] = rsmd.getColumnLabel(i);
-		return result;
-	}
-	*/
-	
-	/* backup
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	static final <T> List<T> build(ResultSet rs, Class<? extends Model> modelClass) throws SQLException, ReflectiveOperationException {
-		List<T> result = new ArrayList<T>();
-		ResultSetMetaData rsmd = rs.getMetaData();
-		List<String> labelNames = getLabelNames(rsmd);
-		while (rs.next()) {
-			Model<?> ar = modelClass.newInstance();
-			Map<String, Object> attrs = ar.getAttrs();
-			for (String lableName : labelNames) {
-				Object attrValue = rs.getObject(lableName);
-				attrs.put(lableName, attrValue);
-			}
-			result.add((T)ar);
-		}
-		return result;
-	}
-	
-	private static final List<String> getLabelNames(ResultSetMetaData rsmd) throws SQLException {
-		int columCount = rsmd.getColumnCount();
-		List<String> result = new ArrayList<String>();
-		for (int i=1; i<=columCount; i++) {
-			result.add(rsmd.getColumnLabel(i));
-		}
-		return result;
-	}
-	*/
+  /** backup
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  static final <T> List<T> build(ResultSet rs, Class<? extends Model> modelClass) throws SQLException, ReflectiveOperationException {
+  	List<T> result = new ArrayList<T>();
+  	ResultSetMetaData rsmd = rs.getMetaData();
+  	List<String> labelNames = getLabelNames(rsmd);
+  	while (rs.next()) {
+  		Model<?> ar = modelClass.newInstance();
+  		Map<String, Object> attrs = ar.getAttrs();
+  		for (String lableName : labelNames) {
+  			Object attrValue = rs.getObject(lableName);
+  			attrs.put(lableName, attrValue);
+  		}
+  		result.add((T)ar);
+  	}
+  	return result;
+  }
+  
+  private static final List<String> getLabelNames(ResultSetMetaData rsmd) throws SQLException {
+  	int columCount = rsmd.getColumnCount();
+  	List<String> result = new ArrayList<String>();
+  	for (int i=1; i<=columCount; i++) {
+  		result.add(rsmd.getColumnLabel(i));
+  	}
+  	return result;
+  }
+  */
 }
-

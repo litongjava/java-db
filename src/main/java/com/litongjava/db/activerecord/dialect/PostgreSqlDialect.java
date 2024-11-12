@@ -504,10 +504,35 @@ public class PostgreSqlDialect extends Dialect {
       pst.setObject(i + 1, value, java.sql.Types.OTHER);
     } else if (value instanceof Enum<?>) {
       pst.setString(i + 1, ((Enum<?>) value).name());
+    } else if (value instanceof String[]) {
+      Array sqlArray = pst.getConnection().createArrayOf("varchar", (String[]) value);
+      pst.setArray(i + 1, sqlArray);
+    } else if (value instanceof int[]) {
+      Array sqlArray = pst.getConnection().createArrayOf("integer", (Integer[]) value);
+      pst.setArray(i + 1, sqlArray);
+    } else if (value instanceof long[]) {
+      Array sqlArray = pst.getConnection().createArrayOf("bigint", (Long[]) value);
+      pst.setArray(i + 1, sqlArray);
+    } else if (value instanceof double[]) {
+      Array sqlArray = pst.getConnection().createArrayOf("float8", (Double[]) value);
+      pst.setArray(i + 1, sqlArray);
+    } else if (value instanceof float[]) {
+      Array sqlArray = pst.getConnection().createArrayOf("real", (Float[]) value);
+      pst.setArray(i + 1, sqlArray);
+    } else if (value instanceof boolean[]) {
+      Array sqlArray = pst.getConnection().createArrayOf("boolean", (Boolean[]) value);
+      pst.setArray(i + 1, sqlArray);
+    } else if (value instanceof short[]) {
+      Array sqlArray = pst.getConnection().createArrayOf("smallint", (Short[]) value);
+      pst.setArray(i + 1, sqlArray);
+    } else if (value instanceof Object[]) {
+      Array sqlArray = pst.getConnection().createArrayOf("text", (Object[]) value);
+      pst.setArray(i + 1, sqlArray);
     } else if (value instanceof List<?>) {
       // Assuming list of strings; adjust type as needed
       Array sqlArray = pst.getConnection().createArrayOf("text", ((List<?>) value).toArray());
       pst.setArray(i + 1, sqlArray);
+
     } else if (value instanceof PGobject) {
       pst.setObject(i + 1, value);
     } else {

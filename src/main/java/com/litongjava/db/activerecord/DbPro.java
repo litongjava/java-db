@@ -526,7 +526,6 @@ public class DbPro {
       stat.save(config.name, "find", sqlBuffer.toString(), paras, result.size(), start, elapsed, config.writeSync);
     }
     return result;
-
   }
 
   protected List<Record> find(Config config, Connection conn, String sql, List paras) {

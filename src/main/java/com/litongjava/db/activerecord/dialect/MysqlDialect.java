@@ -307,5 +307,4 @@ public class MysqlDialect extends Dialect {
       pst.setObject(i + 1, json);
     }
   }
-
 }
