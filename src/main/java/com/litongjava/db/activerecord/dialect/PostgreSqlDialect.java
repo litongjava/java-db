@@ -507,22 +507,22 @@ public class PostgreSqlDialect extends Dialect {
     } else if (value instanceof String[]) {
       Array sqlArray = pst.getConnection().createArrayOf("varchar", (String[]) value);
       pst.setArray(i + 1, sqlArray);
-    } else if (value instanceof int[]) {
+    } else if (value instanceof int[] || value instanceof Integer[]) {
       Array sqlArray = pst.getConnection().createArrayOf("integer", (Integer[]) value);
       pst.setArray(i + 1, sqlArray);
-    } else if (value instanceof long[]) {
+    } else if (value instanceof long[] || value instanceof Long[]) {
       Array sqlArray = pst.getConnection().createArrayOf("bigint", (Long[]) value);
       pst.setArray(i + 1, sqlArray);
-    } else if (value instanceof double[]) {
+    } else if (value instanceof double[] || value instanceof Double[]) {
       Array sqlArray = pst.getConnection().createArrayOf("float8", (Double[]) value);
       pst.setArray(i + 1, sqlArray);
-    } else if (value instanceof float[]) {
+    } else if (value instanceof float[] || value instanceof Float[]) {
       Array sqlArray = pst.getConnection().createArrayOf("real", (Float[]) value);
       pst.setArray(i + 1, sqlArray);
-    } else if (value instanceof boolean[]) {
+    } else if (value instanceof boolean[] || value instanceof Boolean[]) {
       Array sqlArray = pst.getConnection().createArrayOf("boolean", (Boolean[]) value);
       pst.setArray(i + 1, sqlArray);
-    } else if (value instanceof short[]) {
+    } else if (value instanceof short[] || value instanceof Short[]) {
       Array sqlArray = pst.getConnection().createArrayOf("smallint", (Short[]) value);
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof Object[]) {

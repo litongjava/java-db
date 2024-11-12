@@ -31,12 +31,12 @@ public class EhCacheInterceptor implements AopInterceptor {
     CacheableModel cacheableModel = CacheableModel.buildCacheModel(inv, target);
     String cacheName = cacheableModel.getName();
     String cacheKey = cacheableModel.getKey();
-    Object cacheData = EhCache.get(cacheName, cacheKey);
+    Object cacheData = EhCacheKit.get(cacheName, cacheKey);
     if (cacheData == null) {
       Lock lock = getLock(cacheName);
       lock.lock(); // prevent cache snowslide
       try {
-        cacheData = EhCache.get(cacheName, cacheKey);
+        cacheData = EhCacheKit.get(cacheName, cacheKey);
         if (cacheData == null) {
           Object returnValue = inv.invoke();
           cacheMethodReturnValue(cacheName, cacheKey, returnValue);
@@ -52,6 +52,6 @@ public class EhCacheInterceptor implements AopInterceptor {
   }
 
   protected void cacheMethodReturnValue(String cacheName, String cacheKey, Object returnValue) {
-    EhCache.put(cacheName, cacheKey, returnValue);
+    EhCacheKit.put(cacheName, cacheKey, returnValue);
   }
 }

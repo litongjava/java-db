@@ -219,13 +219,13 @@ public class Db {
    * </pre>
    * 
    * @param tableName  the table name of the Record save to
-   * @param primaryKey the primary key of the table, composite primary key is
+   * @param primaryKeys the primary key of the table, composite primary key is
    *                   separated by comma character: ","
    * @param record     the Record object
    * @param true       if update succeed otherwise false
    */
-  public static boolean update(String tableName, String primaryKey, Record record) {
-    return MAIN.update(tableName, primaryKey, record);
+  public static boolean update(String tableName, String primaryKeys, Record record) {
+    return MAIN.update(tableName, primaryKeys, record);
   }
 
   /**
@@ -2070,6 +2070,20 @@ public class Db {
   }
 
   public static List<String> queryListString(String sql, Object... params) {
+    if (replicas != null) {
+      return useReplica().query(sql, params);
+    }
+    return MAIN.query(sql, params);
+  }
+
+  public static List<Long> queryListLong(String sql) {
+    if (replicas != null) {
+      return useReplica().query(sql);
+    }
+    return MAIN.query(sql);
+  }
+
+  public static List<Long> queryListLong(String sql, Object... params) {
     if (replicas != null) {
       return useReplica().query(sql, params);
     }

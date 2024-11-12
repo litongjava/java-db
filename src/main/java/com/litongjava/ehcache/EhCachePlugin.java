@@ -45,7 +45,7 @@ public class EhCachePlugin implements IPlugin {
 
   public boolean start() {
     createCacheManager();
-    EhCache.init(cacheManager);
+    EhCacheKit.init(cacheManager);
     return true;
   }
 

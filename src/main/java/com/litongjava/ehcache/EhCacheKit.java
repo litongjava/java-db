@@ -11,12 +11,12 @@ import net.sf.ehcache.Element;
  * CacheKit. Useful tool box for EhCache.
  */
 @Slf4j
-public class EhCache {
+public class EhCacheKit {
 
   private static CacheManager cacheManager;
 
   static void init(CacheManager cacheManager) {
-    EhCache.cacheManager = cacheManager;
+    EhCacheKit.cacheManager = cacheManager;
   }
 
   public static CacheManager getCacheManager() {
@@ -26,7 +26,7 @@ public class EhCache {
   static Cache getOrAddCache(String cacheName) {
     Cache cache = cacheManager.getCache(cacheName);
     if (cache == null) {
-      synchronized (EhCache.class) {
+      synchronized (EhCacheKit.class) {
         cache = cacheManager.getCache(cacheName);
         if (cache == null) {
           log.warn("Could not find cache config [" + cacheName + "], using default.");

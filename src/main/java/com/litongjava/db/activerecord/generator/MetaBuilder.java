@@ -397,6 +397,16 @@ public class MetaBuilder {
           String columnTypeName = rsmd.getColumnTypeName(i);
           if ("_varchar".equalsIgnoreCase(columnTypeName)) {
             typeStr = "java.lang.String[]";
+
+          } else if ("_int8".equalsIgnoreCase(columnTypeName)) {
+            typeStr = "java.lang.Long[]";
+
+          } else if ("_int4".equalsIgnoreCase(columnTypeName)) {
+            typeStr = "java.lang.Integer[]";
+
+          } else if ("_int2".equalsIgnoreCase(columnTypeName)) {
+            typeStr = "java.lang.Short[]";
+
           } else {
             typeStr = "java.lang.Object[]";
           }

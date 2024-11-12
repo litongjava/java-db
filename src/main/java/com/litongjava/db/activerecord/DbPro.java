@@ -1379,12 +1379,12 @@ public class DbPro {
     return save(tableName, config.dialect.getDefaultPrimaryKey(), record, jsonFields);
   }
 
-  protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record) {
+  protected boolean update(Config config, Connection conn, String tableName, String primaryKeys, Record record) {
     if (record.modifyFlag == null || record.modifyFlag.isEmpty()) {
       return false;
     }
 
-    String[] pKeys = primaryKey.split(",");
+    String[] pKeys = primaryKeys.split(",");
     Object[] ids = new Object[pKeys.length];
 
     for (int i = 0; i < pKeys.length; i++) {
@@ -1449,16 +1449,16 @@ public class DbPro {
    * </pre>
    *
    * @param tableName  the table name of the Record save to
-   * @param primaryKey the primary key of the table, composite primary key is
+   * @param primaryKeys the primary key of the table, composite primary key is
    *                   separated by comma character: ","
    * @param record     the Record object
    */
-  public boolean update(String tableName, String primaryKey, Record record) {
+  public boolean update(String tableName, String primaryKeys, Record record) {
 
     Connection conn = null;
     try {
       conn = config.getConnection();
-      return update(config, conn, tableName, primaryKey, record);
+      return update(config, conn, tableName, primaryKeys, record);
     } finally {
       config.close(conn);
     }
@@ -2255,7 +2255,9 @@ public class DbPro {
 
     StringBuilder sql = new StringBuilder();
     List<Object> parasNoUse = new ArrayList<Object>();
-    config.dialect.forModelSave(TableMapping.me().getTable(model.getClass()), attrs, sql, parasNoUse);
+    Table table = model._getTable();
+
+    config.dialect.forModelSave(table, attrs, sql, parasNoUse);
     return batch(sql.toString(), columns.toString(), modelList, batchSize);
   }
 

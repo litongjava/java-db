@@ -15,10 +15,10 @@ public class EvictInterceptor implements AopInterceptor {
     // @CacheName 注解中的多个 cacheName 可用逗号分隔
     String[] cacheNames = getCacheName(inv).split(",");
     if (cacheNames.length == 1) {
-      EhCache.removeAll(cacheNames[0].trim());
+      EhCacheKit.removeAll(cacheNames[0].trim());
     } else {
       for (String cn : cacheNames) {
-        EhCache.removeAll(cn.trim());
+        EhCacheKit.removeAll(cn.trim());
       }
     }
   }
