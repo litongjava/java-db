@@ -12,6 +12,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+import org.postgresql.util.PGobject;
+
 import com.jfinal.kit.SyncWriteMap;
 import com.litongjava.db.SqlPara;
 import com.litongjava.model.db.IAtom;
@@ -2104,4 +2106,7 @@ public class Db {
     return MAIN.query(sql, params);
   }
 
+  public static PGobject queryPGobjectById(String tableName, String column, Object id) {
+    return queryColumnById(tableName, column, id);
+  }
 }

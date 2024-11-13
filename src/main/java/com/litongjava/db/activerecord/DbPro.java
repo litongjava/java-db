@@ -172,7 +172,7 @@ public class DbPro {
 
   public <T> T queryColumnByField(String tableName, String column, String field, Object value) {
     String sql = String.format(queryColumnByField, column, tableName, field);
-    return Db.queryColumn(sql, value);
+    return queryColumn(sql, value);
   }
 
   public String queryStr(String sql, Object... paras) {
