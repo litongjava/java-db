@@ -43,7 +43,7 @@ public abstract class CPI {
 	}
 
 	public static final Config getConfig(Model model) {
-		return model._getConfig();
+		return model._getWriteConfig();
 	}
 
 	public static final String getConfigName(Model model) {

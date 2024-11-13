@@ -79,6 +79,13 @@ public class Db {
     return MAIN;
   }
 
+  public static DbPro useRead() {
+    if (replicas != null) {
+      return useReplica();
+    }
+    return MAIN;
+  }
+
   public static DbPro useReplica(String configName) {
     DbPro result = replicaCaches.get(configName);
     if (result == null) {
@@ -870,6 +877,13 @@ public class Db {
       return useReplica().findFirst(tableName, record);
     }
     return MAIN.findFirst(tableName, record);
+  }
+
+  public static Record findFirst(String tableName, String columns, Record record) {
+    if (replicas != null) {
+      return useReplica().findFirst(tableName, columns, record);
+    }
+    return MAIN.findFirst(tableName, columns, record);
   }
 
   /**

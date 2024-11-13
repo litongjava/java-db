@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.jfinal.kit.StrKit;
 
@@ -33,6 +34,8 @@ public final class DbKit {
    */
   static Config brokenConfig = Config.createBrokenConfig();
   static List<Config> brokenConfigs = null;
+  
+  private static final AtomicInteger counter = new AtomicInteger(0);
 
   private static Map<Class<? extends Model>, Config> modelToConfig = new HashMap<Class<? extends Model>, Config>(512, 0.5F);
   private static Map<String, Config> configNameToConfig = new HashMap<String, Config>(32, 0.25F);
@@ -115,6 +118,18 @@ public final class DbKit {
 
   public static Config getConfig() {
     return config;
+  }
+
+  public static Config getReadConfig() {
+    if (replicaConfigs != null) {
+      return useReplica();
+    }
+    return config;
+  }
+
+  public static Config useReplica() {
+    int index = counter.getAndIncrement() % replicaConfigs.size();
+    return replicaConfigs.get(index);
   }
 
   public static Config getConfig(String configName) {

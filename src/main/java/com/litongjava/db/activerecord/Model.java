@@ -58,7 +58,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   protected abstract String _getTableName();
 
   private Map<String, Object> createAttrsMap() {
-    Config config = _getConfig();
+    Config config = _getWriteConfig();
     if (config == null) {
       return DbKit.brokenConfig.containerFactory.getAttrsMap();
     }
@@ -167,7 +167,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
 
   protected Set<String> _getModifyFlag() {
     if (modifyFlag == null) {
-      Config config = _getConfig();
+      Config config = _getWriteConfig();
       if (config == null) {
         modifyFlag = DbKit.brokenConfig.containerFactory.getModifyFlagSet();
       } else {
@@ -183,13 +183,24 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     }
   }
 
-  protected Config _getConfig() {
+  protected Config _getWriteConfig() {
     if (configName != null) {
       return DbKit.getConfig(configName);
     }
     Config config = DbKit.getConfig(_getUsefulClass());
     if (config == null) {
       return DbKit.getConfig();
+    }
+    return config;
+  }
+
+  protected Config _getReadConfig() {
+    if (configName != null) {
+      return DbKit.getConfig(configName);
+    }
+    Config config = DbKit.getConfig(_getUsefulClass());
+    if (config == null) {
+      return DbKit.getReadConfig();
     }
     return config;
   }
@@ -506,7 +517,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   }
 
   protected Page<M> doPaginate(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
-    Config config = _getConfig();
+    Config config = _getReadConfig();
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -562,7 +573,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   }
 
   protected Page<M> doPaginateByFullSql(int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
-    Config config = _getConfig();
+    Config config = _getReadConfig();
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -589,7 +600,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   public boolean save() {
     filter(FILTER_BY_SAVE);
 
-    Config config = _getConfig();
+    Config config = _getWriteConfig();
     Table table = _getTable();
 
     // 不必判断 attrs 中的字段个数是否为 0，因为以下 sql 合法：insert into table_name() values()
@@ -700,7 +711,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   }
 
   protected boolean deleteById(Table table, Object... idValues) {
-    Config config = _getConfig();
+    Config config = _getWriteConfig();
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -732,7 +743,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
       }
     }
 
-    Config config = _getConfig();
+    Config config = _getWriteConfig();
     StringBuilder sql = new StringBuilder();
     List<Object> paras = new ArrayList<Object>();
     config.dialect.forModelUpdate(table, attrs, _getModifyFlag(), sql, paras);
@@ -753,6 +764,17 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
       return false;
     } catch (Exception e) {
       throw new ActiveRecordException(e);
+    } finally {
+      config.close(conn);
+    }
+  }
+
+  public List<M> find(String tableName, String columns, Record record) {
+    Connection conn = null;
+    Config config = _getReadConfig();
+    try {
+      conn = config.getConnection();
+      return find(config, conn, tableName, columns, record);
     } finally {
       config.close(conn);
     }
@@ -807,7 +829,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   }
 
   public List<M> find() {
-    Config config = _getConfig();
+    Config config = _getReadConfig();
     Table table = _getTable();
     return find(config, table.getName(), toRecord());
   }
@@ -897,7 +919,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * @return the list of Model
    */
   public List<M> find(String sql, Object... paras) {
-    return find(_getConfig(), sql, paras);
+    return find(_getReadConfig(), sql, paras);
   }
 
   /**
@@ -908,7 +930,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   }
 
   public List<M> findAll() {
-    Config config = _getConfig();
+    Config config = _getReadConfig();
     String sql = config.dialect.forFindAll(_getTable().getName());
     return find(config, sql, NULL_PARA_ARRAY);
   }
@@ -934,8 +956,22 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
 
   public M findFirst() {
     Table table = _getTable();
-    Record r = Db.findFirst(table.getName(), toRecord());
-    return fromRecord(r);
+    return findFirst(table.getName(), toRecord());
+  }
+
+  public M findColumnsFirst(String columns) {
+    Table table = _getTable();
+    return findFirst(table.getName(), columns, toRecord());
+  }
+
+  public M findFirst(String tableName, String columns, Record record) {
+    List<M> result = find(tableName, columns, record);
+    return result.size() > 0 ? result.get(0) : null;
+  }
+
+  public M findFirst(String tableName, Record record) {
+    List<M> result = find(tableName, "*", record);
+    return result.size() > 0 ? result.get(0) : null;
   }
 
   /**
@@ -989,7 +1025,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     if (table.getPrimaryKey().length != idValues.length) {
       throw new IllegalArgumentException("id values error, need " + table.getPrimaryKey().length + " id value");
     }
-    Config config = _getConfig();
+    Config config = _getReadConfig();
     String sql = config.dialect.forModelFindById(table, columns);
     List<M> result = find(config, sql, idValues);
     return result.size() > 0 ? result.get(0) : null;
@@ -1043,7 +1079,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    */
   public M keep(String... attrs) {
     if (attrs != null && attrs.length > 0) {
-      Config config = _getConfig();
+      Config config = _getWriteConfig();
       if (config == null) { // 支持无数据库连接场景
         config = DbKit.brokenConfig;
       }
@@ -1141,7 +1177,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * @return the list of Model
    */
   public List<M> findByCache(String cacheName, Object key, String sql, Object... paras) {
-    Config config = _getConfig();
+    Config config = _getReadConfig();
     IDbCache cache = config.getCache();
     List<M> result = cache.get(cacheName, key);
     if (result == null) {
@@ -1167,7 +1203,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * @param paras the parameters of sql
    */
   public M findFirstByCache(String cacheName, Object key, String sql, Object... paras) {
-    IDbCache cache = _getConfig().getCache();
+    IDbCache cache = _getReadConfig().getCache();
     M result = cache.get(cacheName, key);
     if (result == null) {
       result = findFirst(sql, paras);
@@ -1206,7 +1242,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   }
 
   protected Page<M> doPaginateByCache(String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
-    IDbCache cache = _getConfig().getCache();
+    IDbCache cache = _getReadConfig().getCache();
     Page<M> result = cache.get(cacheName, key);
     if (result == null) {
       result = doPaginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
@@ -1216,7 +1252,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   }
 
   public String getSql(String key) {
-    return _getConfig().getSqlKit().getSql(key);
+    return _getWriteConfig().getSqlKit().getSql(key);
   }
 
   /**
@@ -1231,11 +1267,11 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   } */
 
   public SqlPara getSqlPara(String key, Map data) {
-    return _getConfig().getSqlKit().getSqlPara(key, data);
+    return _getWriteConfig().getSqlKit().getSqlPara(key, data);
   }
 
   public SqlPara getSqlPara(String key, Object... paras) {
-    return _getConfig().getSqlKit().getSqlPara(key, paras);
+    return _getWriteConfig().getSqlKit().getSqlPara(key, paras);
   }
 
   public SqlPara getSqlPara(String key, Model model) {
@@ -1243,11 +1279,11 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   }
 
   public SqlPara getSqlParaByString(String content, Map data) {
-    return _getConfig().getSqlKit().getSqlParaByString(content, data);
+    return _getWriteConfig().getSqlKit().getSqlParaByString(content, data);
   }
 
   public SqlPara getSqlParaByString(String content, Object... paras) {
-    return _getConfig().getSqlKit().getSqlParaByString(content, paras);
+    return _getWriteConfig().getSqlKit().getSqlParaByString(content, paras);
   }
 
   public SqlPara getSqlParaByString(String content, Model model) {
@@ -1287,7 +1323,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * </pre>
    */
   public void each(Function<M, Boolean> func, String sql, Object... paras) {
-    Config config = _getConfig();
+    Config config = _getWriteConfig();
     Connection conn = null;
     try {
       conn = config.getConnection();
