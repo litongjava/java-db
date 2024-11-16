@@ -2,6 +2,7 @@ package com.litongjava.kit;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 
 import org.postgresql.util.PGobject;
 
@@ -79,4 +80,21 @@ public class PGJsonUtils {
 
   }
 
+  public static <T> T toBean(PGobject pgObject, Class<T> clazz) {
+    String value = pgObject.getValue();
+    if (StrUtil.isNotBlank(value)) {
+      return JsonUtils.parse(value, clazz);
+    } else {
+      return null;
+    }
+  }
+
+  public static <T> List<T> toListBean(PGobject pgObject, Class<T> clazz) {
+    String value = pgObject.getValue();
+    if (StrUtil.isNotBlank(value)) {
+      return JsonUtils.parseArray(value, clazz);
+    } else {
+      return null;
+    }
+  }
 }
