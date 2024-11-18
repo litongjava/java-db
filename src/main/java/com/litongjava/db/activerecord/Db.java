@@ -422,6 +422,13 @@ public class Db {
     return MAIN.queryFirst(sql, paras);
   }
 
+  public static byte[] quereyBytes(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryBytes(sql, paras);
+    }
+    return MAIN.queryBytes(sql, paras);
+  }
+
   /**
    * @see #queryFirst(String, Object...)
    * @param sql an SQL statement
@@ -2109,4 +2116,5 @@ public class Db {
   public static PGobject queryPGobjectById(String tableName, String column, Object id) {
     return queryColumnById(tableName, column, id);
   }
+
 }

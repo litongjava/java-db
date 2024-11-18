@@ -233,13 +233,22 @@ public class PostgreSqlDialect extends Dialect {
   public void fillStatement(PreparedStatement pst, List<Object> paras) throws SQLException {
     for (int i = 0, size = paras.size(); i < size; i++) {
       Object value = paras.get(i);
-      fillPst(pst, i, value);
+      if (value != null) {
+        fillPst(pst, i, value);
+      } else {
+        pst.setObject(i + 1, value);
+      }
     }
   }
 
   public void fillStatement(PreparedStatement pst, Object... paras) throws SQLException {
     for (int i = 0, size = paras.length; i < size; i++) {
-      fillPst(pst, i, paras[i]);
+      if (paras[i] != null) {
+        fillPst(pst, i, paras[i]);
+      } else {
+        pst.setObject(i + 1, paras[i]);
+      }
+
     }
   }
 

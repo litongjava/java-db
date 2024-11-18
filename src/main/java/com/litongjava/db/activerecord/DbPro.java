@@ -61,6 +61,54 @@ public class DbPro {
     return config;
   }
 
+  protected List<byte[]> queryListBytes(Config config, Connection conn, String sql, Object... paras) {
+    List<byte[]> result = new ArrayList();
+    PreparedStatement pst = null;
+    try {
+      pst = conn.prepareStatement(sql);
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
+    }
+    try {
+      config.dialect.fillStatement(pst, paras);
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
+    }
+    long start = System.currentTimeMillis();
+
+    ResultSet rs = null;
+    try {
+      rs = pst.executeQuery();
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
+    }
+    int colAmount = 0;
+    try {
+      colAmount = rs.getMetaData().getColumnCount();
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
+    }
+    if (colAmount > 1) {
+      throw new ActiveRecordException("please use queryListMultiBytes");
+    } else if (colAmount == 1) {
+      try {
+        while (rs.next()) {
+          result.add(rs.getBytes(1));
+        }
+      } catch (SQLException e) {
+        throw new ActiveRecordException(e.getMessage() + " " + sql, e);
+      }
+    }
+
+    ISqlStatementStat stat = config.getSqlStatementStat();
+    if (stat != null) {
+      long end = System.currentTimeMillis();
+      long elapsed = end - start;
+      stat.save(config.name, "query", sql, paras, result.size(), start, elapsed, config.writeSync);
+    }
+    return result;
+  }
+
   protected <T> List<T> query(Config config, Connection conn, String sql, Object... paras) {
     List result = new ArrayList();
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -102,6 +150,16 @@ public class DbPro {
     try {
       conn = config.getConnection();
       return query(config, conn, sql, paras);
+    } finally {
+      config.close(conn);
+    }
+  }
+
+  public List<byte[]> queryListBytes(String sql, Object... paras) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
+      return queryListBytes(config, conn, sql, paras);
     } finally {
       config.close(conn);
     }
@@ -251,7 +309,8 @@ public class DbPro {
   }
 
   public byte[] queryBytes(String sql, Object... paras) {
-    return (byte[]) queryColumn(sql, paras);
+    List<byte[]> result = queryListBytes(sql, paras);
+    return (result.size() > 0 ? result.get(0) : null);
   }
 
   public byte[] queryBytes(String sql) {
