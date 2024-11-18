@@ -368,7 +368,7 @@ public class PostgreSqlDialect extends Dialect {
         Object object = record.get(f);
         if (object != null) {
           PGobject pGobject = new PGobject();
-          pGobject.setType("json");
+          pGobject.setType("jsonb");
           String jsonString = null;
           if (object instanceof String) {
             jsonString = (String) object;
@@ -428,7 +428,7 @@ public class PostgreSqlDialect extends Dialect {
         Object object = record.get(f);
         if (object != null) {
           PGobject pGobject = new PGobject();
-          pGobject.setType("json");
+          pGobject.setType("jsonb");
           String jsonString = null;
           if (object instanceof String) {
             jsonString = (String) object;
@@ -454,7 +454,7 @@ public class PostgreSqlDialect extends Dialect {
           Object object = record.get(f);
           if (object != null) {
             PGobject pGobject = new PGobject();
-            pGobject.setType("json");
+            pGobject.setType("jsonb");
             String jsonString = null;
             if (object instanceof String) {
               jsonString = (String) object;
