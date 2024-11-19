@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import com.litongjava.db.activerecord.Record;
+import com.litongjava.tio.utils.hutool.StrUtil;
 
 public class DialectUtils {
 
@@ -92,6 +93,22 @@ public class DialectUtils {
       }
     }
     return stringBuffer.toString();
+  }
+
+  public static String forColumns(String columns) {
+    if (StrUtil.isNotBlank(columns)) {
+      StringBuffer sql = new StringBuffer();
+      String[] arr = columns.split(",");
+      for (int i = 0; i < arr.length; i++) {
+        if (i > 0) {
+          sql.append(',');
+        }
+        sql.append('`').append(arr[i].trim()).append('`');
+      }
+      return sql.toString();
+    } else {
+      return null;
+    }
   }
 
 }

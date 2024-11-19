@@ -289,4 +289,9 @@ public class SqlServerDialect extends Dialect {
     }
     return sql;
   }
+  
+  @Override
+  public String forColumns(String columns) {
+    return DialectUtils.forColumns(columns);
+  }
 }

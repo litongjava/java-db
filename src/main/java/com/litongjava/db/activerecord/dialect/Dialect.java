@@ -68,6 +68,8 @@ public abstract class Dialect {
 
   public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields);
 
+  public abstract String forColumns(String columns);
+
   public abstract String forExistsByFields(String tableName, String fields);
 
   public abstract void transformJsonFields(Record record, String[] jsonFields);
@@ -343,5 +345,4 @@ public abstract class Dialect {
   public void trimPrimaryKeys(String[] pKeys) {
     DialectUtils.trimPrimaryKeys(pKeys);
   }
-
 }

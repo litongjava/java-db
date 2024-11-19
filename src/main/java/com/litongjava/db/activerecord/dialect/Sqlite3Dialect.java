@@ -274,4 +274,9 @@ public class Sqlite3Dialect extends Dialect {
     }
     return sql;
   }
+
+  @Override
+  public String forColumns(String columns) {
+    return DialectUtils.forColumns(columns);
+  }
 }

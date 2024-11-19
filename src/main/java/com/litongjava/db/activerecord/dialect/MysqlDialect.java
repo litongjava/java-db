@@ -307,4 +307,9 @@ public class MysqlDialect extends Dialect {
       pst.setObject(i + 1, json);
     }
   }
+
+  @Override
+  public String forColumns(String columns) {
+    return DialectUtils.forColumns(columns);
+  }
 }

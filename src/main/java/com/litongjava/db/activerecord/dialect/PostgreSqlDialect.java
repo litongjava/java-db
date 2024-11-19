@@ -21,6 +21,7 @@ import com.litongjava.db.activerecord.Record;
 import com.litongjava.db.activerecord.Table;
 import com.litongjava.db.activerecord.builder.TimestampProcessedModelBuilder;
 import com.litongjava.db.activerecord.builder.TimestampProcessedRecordBuilder;
+import com.litongjava.tio.utils.hutool.StrUtil;
 import com.litongjava.tio.utils.json.Json;
 import com.litongjava.tio.utils.json.JsonUtils;
 
@@ -577,4 +578,20 @@ public class PostgreSqlDialect extends Dialect {
     return sql;
   }
 
+  @Override
+  public String forColumns(String columns) {
+    if (StrUtil.isNotEmpty(columns)) {
+      String[] arr = columns.split(",");
+      StringBuffer sql = new StringBuffer();
+      for (int i = 0; i < arr.length; i++) {
+        if (i > 0) {
+          sql.append(',');
+        }
+        sql.append('\"').append(arr[i].trim()).append('\"');
+      }
+      return sql.toString();
+    } else {
+      return null;
+    }
+  }
 }

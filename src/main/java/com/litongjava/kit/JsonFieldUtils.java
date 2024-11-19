@@ -11,7 +11,7 @@ import com.litongjava.db.activerecord.Record;
 import com.litongjava.tio.utils.hutool.StrUtil;
 import com.litongjava.tio.utils.json.JsonUtils;
 
-public class PGJsonUtils {
+public class JsonFieldUtils {
 
   public static PGobject json(Object obj) {
     if (obj == null) {
@@ -74,10 +74,41 @@ public class PGJsonUtils {
       } else {
         record.set(key, new HashMap<>(1));
       }
+    } else if (object instanceof String) {
+      String value = (String) object;
+      if (StrUtil.isNotBlank(value)) {
+        T setting = JsonUtils.parse(value, clazz);
+        record.set(key, setting);
+      } else {
+        record.set(key, new HashMap<>(1));
+      }
     } else {
       return;
     }
+  }
 
+  public static <T> void toListBean(Record record, String key, Class<T> clazz) {
+    Object object = record.get(key);
+    if (object instanceof PGobject) {
+      PGobject pgObject1 = (PGobject) object;
+      String value = pgObject1.getValue();
+      if (StrUtil.isNotBlank(value)) {
+        List<T> setting = JsonUtils.parseArray(value, clazz);
+        record.set(key, setting);
+      } else {
+        record.set(key, new HashMap<>(1));
+      }
+    } else if (object instanceof String) {
+      String value = (String) object;
+      if (StrUtil.isNotBlank(value)) {
+        List<T> setting = JsonUtils.parseArray(value, clazz);
+        record.set(key, setting);
+      } else {
+        record.set(key, new HashMap<>(1));
+      }
+    } else {
+      return;
+    }
   }
 
   public static <T> T toBean(PGobject pgObject, Class<T> clazz) {
