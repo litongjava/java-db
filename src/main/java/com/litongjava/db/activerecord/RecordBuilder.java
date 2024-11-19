@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.postgresql.util.PGobject;
+
 import com.litongjava.db.activerecord.builder.BuilderKit;
 
 /**
@@ -77,6 +79,9 @@ public class RecordBuilder {
           if (labelName.equals(jsonField) && value != null) {
             if (value instanceof String) {
               String stringValue = (String) value;
+              value = BuilderKit.parseJsonField(stringValue);
+            } else if (value instanceof PGobject) {
+              String stringValue = ((PGobject) value).getValue();
               value = BuilderKit.parseJsonField(stringValue);
             }
           }

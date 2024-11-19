@@ -62,7 +62,7 @@ public class BuilderKit {
         value = rs.getObject(i);
         if (value instanceof PGobject) {
           PGobject pGobject = (PGobject) value;
-          if ("json".equals(pGobject.getType())) {
+          if ("json".equals(pGobject.getType()) || "jsonb".equals(pGobject.getType())) {
             value = pGobject.getValue();
             if ("[null]".equals(value)) {
               value = null;

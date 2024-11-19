@@ -1363,10 +1363,8 @@ public class DbPro {
     String[] pKeys = primaryKey.split(",");
     List<Object> paras = new ArrayList<Object>();
     StringBuilder sql = new StringBuilder();
-    config.dialect.forDbSave(tableName, pKeys, record, sql, paras);
-
     config.dialect.transformJsonFields(record, jsonFields);
-
+    config.dialect.forDbSave(tableName, pKeys, record, sql, paras);
     int result = 0;
     String sqlString = sql.toString();
     try (PreparedStatement pst = config.dialect.isOracle() ? conn.prepareStatement(sqlString, pKeys) : conn.prepareStatement(sqlString, Statement.RETURN_GENERATED_KEYS)) {
