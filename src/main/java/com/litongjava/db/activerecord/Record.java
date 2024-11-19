@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.postgresql.util.PGobject;
+
 import com.jfinal.kit.Kv;
 import com.jfinal.kit.TypeKit;
 import com.litongjava.model.db.IRow;
@@ -408,6 +410,17 @@ public class Record implements IRow<Record>, Serializable {
     }
   }
 
+  public PGobject getPGobject(String column) {
+    Object object = getColumns().get(column);
+    return (PGobject) object;
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> T getAs(String column) {
+    Object object = getColumns().get(column);
+    return (T) object;
+  }
+
   @SuppressWarnings("unchecked")
   public <T> List<T> getList(String column) {
     Object object = getColumns().get(column);
@@ -523,4 +536,5 @@ public class Record implements IRow<Record>, Serializable {
     Record record = new Record();
     return record.setColumns(recordMap);
   }
+
 }
