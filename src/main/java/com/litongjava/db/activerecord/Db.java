@@ -956,7 +956,7 @@ public class Db {
    * @param clazz
    * @param tableName
    * @param idValue
-   * @return
+   * @return T
    */
   public static <T> T findById(Class<T> clazz, String tableName, Object idValue) {
     if (replicas != null) {
@@ -971,7 +971,7 @@ public class Db {
    * @param tableName
    * @param columns
    * @param idValue
-   * @return
+   * @return T
    */
   public static <T> T findColumnsById(Class<T> clazz, String tableName, String columns, Object idValue) {
     if (replicas != null) {
@@ -984,13 +984,28 @@ public class Db {
    * @param tableName
    * @param columns
    * @param idValue
-   * @return
+   * @return Record
    */
   public static Record findColumnsById(String tableName, String columns, Object idValue) {
     if (replicas != null) {
       return useReplica().findColumnsById(tableName, columns, idValue);
     }
     return MAIN.findColumnsById(tableName, columns, idValue);
+  }
+
+  /**
+   * 
+   * @param tableName
+   * @param columns
+   * @param primaryKey
+   * @param idValue
+   * @return Record
+   */
+  public static Record findColumnsById(String tableName, String columns, String primaryKey, Object idValue) {
+    if (replicas != null) {
+      return useReplica().findColumnsById(tableName, columns, primaryKey, idValue);
+    }
+    return MAIN.findColumnsById(tableName, columns, primaryKey, idValue);
   }
 
   /**
