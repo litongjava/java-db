@@ -51,6 +51,7 @@ VALUES (3, '王五', 35, 'wangwu@example.com', '广州市天河区', '无');
 ### 2. 添加 Maven 依赖
 
 在项目的 `pom.xml` 中添加以下依赖：
+https://mvnrepository.com/artifact/com.litongjava/java-db/1.4.5
 
 ```xml
 <dependency>
