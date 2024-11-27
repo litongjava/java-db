@@ -318,7 +318,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   /**
    * Put record to the model without check attribute name.
    */
-  public M put(Record record) {
+  public M put(Row record) {
     attrs.putAll(record.getColumns());
     return (M) this;
   }
@@ -326,11 +326,11 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   /**
    * Convert model to record.
    */
-  public Record toRecord() {
-    return new Record().setColumns(_getAttrs());
+  public Row toRecord() {
+    return new Row().setColumns(_getAttrs());
   }
 
-  public M fromRecord(Record record) {
+  public M fromRecord(Row record) {
     this._setAttrs(record.getColumns());
     return (M) this;
   }
@@ -681,7 +681,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    */
   public boolean delete() {
     Table table = _getTable();
-    Record record = this.toRecord();
+    Row record = this.toRecord();
     return Db.delete(table.getName(), record);
   }
 
@@ -769,7 +769,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     }
   }
 
-  public List<M> find(String tableName, String columns, Record record) {
+  public List<M> find(String tableName, String columns, Row record) {
     Connection conn = null;
     Config config = _getReadConfig();
     try {
@@ -834,7 +834,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     return find(config, table.getName(), toRecord());
   }
 
-  public List<M> find(Config config, String tableName, Record record) {
+  public List<M> find(Config config, String tableName, Row record) {
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -844,7 +844,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     }
   }
 
-  protected List<M> find(Config config, Connection conn, String tableName, String columns, Record record) {
+  protected List<M> find(Config config, Connection conn, String tableName, String columns, Row record) {
     List<Object> paras = new ArrayList<>();
 
     StringBuffer sqlBuffer = config.dialect.forDbFind(tableName, columns, record, paras);
@@ -964,12 +964,12 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     return findFirst(table.getName(), columns, toRecord());
   }
 
-  public M findFirst(String tableName, String columns, Record record) {
+  public M findFirst(String tableName, String columns, Row record) {
     List<M> result = find(tableName, columns, record);
     return result.size() > 0 ? result.get(0) : null;
   }
 
-  public M findFirst(String tableName, Record record) {
+  public M findFirst(String tableName, Row record) {
     List<M> result = find(tableName, "*", record);
     return result.size() > 0 ? result.get(0) : null;
   }

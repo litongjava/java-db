@@ -16,7 +16,7 @@ import com.litongjava.db.activerecord.ActiveRecordException;
 import com.litongjava.db.activerecord.CPI;
 import com.litongjava.db.activerecord.Model;
 import com.litongjava.db.activerecord.ModelBuilder;
-import com.litongjava.db.activerecord.Record;
+import com.litongjava.db.activerecord.Row;
 import com.litongjava.db.activerecord.Table;
 import com.litongjava.db.activerecord.builder.TimestampProcessedModelBuilder;
 import com.litongjava.db.activerecord.builder.TimestampProcessedRecordBuilder;
@@ -137,7 +137,7 @@ public class AnsiSqlDialect extends Dialect {
     return sql.toString();
   }
 
-  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+  public void forDbSave(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -158,7 +158,7 @@ public class AnsiSqlDialect extends Dialect {
     sql.append(temp.toString()).append(')');
   }
 
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -198,7 +198,7 @@ public class AnsiSqlDialect extends Dialect {
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public Page<Record> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
+  public Page<Row> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
     // String totalRowSql = "select count(*) " + replaceOrderBy(sqlExceptSelect);
     List result = CPI.query(conn, totalRowSql, paras);
     int size = result.size();
@@ -213,7 +213,7 @@ public class AnsiSqlDialect extends Dialect {
       totalRow = (size > 0) ? ((Number) result.get(0)).longValue() : 0;
     }
     if (totalRow == 0) {
-      return new Page<Record>(new ArrayList<Record>(0), pageNumber, pageSize, 0, 0);
+      return new Page<Row>(new ArrayList<Row>(0), pageNumber, pageSize, 0, 0);
     }
 
     int totalPage = (int) (totalRow / pageSize);
@@ -221,7 +221,7 @@ public class AnsiSqlDialect extends Dialect {
       totalPage++;
     }
     if (pageNumber > totalPage) {
-      return new Page<Record>(new ArrayList<Record>(0), pageNumber, pageSize, totalPage, (int) totalRow);
+      return new Page<Row>(new ArrayList<Row>(0), pageNumber, pageSize, totalPage, (int) totalRow);
     }
 
     // StringBuilder sql = new StringBuilder();
@@ -240,23 +240,23 @@ public class AnsiSqlDialect extends Dialect {
       }
     }
 
-    List<Record> list = buildRecord(rs, pageSize);
+    List<Row> list = buildRecord(rs, pageSize);
     if (rs != null)
       rs.close();
     if (pst != null)
       pst.close();
-    return new Page<Record>(list, pageNumber, pageSize, totalPage, (int) totalRow);
+    return new Page<Row>(list, pageNumber, pageSize, totalPage, (int) totalRow);
   }
 
-  private List<Record> buildRecord(ResultSet rs, int pageSize) throws SQLException {
-    List<Record> result = new ArrayList<Record>();
+  private List<Row> buildRecord(ResultSet rs, int pageSize) throws SQLException {
+    List<Row> result = new ArrayList<Row>();
     ResultSetMetaData rsmd = rs.getMetaData();
     int columnCount = rsmd.getColumnCount();
     String[] labelNames = new String[columnCount + 1];
     int[] types = new int[columnCount + 1];
     buildLabelNamesAndTypes(rsmd, labelNames, types);
     for (int k = 0; k < pageSize && rs.next(); k++) {
-      Record record = new Record();
+      Row record = new Row();
       Map<String, Object> columns = record.getColumns();
       for (int i = 1; i <= columnCount; i++) {
         Object value;
@@ -397,7 +397,7 @@ public class AnsiSqlDialect extends Dialect {
   }
 
   @Override
-  public void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+  public void forDbDelete(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
     DialectUtils.forDbDelete(tableName, pKeys, record, sql, paras);
   }
 
@@ -407,7 +407,7 @@ public class AnsiSqlDialect extends Dialect {
   }
 
   @Override
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
     if (jsonFields != null) {
       for (String f : jsonFields) {
         record.set(f, Json.getJson().toJson(record.get(f)));
@@ -417,7 +417,7 @@ public class AnsiSqlDialect extends Dialect {
   }
 
   @Override
-  public void transformJsonFields(Record record, String[] jsonFields) {
+  public void transformJsonFields(Row record, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
         Object object = record.get(f);
@@ -431,10 +431,10 @@ public class AnsiSqlDialect extends Dialect {
   }
 
   @Override
-  public void transformJsonFields(List<Record> recordList, String[] jsonFields) {
+  public void transformJsonFields(List<Row> recordList, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
-        for (Record record : recordList) {
+        for (Row record : recordList) {
           Object object = record.get(f);
           if (object != null) {
             String value = Json.getJson().toJson(object);
@@ -446,7 +446,7 @@ public class AnsiSqlDialect extends Dialect {
   }
 
   @Override
-  public StringBuffer forDbFind(String tableName, String columns, Record record, List<Object> paras) {
+  public StringBuffer forDbFind(String tableName, String columns, Row record, List<Object> paras) {
     StringBuffer sql = new StringBuffer();
     tableName = tableName.trim();
 

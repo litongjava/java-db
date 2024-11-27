@@ -12,7 +12,7 @@ import java.util.function.Function;
 
 import com.litongjava.db.activerecord.CPI;
 import com.litongjava.db.activerecord.Config;
-import com.litongjava.db.activerecord.Record;
+import com.litongjava.db.activerecord.Row;
 import com.litongjava.db.activerecord.RecordBuilder;
 
 /**
@@ -29,7 +29,7 @@ public class H2RecordBuilder extends RecordBuilder {
     public static final H2RecordBuilder me = new H2RecordBuilder();
 
     @Override
-    public List<Record> build(Config config, ResultSet rs) throws SQLException {
+    public List<Row> build(Config config, ResultSet rs) throws SQLException {
         return build(config, rs, null);
     }
 
@@ -44,15 +44,15 @@ public class H2RecordBuilder extends RecordBuilder {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public List<Record> build(Config config, ResultSet rs, Function<Record, Boolean> func) throws SQLException {
-        List<Record> result = new ArrayList<Record>();
+    public List<Row> build(Config config, ResultSet rs, Function<Row, Boolean> func) throws SQLException {
+        List<Row> result = new ArrayList<Row>();
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
         String[] labelNames = new String[columnCount + 1];
         int[] types = new int[columnCount + 1];
         buildLabelNamesAndTypes(rsmd, labelNames, types);
         while (rs.next()) {
-            Record record = new Record();
+            Row record = new Row();
             CPI.setColumnsMap(record, config.getContainerFactory().getColumnsMap());
             Map<String, Object> columns = record.getColumns();
             for (int i = 1; i <= columnCount; i++) {

@@ -10,13 +10,13 @@ import java.util.stream.Collectors;
 import org.postgresql.util.PGobject;
 
 import com.jfinal.kit.Kv;
-import com.litongjava.db.activerecord.Record;
+import com.litongjava.db.activerecord.Row;
 import com.litongjava.tio.utils.json.JsonUtils;
 import com.litongjava.tio.utils.name.CamelNameUtils;
 
-public class RecordUtils {
+public class RowUtils {
 
-  public static List<List<Object>> getListData(List<Record> records, int size) {
+  public static List<List<Object>> getListData(List<Row> records, int size) {
     List<List<Object>> columnValues = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
       Object[] columnValuesForRow = records.get(i).getColumnValues();
@@ -45,13 +45,13 @@ public class RecordUtils {
     return kv;
   }
 
-  public static List<Kv> recordsToKv(List<Record> list, boolean underscoreToCamel) {
+  public static List<Kv> recordsToKv(List<Row> list, boolean underscoreToCamel) {
     return list.stream().map(record -> {
       return recordToKv(record, underscoreToCamel);
     }).collect(Collectors.toList());
   }
 
-  public static Kv recordToKv(Record record, boolean underscoreToCamel) {
+  public static Kv recordToKv(Row record, boolean underscoreToCamel) {
     if (record == null) {
       return null;
     }
@@ -73,7 +73,7 @@ public class RecordUtils {
     }
   }
 
-  public static List<Map<String, Object>> recordsToMap(List<Record> records) {
+  public static List<Map<String, Object>> recordsToMap(List<Row> records) {
     return records.stream().map(record -> record.toMap()).collect(Collectors.toList());
   }
 }

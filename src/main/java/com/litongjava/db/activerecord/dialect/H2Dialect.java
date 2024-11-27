@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.litongjava.db.activerecord.Config;
-import com.litongjava.db.activerecord.Record;
+import com.litongjava.db.activerecord.Row;
 import com.litongjava.db.activerecord.Table;
 import com.litongjava.tio.utils.json.Json;
 
@@ -21,7 +21,7 @@ import com.litongjava.tio.utils.json.Json;
 public class H2Dialect extends Dialect {
 
   @Override
-  public List<Record> buildRecordList(Config config, ResultSet rs) throws SQLException {
+  public List<Row> buildRecordList(Config config, ResultSet rs) throws SQLException {
     return recordBuilder.build(config, rs);
   }
 
@@ -190,7 +190,7 @@ public class H2Dialect extends Dialect {
   }
 
   @Override
-  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+  public void forDbSave(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -220,7 +220,7 @@ public class H2Dialect extends Dialect {
   }
 
   @Override
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -265,7 +265,7 @@ public class H2Dialect extends Dialect {
   }
 
   @Override
-  public void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+  public void forDbDelete(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
     DialectUtils.forDbDelete(tableName, pKeys, record, sql, paras);
   }
 
@@ -275,7 +275,7 @@ public class H2Dialect extends Dialect {
   }
 
   @Override
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
     if (jsonFields != null) {
       for (String f : jsonFields) {
         record.set(f, Json.getJson().toJson(record.get(f)));
@@ -286,7 +286,7 @@ public class H2Dialect extends Dialect {
   }
 
   @Override
-  public void transformJsonFields(Record record, String[] jsonFields) {
+  public void transformJsonFields(Row record, String[] jsonFields) {
     if (jsonFields != null) {
       for (String f : jsonFields) {
         Object object = record.get(f);
@@ -300,10 +300,10 @@ public class H2Dialect extends Dialect {
   }
 
   @Override
-  public void transformJsonFields(List<Record> recordList, String[] jsonFields) {
+  public void transformJsonFields(List<Row> recordList, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
-        for (Record record : recordList) {
+        for (Row record : recordList) {
           Object object = record.get(f);
           if (object != null) {
             String value = Json.getJson().toJson(object);
@@ -315,7 +315,7 @@ public class H2Dialect extends Dialect {
   }
 
   @Override
-  public StringBuffer forDbFind(String tableName, String columns, Record record, List<Object> paras) {
+  public StringBuffer forDbFind(String tableName, String columns, Row record, List<Object> paras) {
     StringBuffer sql = new StringBuffer();
     tableName = tableName.trim();
 

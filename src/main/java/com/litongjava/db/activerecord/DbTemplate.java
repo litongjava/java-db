@@ -51,11 +51,11 @@ public class DbTemplate {
 
   // ---------
 
-  public List<Record> find() {
+  public List<Row> find() {
     return db.find(sqlPara);
   }
 
-  public Record findFirst() {
+  public Row findFirst() {
     return db.findFirst(sqlPara);
   }
 
@@ -63,17 +63,17 @@ public class DbTemplate {
     return db.update(sqlPara);
   }
 
-  public Page<Record> paginate(int pageNumber, int pageSize) {
+  public Page<Row> paginate(int pageNumber, int pageSize) {
     return db.paginate(pageNumber, pageSize, sqlPara);
   }
 
-  public Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql) {
+  public Page<Row> paginate(int pageNumber, int pageSize, boolean isGroupBySql) {
     return db.paginate(pageNumber, pageSize, isGroupBySql, sqlPara);
   }
 
   // ---------
 
-  public void each(Function<Record, Boolean> func) {
+  public void each(Function<Row, Boolean> func) {
     db.each(func, sqlPara.getSql(), sqlPara.getPara());
   }
 
@@ -139,20 +139,20 @@ public class DbTemplate {
 
   // ---------
 
-  public List<Record> findByCache(String cacheName, Object key) {
+  public List<Row> findByCache(String cacheName, Object key) {
     return db.findByCache(cacheName, key, sqlPara.getSql(), sqlPara.getPara());
   }
 
-  public Record findFirstByCache(String cacheName, Object key) {
+  public Row findFirstByCache(String cacheName, Object key) {
     return db.findFirstByCache(cacheName, key, sqlPara.getSql(), sqlPara.getPara());
   }
 
-  public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize) {
+  public Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize) {
     String[] sqls = PageSqlKit.parsePageSql(sqlPara.getSql());
     return db.paginateByCache(cacheName, key, pageNumber, pageSize, sqls[0], sqls[1], sqlPara.getPara());
   }
 
-  public Page<Record> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql) {
+  public Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql) {
     String[] sqls = PageSqlKit.parsePageSql(sqlPara.getSql());
     return db.paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, sqls[0], sqls[1], sqlPara.getPara());
   }

@@ -3,7 +3,7 @@ package com.litongjava.db.activerecord.bean;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
-import com.litongjava.db.activerecord.Record;
+import com.litongjava.db.activerecord.Row;
 import com.litongjava.db.annotation.ATableField;
 import com.litongjava.db.annotation.ATableName;
 import com.litongjava.record.RecordConvert;
@@ -12,7 +12,7 @@ import com.litongjava.tio.utils.name.CamelNameUtils;
 public class DefaultRecordConvert implements RecordConvert {
 
   @Override
-  public <T> T toJavaBean(Record record, Class<T> beanClass) {
+  public <T> T toJavaBean(Row record, Class<T> beanClass) {
     try {
       T bean = beanClass.getDeclaredConstructor().newInstance();
       Field[] fields = beanClass.getDeclaredFields();
@@ -50,8 +50,8 @@ public class DefaultRecordConvert implements RecordConvert {
   }
 
   @Override
-  public Record fromJavaBean(Object bean) {
-    Record record = new Record();
+  public Row fromJavaBean(Object bean) {
+    Row record = new Row();
     Class<?> beanClass = bean.getClass();
 
     // 处理 ATableName 注解

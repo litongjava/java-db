@@ -17,7 +17,7 @@ import org.postgresql.util.PGobject;
 
 import com.litongjava.db.activerecord.CPI;
 import com.litongjava.db.activerecord.Model;
-import com.litongjava.db.activerecord.Record;
+import com.litongjava.db.activerecord.Row;
 import com.litongjava.db.activerecord.Table;
 import com.litongjava.db.activerecord.builder.TimestampProcessedModelBuilder;
 import com.litongjava.db.activerecord.builder.TimestampProcessedRecordBuilder;
@@ -142,7 +142,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
-  public void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+  public void forDbDelete(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys); // important
 
@@ -176,7 +176,7 @@ public class PostgreSqlDialect extends Dialect {
     return sql.toString();
   }
 
-  public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+  public void forDbSave(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -197,7 +197,7 @@ public class PostgreSqlDialect extends Dialect {
     sql.append(temp.toString()).append(')');
   }
 
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -289,7 +289,7 @@ public class PostgreSqlDialect extends Dialect {
    * <p>
    * 相对于 Dialect 中的默认实现，仅将 rs.getXxx(1) 改成了 rs.getXxx(pKey)
    */
-  public void getRecordGeneratedKey(PreparedStatement pst, Record record, String[] pKeys) {
+  public void getRecordGeneratedKey(PreparedStatement pst, Row record, String[] pKeys) {
     try (ResultSet rs = pst.getGeneratedKeys()) { // Automatically closes ResultSet
       ResultSetMetaData metaData = rs.getMetaData();
       int columnCount = metaData.getColumnCount();
@@ -390,7 +390,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
         Object object = record.get(f);
@@ -450,7 +450,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
-  public void transformJsonFields(Record record, String[] jsonFields) {
+  public void transformJsonFields(Row record, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
         Object object = record.get(f);
@@ -475,10 +475,10 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
-  public void transformJsonFields(List<Record> recordList, String[] jsonFields) {
+  public void transformJsonFields(List<Row> recordList, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
-        for (Record record : recordList) {
+        for (Row record : recordList) {
           Object object = record.get(f);
           if (object != null) {
             PGobject pGobject = new PGobject();
@@ -583,7 +583,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
-  public StringBuffer forDbFind(String tableName, String columns, Record record, List<Object> paras) {
+  public StringBuffer forDbFind(String tableName, String columns, Row record, List<Object> paras) {
     StringBuffer sql = new StringBuffer();
     tableName = tableName.trim();
     sql.append("select ").append(columns).append(" from \"").append(tableName).append("\"");

@@ -3,7 +3,7 @@ package com.litongjava.db.activerecord.dialect;
 import java.util.List;
 import java.util.Map.Entry;
 
-import com.litongjava.db.activerecord.Record;
+import com.litongjava.db.activerecord.Row;
 import com.litongjava.tio.utils.hutool.StrUtil;
 
 public class DialectUtils {
@@ -63,7 +63,7 @@ public class DialectUtils {
     return sql;
   }
 
-  public static void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+  public static void forDbDelete(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys); // important
 

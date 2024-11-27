@@ -18,7 +18,7 @@ public class BatchSaveFetchGeneratedKey extends DbPro {
 		throw new RuntimeException("暂未实现");
 	}
 
-	public int[] batchSave(String tableName, List<? extends Record> recordList, int batchSize) {
+	public int[] batchSave(String tableName, List<? extends Row> recordList, int batchSize) {
 		throw new RuntimeException("暂未实现");
 	}
 }

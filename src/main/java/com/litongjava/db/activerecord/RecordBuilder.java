@@ -19,24 +19,24 @@ public class RecordBuilder {
 
   public static final RecordBuilder me = new RecordBuilder();
 
-  public List<Record> build(Config config, ResultSet rs) throws SQLException {
+  public List<Row> build(Config config, ResultSet rs) throws SQLException {
     return build(config, rs, null);
   }
 
-  public List<Record> buildJsonFields(Config config, ResultSet rs, String[] jsonFields) throws SQLException {
+  public List<Row> buildJsonFields(Config config, ResultSet rs, String[] jsonFields) throws SQLException {
     return buildJsonFields(config, rs, jsonFields, null);
   }
 
   @SuppressWarnings("unchecked")
-  public List<Record> build(Config config, ResultSet rs, Function<Record, Boolean> func) throws SQLException {
-    List<Record> result = new ArrayList<Record>();
+  public List<Row> build(Config config, ResultSet rs, Function<Row, Boolean> func) throws SQLException {
+    List<Row> result = new ArrayList<Row>();
     ResultSetMetaData rsmd = rs.getMetaData();
     int columnCount = rsmd.getColumnCount();
     String[] labelNames = new String[columnCount + 1];
     int[] types = new int[columnCount + 1];
     buildLabelNamesAndTypes(rsmd, labelNames, types);
     while (rs.next()) {
-      Record record = new Record();
+      Row record = new Row();
       record.setColumnsMap(config.containerFactory.getColumnsMap());
       Map<String, Object> columns = record.getColumns();
       for (int i = 1; i <= columnCount; i++) {
@@ -58,8 +58,8 @@ public class RecordBuilder {
   }
 
   @SuppressWarnings("unchecked")
-  public List<Record> buildJsonFields(Config config, ResultSet rs, String[] jsonFields, Function<Record, Boolean> func) throws SQLException {
-    List<Record> result = new ArrayList<>();
+  public List<Row> buildJsonFields(Config config, ResultSet rs, String[] jsonFields, Function<Row, Boolean> func) throws SQLException {
+    List<Row> result = new ArrayList<>();
 
     ResultSetMetaData rsmd = rs.getMetaData();
     int columnCount = rsmd.getColumnCount();
@@ -67,7 +67,7 @@ public class RecordBuilder {
     int[] types = new int[columnCount + 1];
     buildLabelNamesAndTypes(rsmd, labelNames, types);
     while (rs.next()) {
-      Record record = new Record();
+      Row record = new Row();
       record.setColumnsMap(config.containerFactory.getColumnsMap());
       Map<String, Object> columns = record.getColumns();
       for (int i = 1; i <= columnCount; i++) {

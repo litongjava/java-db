@@ -1,9 +1,9 @@
 package com.litongjava.record;
 
-import com.litongjava.db.activerecord.Record;
+import com.litongjava.db.activerecord.Row;
 
 public interface RecordConvert {
-  public <T> T toJavaBean(Record record,Class<T> beanClass);
+  public <T> T toJavaBean(Row record,Class<T> beanClass);
 
-  public Record fromJavaBean(Object bean);
+  public Row fromJavaBean(Object bean);
 }

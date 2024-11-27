@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 import com.litongjava.db.activerecord.Config;
 import com.litongjava.db.activerecord.Model;
 import com.litongjava.db.activerecord.ModelBuilder;
-import com.litongjava.db.activerecord.Record;
+import com.litongjava.db.activerecord.Row;
 import com.litongjava.db.activerecord.RecordBuilder;
 import com.litongjava.db.activerecord.Table;
 import com.litongjava.db.activerecord.builder.KeepByteAndShortModelBuilder;
@@ -58,23 +58,23 @@ public abstract class Dialect {
 
   public abstract String forDbDeleteById(String tableName, String[] pKeys);
 
-  public abstract StringBuffer forDbFind(String tableName, String columns, Record record, List<Object> paras);
+  public abstract StringBuffer forDbFind(String tableName, String columns, Row record, List<Object> paras);
 
-  public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras);
+  public abstract void forDbSave(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras);
 
-  public abstract void forDbDelete(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras);
+  public abstract void forDbDelete(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras);
 
-  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras);
+  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras);
 
-  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras, String[] jsonFields);
+  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras, String[] jsonFields);
 
   public abstract String forColumns(String columns);
 
   public abstract String forExistsByFields(String tableName, String fields);
 
-  public abstract void transformJsonFields(Record record, String[] jsonFields);
+  public abstract void transformJsonFields(Row record, String[] jsonFields);
 
-  public abstract void transformJsonFields(List<Record> modelOrRecordList, String[] jsonFields);
+  public abstract void transformJsonFields(List<Row> modelOrRecordList, String[] jsonFields);
 
   public String forFindAll(String tableName) {
     return "select * from " + tableName;
@@ -154,15 +154,15 @@ public abstract class Dialect {
     modelBuilder.build(rs, modelClass, func);
   }
 
-  public List<Record> buildRecordList(Config config, ResultSet rs) throws SQLException {
+  public List<Row> buildRecordList(Config config, ResultSet rs) throws SQLException {
     return recordBuilder.build(config, rs);
   }
 
-  public List<Record> buildRecordListWithJsonFields(Config config, ResultSet rs, String[] jsonFields) throws SQLException {
+  public List<Row> buildRecordListWithJsonFields(Config config, ResultSet rs, String[] jsonFields) throws SQLException {
     return recordBuilder.buildJsonFields(config, rs, jsonFields);
   }
 
-  public void eachRecord(Config config, ResultSet rs, Function<Record, Boolean> func) throws SQLException {
+  public void eachRecord(Config config, ResultSet rs, Function<Row, Boolean> func) throws SQLException {
     recordBuilder.build(config, rs, func);
   }
 
@@ -214,7 +214,7 @@ public abstract class Dialect {
    * 用于获取 Db.save(tableName, record) 以后自动生成的主键值，可通过覆盖此方法实现更精细的控制
    * 目前只有 PostgreSqlDialect，覆盖过此方法
    */
-  public void getRecordGeneratedKey(PreparedStatement pst, Record record, String[] pKeys) throws SQLException {
+  public void getRecordGeneratedKey(PreparedStatement pst, Row record, String[] pKeys) throws SQLException {
     ResultSet rs = pst.getGeneratedKeys();
     for (String pKey : pKeys) {
       if (record.get(pKey) == null || isOracle()) {

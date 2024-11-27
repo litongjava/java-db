@@ -304,12 +304,12 @@ public final class DbKit {
   }
 
   @SuppressWarnings("unchecked")
-  public static List<Integer> batchListSave(String tableName, List<? extends Record> recordList, int batchSize, String db) {
+  public static List<Integer> batchListSave(String tableName, List<? extends Row> recordList, int batchSize, String db) {
     if (recordList == null || recordList.size() == 0)
       return new ArrayList<>();
     Map<String, BatchInfo> updateMap = new HashMap<>();
 
-    for (Record record : recordList) {
+    for (Row record : recordList) {
       Map<String, Object> attrs = record.getColumns();
       int index = 0;
       StringBuilder columns = new StringBuilder();
@@ -336,7 +336,7 @@ public final class DbKit {
     return batchModelList(recordList, batchSize, db, updateMap);
   }
 
-  public static List<Integer> batchListSave(String tableName, List<? extends Record> recordList) {
+  public static List<Integer> batchListSave(String tableName, List<? extends Row> recordList) {
     return batchListSave(tableName, recordList, DB_BATCH_COUNT, null);
   }
 

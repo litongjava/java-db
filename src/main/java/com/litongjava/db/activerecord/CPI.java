@@ -34,7 +34,7 @@ public abstract class CPI {
 		return model._getModifyFlag();
 	}
 
-	public static final Set<String> getModifyFlag(Record record) {
+	public static final Set<String> getModifyFlag(Row record) {
 		return record._getModifyFlag();
 	}
 
@@ -74,23 +74,23 @@ public abstract class CPI {
 		return record.getColumns();
 	} */
 
-	public static void setColumnsMap(Record record, Map<String, Object> columns) {
+	public static void setColumnsMap(Row record, Map<String, Object> columns) {
 		record.setColumnsMap(columns);
 	}
 
-	public static List<Record> find(Connection conn, String sql, Object... paras) throws SQLException {
+	public static List<Row> find(Connection conn, String sql, Object... paras) throws SQLException {
 		return Db.find(DbKit.config, conn, sql, paras);
 	}
 
-	public static List<Record> find(String configName, Connection conn, String sql, Object... paras) throws SQLException {
+	public static List<Row> find(String configName, Connection conn, String sql, Object... paras) throws SQLException {
 		return Db.find(DbKit.getConfig(configName), conn, sql, paras);
 	}
 
-	public static Page<Record> paginate(Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws SQLException {
+	public static Page<Row> paginate(Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws SQLException {
 		return Db.paginate(DbKit.config, conn, pageNumber, pageSize, select, sqlExceptSelect, paras);
 	}
 
-	public static Page<Record> paginate(String configName, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws SQLException {
+	public static Page<Row> paginate(String configName, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws SQLException {
 		return Db.paginate(DbKit.getConfig(configName), conn, pageNumber, pageSize, select, sqlExceptSelect, paras);
 	}
 

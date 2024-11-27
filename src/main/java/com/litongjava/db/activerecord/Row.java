@@ -18,7 +18,7 @@ import com.litongjava.model.db.IRow;
 /**
  * Record
  */
-public class Record implements IRow<Record>, Serializable {
+public class Row implements IRow<Row>, Serializable {
 
   private static final long serialVersionUID = 905784513600884082L;
   private Map<String, Object> columns; // = getColumnsMap(); // getConfig().containerFactory.getColumnsMap(); // new HashMap<String, Object>();
@@ -28,7 +28,7 @@ public class Record implements IRow<Record>, Serializable {
     return tableName;
   }
 
-  public Record setTableName(String tableName) {
+  public Row setTableName(String tableName) {
     this.tableName = tableName;
     return this;
   }
@@ -62,7 +62,7 @@ public class Record implements IRow<Record>, Serializable {
    * Only the containerFactory of the config used by Record for getColumnsMap()
    * @param configName the config name
    */
-  public Record setContainerFactoryByConfigName(String configName) {
+  public Row setContainerFactoryByConfigName(String configName) {
     Config config = DbKit.getConfig(configName);
     if (config == null) {
       throw new IllegalArgumentException("Config not found: " + configName);
@@ -107,7 +107,7 @@ public class Record implements IRow<Record>, Serializable {
    * Set columns value with map.
    * @param columns the columns map
    */
-  public Record setColumns(Map<String, Object> columns) {
+  public Row setColumns(Map<String, Object> columns) {
     for (Entry<String, Object> e : columns.entrySet()) {
       set(e.getKey(), e.getValue());
     }
@@ -118,7 +118,7 @@ public class Record implements IRow<Record>, Serializable {
    * Set columns value with Record.
    * @param record the Record object
    */
-  public Record setColumns(Record record) {
+  public Row setColumns(Row record) {
     return setColumns(record.getColumns());
   }
 
@@ -126,7 +126,7 @@ public class Record implements IRow<Record>, Serializable {
    * Set columns value with Model object.
    * @param model the Model object
    */
-  public Record setColumns(Model<?> model) {
+  public Row setColumns(Model<?> model) {
     return setColumns(model._getAttrs());
   }
 
@@ -134,7 +134,7 @@ public class Record implements IRow<Record>, Serializable {
    * Remove attribute of this record.
    * @param column the column name of the record
    */
-  public Record remove(String column) {
+  public Row remove(String column) {
     getColumns().remove(column);
     _getModifyFlag().remove(column);
     return this;
@@ -144,7 +144,7 @@ public class Record implements IRow<Record>, Serializable {
    * Remove columns of this record.
    * @param columns the column names of the record
    */
-  public Record remove(String... columns) {
+  public Row remove(String... columns) {
     if (columns != null) {
       for (String c : columns) {
         this.getColumns().remove(c);
@@ -157,7 +157,7 @@ public class Record implements IRow<Record>, Serializable {
   /**
    * Remove columns if it is null.
    */
-  public Record removeNullValueColumns() {
+  public Row removeNullValueColumns() {
     for (java.util.Iterator<Entry<String, Object>> it = getColumns().entrySet().iterator(); it.hasNext();) {
       Entry<String, Object> e = it.next();
       if (e.getValue() == null) {
@@ -173,7 +173,7 @@ public class Record implements IRow<Record>, Serializable {
    * @param columns the column names of the record
    */
   @SuppressWarnings("unchecked")
-  public Record keep(String... columns) {
+  public Row keep(String... columns) {
     if (columns != null && columns.length > 0) {
       Config config = DbKit.getConfig();
       if (config == null) { // 支持无数据库连接场景
@@ -200,7 +200,7 @@ public class Record implements IRow<Record>, Serializable {
    * Keep column of this record and remove other columns.
    * @param column the column names of the record
    */
-  public Record keep(String column) {
+  public Row keep(String column) {
     if (getColumns().containsKey(column)) { // prevent put null value to the newColumns
       Object keepIt = getColumns().get(column);
       getColumns().clear();
@@ -221,7 +221,7 @@ public class Record implements IRow<Record>, Serializable {
   /**
    * Remove all columns of this record.
    */
-  public Record clear() {
+  public Row clear() {
     getColumns().clear();
     clearModifyFlag();
     return this;
@@ -232,7 +232,7 @@ public class Record implements IRow<Record>, Serializable {
    * @param column the column name
    * @param value the value of the column
    */
-  public Record set(String column, Object value) {
+  public Row set(String column, Object value) {
     getColumns().put(column, value);
     _getModifyFlag().add(column); // Add modify flag, update() need this flag.
     return this;
@@ -455,11 +455,11 @@ public class Record implements IRow<Record>, Serializable {
   }
 
   public boolean equals(Object o) {
-    if (!(o instanceof Record))
+    if (!(o instanceof Row))
       return false;
     if (o == this)
       return true;
-    return getColumns().equals(((Record) o).getColumns());
+    return getColumns().equals(((Row) o).getColumns());
   }
 
   public int hashCode() {
@@ -488,13 +488,13 @@ public class Record implements IRow<Record>, Serializable {
   }
 
   @Override
-  public Record put(Map<String, Object> map) {
+  public Row put(Map<String, Object> map) {
     getColumns().putAll(map);
     return this;
   }
 
   @Override
-  public Record put(String key, Object value) {
+  public Row put(String key, Object value) {
     getColumns().put(key, value);
     return this;
   }
@@ -521,19 +521,19 @@ public class Record implements IRow<Record>, Serializable {
    * @param bean
    * @return
    */
-  public static Record fromBean(Object bean) {
+  public static Row fromBean(Object bean) {
     return DbKit.getConfig().getRecordConvert().fromJavaBean(bean);
   }
 
-  public static Record by(String column, Object value) {
-    Record record = new Record();
+  public static Row by(String column, Object value) {
+    Row record = new Row();
     record.getColumns().put(column, value);
     record._getModifyFlag().add(column); // Add modify flag, update() need this flag.
     return record;
   }
 
-  public static Record fromMap(Map<String, Object> recordMap) {
-    Record record = new Record();
+  public static Row fromMap(Map<String, Object> recordMap) {
+    Row record = new Row();
     return record.setColumns(recordMap);
   }
 

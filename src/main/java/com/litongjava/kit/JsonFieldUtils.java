@@ -7,7 +7,7 @@ import java.util.List;
 import org.postgresql.util.PGobject;
 
 import com.jfinal.kit.Kv;
-import com.litongjava.db.activerecord.Record;
+import com.litongjava.db.activerecord.Row;
 import com.litongjava.tio.utils.hutool.StrUtil;
 import com.litongjava.tio.utils.json.JsonUtils;
 
@@ -63,48 +63,48 @@ public class JsonFieldUtils {
     }
   }
 
-  public static <T> void toBean(Record record, String key, Class<T> clazz) {
-    Object object = record.get(key);
+  public static <T> void toBean(Row row, String key, Class<T> clazz) {
+    Object object = row.get(key);
     if (object instanceof PGobject) {
       PGobject pgObject1 = (PGobject) object;
       String value = pgObject1.getValue();
       if (StrUtil.isNotBlank(value)) {
         T setting = JsonUtils.parse(value, clazz);
-        record.set(key, setting);
+        row.set(key, setting);
       } else {
-        record.set(key, new HashMap<>(1));
+        row.set(key, new HashMap<>(1));
       }
     } else if (object instanceof String) {
       String value = (String) object;
       if (StrUtil.isNotBlank(value)) {
         T setting = JsonUtils.parse(value, clazz);
-        record.set(key, setting);
+        row.set(key, setting);
       } else {
-        record.set(key, new HashMap<>(1));
+        row.set(key, new HashMap<>(1));
       }
     } else {
       return;
     }
   }
 
-  public static <T> void toListBean(Record record, String key, Class<T> clazz) {
-    Object object = record.get(key);
+  public static <T> void toListBean(Row row, String key, Class<T> clazz) {
+    Object object = row.get(key);
     if (object instanceof PGobject) {
       PGobject pgObject1 = (PGobject) object;
       String value = pgObject1.getValue();
       if (StrUtil.isNotBlank(value)) {
         List<T> setting = JsonUtils.parseArray(value, clazz);
-        record.set(key, setting);
+        row.set(key, setting);
       } else {
-        record.set(key, new HashMap<>(1));
+        row.set(key, new HashMap<>(1));
       }
     } else if (object instanceof String) {
       String value = (String) object;
       if (StrUtil.isNotBlank(value)) {
         List<T> setting = JsonUtils.parseArray(value, clazz);
-        record.set(key, setting);
+        row.set(key, setting);
       } else {
-        record.set(key, new HashMap<>(1));
+        row.set(key, new HashMap<>(1));
       }
     } else {
       return;
