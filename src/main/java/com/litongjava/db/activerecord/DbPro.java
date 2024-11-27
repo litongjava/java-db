@@ -417,20 +417,41 @@ public class DbPro {
    * Execute sql update
    */
   protected int update(Config config, Connection conn, String sql, Object... paras) {
-    try (PreparedStatement pst = conn.prepareStatement(sql)) {
-      config.dialect.fillStatement(pst, paras);
-      long start = System.currentTimeMillis();
-      int result = pst.executeUpdate();
-      ISqlStatementStat stat = config.getSqlStatementStat();
-      if (stat != null) {
-        long end = System.currentTimeMillis();
-        long elapsed = end - start;
-        stat.save(config.name, "update", sql, paras, result, start, elapsed, config.writeSync);
-      }
-      return result;
+    PreparedStatement pst;
+    try {
+      pst = conn.prepareStatement(sql);
     } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage() + " " + sql, e);
+      throw new ActiveRecordException(e.getMessage() + " sql:" + sql, e);
     }
+    try {
+      config.dialect.fillStatement(pst, paras);
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage() + " sql:" + sql, e);
+    }
+
+    long start = System.currentTimeMillis();
+    int result;
+    try {
+      result = pst.executeUpdate();
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage() + " sql:" + sql, e);
+    } finally {
+      if (pst != null) {
+        try {
+          pst.close();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    ISqlStatementStat stat = config.getSqlStatementStat();
+    if (stat != null) {
+      long end = System.currentTimeMillis();
+      long elapsed = end - start;
+      stat.save(config.name, "update", sql, paras, result, start, elapsed, config.writeSync);
+    }
+    return result;
+
   }
 
   /**
@@ -1478,8 +1499,10 @@ public class DbPro {
 
     for (int i = 0; i < pKeys.length; i++) {
       ids[i] = record.get(pKeys[i].trim()); // .trim() is important!
-      if (ids[i] == null)
+      if (ids[i] == null) {
         throw new ActiveRecordException("You can't update record without Primary Key, " + pKeys[i] + " can not be null.");
+      }
+        
     }
 
     StringBuilder sql = new StringBuilder();

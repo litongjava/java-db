@@ -24,7 +24,7 @@ public class DialectUtils {
   }
 
   public static String forDbFindColumnsById(String tableName, String columns, String[] pKeys) {
-    StringBuilder sql = forDbFindColumnsReturnStrinBuilder(tableName, columns);
+    StringBuilder sql = forDbFindColumnsSql(tableName, columns);
     sql.append(" where ");
     for (int i = 0; i < pKeys.length; i++) {
       if (i > 0) {
@@ -36,10 +36,10 @@ public class DialectUtils {
   }
 
   public static String forDbFindColumns(String tableName, String columns) {
-    return forDbFindColumnsReturnStrinBuilder(tableName, columns).toString();
+    return forDbFindColumnsSql(tableName, columns).toString();
   }
 
-  public static StringBuilder forDbFindColumnsReturnStrinBuilder(String tableName, String columns) {
+  public static StringBuilder forDbFindColumnsSql(String tableName, String columns) {
     StringBuilder sql = new StringBuilder("select ");
     columns = columns.trim();
     if ("*".equals(columns)) {
@@ -54,7 +54,12 @@ public class DialectUtils {
       }
     }
 
-    sql.append(" from `").append(tableName).append("`");
+    if (tableName.contains(".")) {
+      sql.append(" from ").append(tableName);
+    } else {
+      sql.append(" from `").append(tableName).append("`");
+    }
+
     return sql;
   }
 
@@ -62,8 +67,12 @@ public class DialectUtils {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys); // important
 
-    sql.append("delete from `");
-    sql.append(tableName).append("`");
+    sql.append("delete from ");
+    if (tableName.contains(".")) {
+      sql.append(tableName);
+    } else {
+      sql.append("`").append(tableName).append("`");
+    }
 
     sql.append(" where ");
 
@@ -80,7 +89,12 @@ public class DialectUtils {
 
   public static String forExistsByFields(String tableName, String fields) {
     StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append("select count(1) from `").append(tableName).append("`");
+    if(tableName.contains(".")) {
+      stringBuffer.append("select count(1) from ").append(tableName);
+    }else {
+      stringBuffer.append("select count(1) from `").append(tableName).append("`");
+    }
+    
     String[] split = fields.split(",");
     if (split.length > 0) {
       stringBuffer.append(" where ");

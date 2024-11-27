@@ -22,11 +22,19 @@ import com.litongjava.tio.utils.json.JsonUtils;
 public class MysqlDialect extends Dialect {
 
   public String forTableBuilderDoBuild(String tableName) {
-    return "select * from `" + tableName + "` where 1 = 2";
+    if (tableName.contains(".")) {
+      return "select * from " + tableName + " where 1 = 2";
+    } else {
+      return "select * from `" + tableName + "` where 1 = 2";
+    }
   }
 
   public String forFindAll(String tableName) {
-    return "select * from `" + tableName + "`";
+    if (tableName.contains(".")) {
+      return "select * from " + tableName;
+    } else {
+      return "select * from `" + tableName + "`";
+    }
   }
 
   public void forModelSave(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras) {
@@ -50,9 +58,14 @@ public class MysqlDialect extends Dialect {
   public String forModelDeleteById(Table table) {
     String[] pKeys = table.getPrimaryKey();
     StringBuilder sql = new StringBuilder(45);
-    sql.append("delete from `");
-    sql.append(table.getName());
-    sql.append("` where ");
+    String tableName = table.getName();
+    if (tableName.contains(".")) {
+      sql.append("delete from ").append(tableName);
+    } else {
+      sql.append("delete from `").append(tableName).append("`");
+    }
+
+    sql.append(" where ");
     for (int i = 0; i < pKeys.length; i++) {
       if (i > 0) {
         sql.append(" and ");
@@ -63,7 +76,13 @@ public class MysqlDialect extends Dialect {
   }
 
   public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras) {
-    sql.append("update `").append(table.getName()).append("` set ");
+    String tableName = table.getName();
+    if (tableName.contains(".")) {
+      sql.append("update ").append(tableName);
+    } else {
+      sql.append("update `").append(tableName).append("`");
+    }
+    sql.append(" set ");
     String[] pKeys = table.getPrimaryKey();
     for (Entry<String, Object> e : attrs.entrySet()) {
       String colName = e.getKey();
@@ -95,7 +114,13 @@ public class MysqlDialect extends Dialect {
     tableName = tableName.trim();
     DialectUtils.trimPrimaryKeys(pKeys);
 
-    StringBuilder sql = new StringBuilder("select * from `").append(tableName).append("` where ");
+    StringBuilder sql = new StringBuilder("select * from ");
+    if (tableName.contains(".")) {
+      sql.append(tableName);
+    } else {
+      sql.append("`").append(tableName).append("`");
+    }
+    sql.append(" where ");
     for (int i = 0; i < pKeys.length; i++) {
       if (i > 0) {
         sql.append(" and ");
@@ -108,8 +133,14 @@ public class MysqlDialect extends Dialect {
   public String forDbDeleteById(String tableName, String[] pKeys) {
     tableName = tableName.trim();
     DialectUtils.trimPrimaryKeys(pKeys);
+    StringBuilder sql = new StringBuilder("delete from ");
+    if (tableName.contains(".")) {
+      sql.append(tableName);
+    } else {
+      sql.append("`").append(tableName).append("`");
+    }
 
-    StringBuilder sql = new StringBuilder("delete from `").append(tableName).append("` where ");
+    sql.append(" where ");
     for (int i = 0; i < pKeys.length; i++) {
       if (i > 0) {
         sql.append(" and ");
@@ -126,8 +157,12 @@ public class MysqlDialect extends Dialect {
     tableName = tableName.trim();
     DialectUtils.trimPrimaryKeys(pKeys); // important
 
-    sql.append("insert into `");
-    sql.append(tableName).append("`(");
+    if (tableName.contains(".")) {
+      sql.append("insert into ").append(tableName).append("(");
+    } else {
+      sql.append("insert into `").append(tableName).append("`(");
+    }
+
     StringBuilder temp = new StringBuilder();
     temp.append(") values(");
 
@@ -147,7 +182,12 @@ public class MysqlDialect extends Dialect {
   public StringBuffer forDbFind(String tableName, String columns, Record record, List<Object> paras) {
     StringBuffer sql = new StringBuffer();
     tableName = tableName.trim();
-    sql.append("select ").append(columns).append(" from `").append(tableName).append("`");
+    sql.append("select ").append(columns).append(" from ");
+    if (tableName.contains(".")) {
+      sql.append(tableName);
+    } else {
+      sql.append("`").append(tableName).append("`");
+    }
 
     if (!record.getColumns().isEmpty()) {
       sql.append(" where ");
@@ -178,7 +218,12 @@ public class MysqlDialect extends Dialect {
     // Record 新增支持 modifyFlag
     Set<String> modifyFlag = CPI.getModifyFlag(record);
 
-    sql.append("update `").append(tableName).append("` set ");
+    if (tableName.contains(".")) {
+      sql.append("update ").append(tableName).append(" set ");
+    } else {
+      sql.append("update `").append(tableName).append("` set ");
+    }
+
     for (Entry<String, Object> e : record.getColumns().entrySet()) {
       String colName = e.getKey();
       if (modifyFlag.contains(colName) && !isPrimaryKey(colName, pKeys)) {
@@ -239,7 +284,6 @@ public class MysqlDialect extends Dialect {
           String value = Json.getJson().toJson(object);
           record.set(f, value);
         }
-
       }
     }
   }
