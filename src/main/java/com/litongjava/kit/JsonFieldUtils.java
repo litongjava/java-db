@@ -3,6 +3,7 @@ package com.litongjava.kit;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.postgresql.util.PGobject;
 
@@ -111,6 +112,54 @@ public class JsonFieldUtils {
     }
   }
 
+  public static void toMap(Row row, String key) {
+    Object object = row.get(key);
+    if (object instanceof PGobject) {
+      PGobject pgObject1 = (PGobject) object;
+      String value = pgObject1.getValue();
+      if (StrUtil.isNotBlank(value)) {
+        Map<?, ?> map = JsonUtils.parseToMap(value);
+        row.set(key, map);
+      } else {
+        row.set(key, new HashMap<>(1));
+      }
+    } else if (object instanceof String) {
+      String value = (String) object;
+      if (StrUtil.isNotBlank(value)) {
+        Map<?, ?> map = JsonUtils.parseToMap(value);
+        row.set(key, map);
+      } else {
+        row.set(key, new HashMap<>(1));
+      }
+    } else {
+      return;
+    }
+  }
+
+  public static <T> void toListMap(Row row, String key) {
+    Object object = row.get(key);
+    if (object instanceof PGobject) {
+      PGobject pgObject1 = (PGobject) object;
+      String value = pgObject1.getValue();
+      if (StrUtil.isNotBlank(value)) {
+        List<Map<String, Object>> maps = JsonUtils.parseToListMap(value, String.class, Object.class);
+        row.set(key, maps);
+      } else {
+        row.set(key, new HashMap<>(1));
+      }
+    } else if (object instanceof String) {
+      String value = (String) object;
+      if (StrUtil.isNotBlank(value)) {
+        List<Map<String, Object>> maps = JsonUtils.parseToListMap(value, String.class, Object.class);
+        row.set(key, maps);
+      } else {
+        row.set(key, new HashMap<>(1));
+      }
+    } else {
+      return;
+    }
+  }
+
   public static <T> T toBean(PGobject pgObject, Class<T> clazz) {
     String value = pgObject.getValue();
     if (StrUtil.isNotBlank(value)) {
@@ -128,4 +177,5 @@ public class JsonFieldUtils {
       return null;
     }
   }
+
 }

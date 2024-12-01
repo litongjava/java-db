@@ -1992,6 +1992,15 @@ public class RedisDb {
     }
   }
 
+  public Boolean setRawIfAbsent(String key, String value) {
+    Jedis jedis = getJedis();
+    try {
+      return jedis.setnx(key, value) == 1;
+    } finally {
+      close(jedis);
+    }
+  }
+
   /**
    * Set {@code key} to hold the string {@code value} and expiration
    * {@code timeout} if {@code key} is absent.
@@ -2007,6 +2016,16 @@ public class RedisDb {
     Jedis jedis = getJedis();
     try {
       String result = jedis.set(keyToBytes(key), valueToBytes(value), SetParams.setParams().nx().px(timeout));
+      return "OK".equals(result);
+    } finally {
+      close(jedis);
+    }
+  }
+
+  public Boolean setRawIfAbsent(String key, String value, long timeout) {
+    Jedis jedis = getJedis();
+    try {
+      String result = jedis.set(key, value, SetParams.setParams().nx().px(timeout));
       return "OK".equals(result);
     } finally {
       close(jedis);
@@ -2032,6 +2051,16 @@ public class RedisDb {
     }
   }
 
+  public Boolean setRawIfPresent(String key, String value) {
+    Jedis jedis = getJedis();
+    try {
+      String result = jedis.set(key, value, SetParams.setParams().xx());
+      return "OK".equals(result);
+    } finally {
+      close(jedis);
+    }
+  }
+
   /**
    * Set {@code key} to hold the string {@code value} and expiration
    * {@code timeout} if {@code key} is present.
@@ -2048,6 +2077,16 @@ public class RedisDb {
     Jedis jedis = getJedis();
     try {
       String result = jedis.set(keyToBytes(key), valueToBytes(value), SetParams.setParams().xx().px(unit.toMillis(timeout)));
+      return "OK".equals(result);
+    } finally {
+      close(jedis);
+    }
+  }
+
+  public Boolean setRawIfPresent(String key, String value, long timeout, TimeUnit unit) {
+    Jedis jedis = getJedis();
+    try {
+      String result = jedis.set(key, value, SetParams.setParams().xx().px(unit.toMillis(timeout)));
       return "OK".equals(result);
     } finally {
       close(jedis);

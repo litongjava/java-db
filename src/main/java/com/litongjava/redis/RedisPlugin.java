@@ -35,10 +35,14 @@ public class RedisPlugin implements IPlugin {
   protected JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
 
   public RedisPlugin(String cacheName, String host) {
-    if (StrKit.isBlank(cacheName))
+    if (StrKit.isBlank(cacheName)) {
       throw new IllegalArgumentException("cacheName can not be blank.");
-    if (StrKit.isBlank(host))
+    }
+
+    if (StrKit.isBlank(host)) {
       throw new IllegalArgumentException("host can not be blank.");
+    }
+
     this.cacheName = cacheName.trim();
     this.host = host;
   }
@@ -55,9 +59,6 @@ public class RedisPlugin implements IPlugin {
 
   public RedisPlugin(String cacheName, String host, int port, int timeout, String password) {
     this(cacheName, host, port, timeout);
-    // 当 password 未指定时 jedis 底层不进行 auth 也可以进行操作
-    // if (StrKit.isBlank(password))
-    // throw new IllegalArgumentException("password can not be blank.");
     this.password = password;
   }
 
@@ -66,11 +67,11 @@ public class RedisPlugin implements IPlugin {
     this.database = database;
   }
 
-  public RedisPlugin(String cacheName, String host, int port, int timeout, String password, int database,
-      String clientName) {
+  public RedisPlugin(String cacheName, String host, int port, int timeout, String password, int database, String clientName) {
     this(cacheName, host, port, timeout, password, database);
-    if (StrKit.isBlank(clientName))
+    if (StrKit.isBlank(clientName)) {
       throw new IllegalArgumentException("clientName can not be blank.");
+    }
     this.clientName = clientName;
   }
 
@@ -97,8 +98,6 @@ public class RedisPlugin implements IPlugin {
     } else if (port != null && timeout != null) {
       jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout, password);
     }
-    // else if (port != null && timeout != null)
-    // jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout);
     else if (port != null) {
       jedisPool = new JedisPool(jedisPoolConfig, host, port);
     } else {
