@@ -12,16 +12,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 import com.litongjava.db.activerecord.Config;
 import com.litongjava.db.activerecord.Model;
 import com.litongjava.db.activerecord.ModelBuilder;
-import com.litongjava.db.activerecord.Row;
 import com.litongjava.db.activerecord.RecordBuilder;
+import com.litongjava.db.activerecord.Row;
 import com.litongjava.db.activerecord.Table;
 import com.litongjava.db.activerecord.builder.KeepByteAndShortModelBuilder;
 import com.litongjava.db.activerecord.builder.KeepByteAndShortRecordBuilder;
+import com.litongjava.db.kit.SqlParseKit;
 import com.litongjava.model.page.Page;
 import com.litongjava.tio.utils.json.JsonUtils;
 
@@ -273,14 +273,6 @@ public abstract class Dialect {
     return false;
   }
 
-  protected static class Holder {
-    // "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*";
-    private static final Pattern ORDER_BY_PATTERN = Pattern.compile("order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
-  }
-
-  public String replaceOrderBy(String sql) {
-    return Holder.ORDER_BY_PATTERN.matcher(sql).replaceAll("");
-  }
 
   public void fillPst(PreparedStatement pst, int i, Object value) throws SQLException {
     if (value instanceof String) {
@@ -339,7 +331,7 @@ public abstract class Dialect {
    * @param ext             扩展参数，在 Model 调用时传入 Model 对象，在 DbPro 调用时传入 null
    */
   public String forPaginateTotalRow(String select, String sqlExceptSelect, Object ext) {
-    return "select count(*) " + replaceOrderBy(sqlExceptSelect);
+    return "select count(*) " + SqlParseKit.replaceOrderBy(sqlExceptSelect);
   }
 
   public void trimPrimaryKeys(String[] pKeys) {
