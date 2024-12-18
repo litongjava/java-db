@@ -147,6 +147,10 @@ public class Db {
     return MAIN.save(tableName, primaryKey, record);
   }
 
+  public static boolean save(String sql, Object... paras) {
+    return MAIN.save(sql, paras);
+  }
+
   /**
    * @see #save(String, String, Row)
    */
@@ -2108,6 +2112,20 @@ public class Db {
   }
 
   public static List<String> queryListString(String sql, Object... params) {
+    if (replicas != null) {
+      return useReplica().query(sql, params);
+    }
+    return MAIN.query(sql, params);
+  }
+
+  public static List<Integer> queryListInteger(String sql) {
+    if (replicas != null) {
+      return useReplica().query(sql);
+    }
+    return MAIN.query(sql);
+  }
+
+  public static List<Integer> queryListInteger(String sql, Object... params) {
     if (replicas != null) {
       return useReplica().query(sql, params);
     }

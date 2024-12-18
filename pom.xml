@@ -16,7 +16,7 @@
     <logback-version>1.4.11</logback-version>
     <lombok-version>1.18.30</lombok-version>
     <java-model.version>1.1.2</java-model.version>
-    <tio.version>3.7.3.v20241015-RELEASE</tio.version>
+    <tio.version>3.7.3.v20241212-RELEASE</tio.version>
   </properties>
   <dependencies>
     <dependency>

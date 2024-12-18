@@ -260,6 +260,7 @@ public class DbPro {
     return queryLong(sql, DbKit.NULL_PARA_ARRAY);
   }
 
+
   public Double queryDouble(String sql, Object... paras) {
     Number n = queryNumber(sql, paras);
     return n != null ? n.doubleValue() : null;
@@ -1325,6 +1326,54 @@ public class DbPro {
     return doPaginateByFullSql(clazz, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
+  protected boolean save(Config config, Connection conn, String sql, Object... paras) {
+
+    PreparedStatement pst = null;
+    if (config.dialect.isOracle()) {
+      try {
+        pst = conn.prepareStatement(sql);
+      } catch (SQLException e) {
+        throw new ActiveRecordException(e);
+      }
+    } else {
+      try {
+        pst = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+      } catch (SQLException e) {
+        throw new ActiveRecordException(e);
+      }
+    }
+
+    try {
+      config.dialect.fillStatement(pst, paras);
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
+    }
+
+    long start = System.currentTimeMillis();
+    int result = 0;
+    try {
+      result = pst.executeUpdate();
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage() + " " + sql + " " + paras.toString(), e);
+    } finally {
+      if (pst != null) {
+        try {
+          pst.close();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+
+    ISqlStatementStat stat = config.getSqlStatementStat();
+    if (stat != null) {
+      long end = System.currentTimeMillis();
+      long elapsed = end - start;
+      stat.save(config.name, "save", sql, paras, result, start, elapsed, config.writeSync);
+    }
+    return result >= 1;
+  }
+
   protected boolean save(Config config, Connection conn, String tableName, String primaryKey, Row record) {
     String[] pKeys = primaryKey.split(",");
     List<Object> paras = new ArrayList<Object>();
@@ -1430,6 +1479,16 @@ public class DbPro {
     }
   }
 
+  public boolean save(String sql, Object... paras) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
+      return save(config, conn, sql, paras);
+    } finally {
+      config.close(conn);
+    }
+  }
+
   public boolean save(String tableName, String primaryKey, Row record, String[] jsonFields) {
     Connection conn = null;
     try {
@@ -1502,7 +1561,7 @@ public class DbPro {
       if (ids[i] == null) {
         throw new ActiveRecordException("You can't update record without Primary Key, " + pKeys[i] + " can not be null.");
       }
-        
+
     }
 
     StringBuilder sql = new StringBuilder();
@@ -2697,5 +2756,7 @@ public class DbPro {
     stringBuffer.append("SELECT count(*) from ").append(table).append(";");
     return Db.queryLong(stringBuffer.toString());
   }
+
+ 
 
 }
