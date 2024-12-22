@@ -7,6 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -332,7 +335,7 @@ public class PostgreSqlDialect extends Dialect {
     }
     return sql.toString();
   }
-  
+
   public static StringBuilder forDbFindColumnsReturnStrinBuilder(String tableName, String columns) {
     StringBuilder sql = new StringBuilder("select ");
     columns = columns.trim();
@@ -531,7 +534,16 @@ public class PostgreSqlDialect extends Dialect {
       pst.setBigDecimal(i + 1, (BigDecimal) value);
     } else if (value instanceof Boolean) {
       pst.setBoolean(i + 1, (Boolean) value);
-    } else if (value instanceof java.time.LocalDate) {
+    }
+
+    // OffsetDateTime
+    else if (value instanceof OffsetDateTime) {
+      OffsetDateTime offsetDateTime = (OffsetDateTime) value;
+      LocalDateTime localDateTime = offsetDateTime.toLocalDateTime();
+      pst.setTimestamp(i + 1, Timestamp.valueOf(localDateTime));
+    }
+    //
+    else if (value instanceof java.time.LocalDate) {
       pst.setDate(i + 1, java.sql.Date.valueOf((java.time.LocalDate) value));
     } else if (value instanceof java.time.LocalDateTime) {
       pst.setTimestamp(i + 1, java.sql.Timestamp.valueOf((java.time.LocalDateTime) value));
