@@ -618,6 +618,20 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
+  public StringBuffer forDbFindByField(String tableName, String columns, String field, Object fieldValue, List<Object> paras) {
+    StringBuffer sql = new StringBuffer();
+    tableName = tableName.trim();
+    sql.append("select ").append(columns).append(" from \"").append(tableName).append("\"");
+
+    if (field != null && !field.isEmpty()) {
+      sql.append(" where ");
+      sql.append('"').append(field).append("\" = ?");
+      paras.add(fieldValue);
+    }
+    return sql;
+  }
+
+  @Override
   public String forColumns(String columns) {
     if (StrUtil.isNotEmpty(columns)) {
       String[] arr = columns.split(",");
@@ -633,4 +647,5 @@ public class PostgreSqlDialect extends Dialect {
       return null;
     }
   }
+
 }

@@ -276,6 +276,21 @@ public class InformixDialect extends Dialect {
     }
     return sql;
   }
+
+  @Override
+  public StringBuffer forDbFindByField(String tableName, String columns, String field, Object fieldValue, List<Object> paras) {
+    StringBuffer sql = new StringBuffer();
+    tableName = tableName.trim();
+    sql.append("select ").append(columns).append(" from ").append(tableName);
+
+    if (field != null && !field.isEmpty()) {
+      sql.append(" where ");
+      sql.append(field).append(" = ?");
+      paras.add(fieldValue);
+    }
+    return sql;
+  }
+
   @Override
   public String forColumns(String columns) {
     return DialectUtils.forColumns(columns);

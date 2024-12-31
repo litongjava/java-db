@@ -16,6 +16,15 @@ import com.litongjava.tio.utils.name.CamelNameUtils;
 
 public class RowUtils {
 
+  public static boolean isExistsPGobject=true;
+  static {
+    try {
+      Class.forName("org.postgresql.util.PGobject");
+    } catch (ClassNotFoundException e) {
+      isExistsPGobject=false;
+    }
+  }
+
   public static List<List<Object>> getListData(List<Row> records, int size) {
     List<List<Object>> columnValues = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
@@ -27,7 +36,7 @@ public class RowUtils {
           columnValuesForRow[j] = JsonUtils.toJson(columnValuesForRow[j]);
         } else if (columnValuesForRow[j] instanceof List) {
           columnValuesForRow[j] = JsonUtils.toJson(columnValuesForRow[j]);
-        } else if (columnValuesForRow[j] instanceof PGobject) {
+        } else if (isExistsPGobject && columnValuesForRow[j] instanceof PGobject) {
           PGobject pgObject = (PGobject) columnValuesForRow[j];
           columnValuesForRow[j] = JsonUtils.toJson(pgObject.getValue());
         }

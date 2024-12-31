@@ -60,6 +60,8 @@ public abstract class Dialect {
 
   public abstract StringBuffer forDbFind(String tableName, String columns, Row record, List<Object> paras);
 
+  public abstract StringBuffer forDbFindByField(String tableName, String columns, String field, Object fieldValue, List<Object> paras);
+
   public abstract void forDbSave(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras);
 
   public abstract void forDbDelete(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras);
@@ -273,7 +275,6 @@ public abstract class Dialect {
     return false;
   }
 
-
   public void fillPst(PreparedStatement pst, int i, Object value) throws SQLException {
     if (value instanceof String) {
       pst.setString(i + 1, (String) value);
@@ -337,4 +338,5 @@ public abstract class Dialect {
   public void trimPrimaryKeys(String[] pKeys) {
     DialectUtils.trimPrimaryKeys(pKeys);
   }
+
 }

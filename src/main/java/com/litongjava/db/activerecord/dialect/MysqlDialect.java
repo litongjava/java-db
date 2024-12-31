@@ -207,6 +207,25 @@ public class MysqlDialect extends Dialect {
   }
 
   @Override
+  public StringBuffer forDbFindByField(String tableName, String columns, String field, Object fieldValue, List<Object> paras) {
+    StringBuffer sql = new StringBuffer();
+    tableName = tableName.trim();
+    sql.append("select ").append(columns).append(" from ");
+    if (tableName.contains(".")) {
+      sql.append(tableName);
+    } else {
+      sql.append("`").append(tableName).append("`");
+    }
+
+    if (field != null && !field.isEmpty()) {
+      sql.append(" where ");
+      sql.append('`').append(field).append("` = ?");
+      paras.add(fieldValue);
+    }
+    return sql;
+  }
+
+  @Override
   public void forDbDelete(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
     DialectUtils.forDbDelete(tableName, pKeys, record, sql, paras);
   }
@@ -356,4 +375,5 @@ public class MysqlDialect extends Dialect {
   public String forColumns(String columns) {
     return DialectUtils.forColumns(columns);
   }
+
 }

@@ -260,7 +260,6 @@ public class DbPro {
     return queryLong(sql, DbKit.NULL_PARA_ARRAY);
   }
 
-
   public Double queryDouble(String sql, Object... paras) {
     Number n = queryNumber(sql, paras);
     return n != null ? n.doubleValue() : null;
@@ -609,6 +608,61 @@ public class DbPro {
     return result;
   }
 
+  public List<Row> findByField(Config config, Connection conn, String tableName, String columns, String field, Object fieldValue) {
+
+    List<Object> paras = new ArrayList<>();
+
+    StringBuffer sqlBuffer = config.dialect.forDbFindByField(tableName, columns, field, fieldValue, paras);
+    PreparedStatement pst;
+    try {
+      pst = conn.prepareStatement(sqlBuffer.toString());
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
+    }
+    try {
+      config.dialect.fillStatement(pst, paras);
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
+    }
+
+    List<Row> result = null;
+    ResultSet rs;
+    long start = System.currentTimeMillis();
+    try {
+      rs = pst.executeQuery();
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage() + " " + sqlBuffer.toString(), e);
+    }
+    try {
+      result = config.dialect.buildRecordList(config, rs);
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e);
+    } finally {
+      if (rs != null) {
+        try {
+          rs.close();
+        } catch (SQLException e) {
+          throw new ActiveRecordException(e);
+        }
+      }
+      if (pst != null) {
+        try {
+          pst.close();
+        } catch (SQLException e) {
+          throw new ActiveRecordException(e);
+        }
+      }
+    }
+
+    ISqlStatementStat stat = config.getSqlStatementStat();
+    if (stat != null) {
+      long end = System.currentTimeMillis();
+      long elapsed = end - start;
+      stat.save(config.name, "find", sqlBuffer.toString(), paras, result.size(), start, elapsed, config.writeSync);
+    }
+    return result;
+  }
+
   protected List<Row> find(Config config, Connection conn, String sql, List paras) {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
@@ -672,6 +726,16 @@ public class DbPro {
     try {
       conn = config.getConnection();
       return find(config, conn, tableName, "*", record);
+    } finally {
+      config.close(conn);
+    }
+  }
+
+  public List<Row> findByField(String tableName, String field, Object fieldValue) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
+      return findByField(config, conn, tableName, "*", field, fieldValue);
     } finally {
       config.close(conn);
     }
@@ -2756,7 +2820,5 @@ public class DbPro {
     stringBuffer.append("SELECT count(*) from ").append(table).append(";");
     return Db.queryLong(stringBuffer.toString());
   }
-
- 
 
 }

@@ -769,6 +769,13 @@ public class Db {
     return MAIN.find(tableName, record);
   }
 
+  public static List<Row> findByField(String tableName, String field, Object fieldValue) {
+    if (replicas != null) {
+      return useReplica().findByField(tableName, field, fieldValue);
+    }
+    return MAIN.findByField(tableName, field, fieldValue);
+  }
+
   public static List<Row> find(String tableName, String columns, Row record) {
     if (replicas != null) {
       return useReplica().find(tableName, columns, record);
