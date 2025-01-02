@@ -856,7 +856,7 @@ public class Db {
    * @param columns
    * @return
    */
-  public static List<Row> findColumnsAll(String tableName, String columns) {
+  public static List<Row> findColumns(String tableName, String columns) {
     if (replicas != null) {
       return useReplica().findColumnsAll(tableName, columns);
     }
@@ -870,7 +870,7 @@ public class Db {
    * @param columns
    * @return
    */
-  public static <T> List<T> findColumnsAll(Class<T> clazz, String tableName, String columns) {
+  public static <T> List<T> findColumns(Class<T> clazz, String tableName, String columns) {
     if (replicas != null) {
       return useReplica().findColumnsAll(clazz, tableName, columns);
     }
