@@ -109,9 +109,9 @@ public class ModelGenerator {
 		String target = modelOutputDir + File.separator + tableMeta.modelName + ".java";
 		
 		File file = new File(target);
-		if (file.exists()) {
-			return ;	// 若 Model 存在，不覆盖
-		}
+		//if (file.exists()) {
+		//	return ;	// 若 Model 存在，不覆盖
+		//}
 		
 		try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(file), "UTF-8")) {
 			osw.write(tableMeta.modelContent);
