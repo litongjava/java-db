@@ -517,6 +517,13 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   }
 
   protected Page<M> doPaginate(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+
+    if (sqlExceptSelect.contains("$table_name")) {
+      sqlExceptSelect = sqlExceptSelect.replace("$table_name", _getTableName());
+    } else if (sqlExceptSelect.contains("$tableName")) {
+      sqlExceptSelect = sqlExceptSelect.replace("$tableName", _getTableName());
+    }
+
     Config config = _getReadConfig();
     Connection conn = null;
     try {
@@ -789,10 +796,10 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   protected List<M> find(Config config, Connection conn, String sql, Object... paras) {
     if (sql.contains("$table_name")) {
       sql = sql.replace("$table_name", _getTableName());
-
     } else if (sql.contains("$tableName")) {
       sql = sql.replace("$tableName", _getTableName());
     }
+
     PreparedStatement pst = null;
     try {
       pst = conn.prepareStatement(sql);
