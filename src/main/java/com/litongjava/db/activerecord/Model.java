@@ -787,6 +787,12 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    *      关闭掉，否则将出现 Connection 资源不能及时回收的问题
    */
   protected List<M> find(Config config, Connection conn, String sql, Object... paras) {
+    if (sql.contains("$table_name")) {
+      sql = sql.replace("$table_name", _getTableName());
+
+    } else if (sql.contains("$tableName")) {
+      sql = sql.replace("$tableName", _getTableName());
+    }
     PreparedStatement pst = null;
     try {
       pst = conn.prepareStatement(sql);
