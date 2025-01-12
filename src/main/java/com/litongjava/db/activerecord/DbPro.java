@@ -440,7 +440,7 @@ public class DbPro {
         try {
           pst.close();
         } catch (SQLException e) {
-          e.printStackTrace();
+          throw new ActiveRecordException(e.getMessage(),e);
         }
       }
     }
@@ -1424,7 +1424,7 @@ public class DbPro {
         try {
           pst.close();
         } catch (SQLException e) {
-          e.printStackTrace();
+          throw new ActiveRecordException(e.getMessage(),e);
         }
       }
     }
@@ -1478,7 +1478,7 @@ public class DbPro {
         try {
           pst.close();
         } catch (SQLException e) {
-          e.printStackTrace();
+          throw new ActiveRecordException(e.getMessage(),e);
         }
       }
     }
@@ -2164,7 +2164,7 @@ public class DbPro {
 
     Object element = list.get(0);
     if (!(element instanceof Row) && !(element instanceof Model)) {
-      throw new IllegalArgumentException("The element in list must be Model or Record.");
+      throw new IllegalArgumentException("The element in list must be Model or Row.");
     }
 
     if (batchSize < 1) {
@@ -2237,7 +2237,7 @@ public class DbPro {
           try {
             r = pst.executeBatch();
           } catch (SQLException e1) {
-            e1.printStackTrace();
+            throw new ActiveRecordException(e1.getMessage(),e1);
           }
           ISqlStatementStat stat = config.getSqlStatementStat();
           if (stat != null) {
@@ -2287,7 +2287,7 @@ public class DbPro {
         try {
           pst.close();
         } catch (SQLException e) {
-          e.printStackTrace();
+          throw new ActiveRecordException(e.getMessage(),e);
         }
       }
     }
@@ -2322,12 +2322,13 @@ public class DbPro {
 
       return batch(config, conn, sql, columns, modelOrRecordList, batchSize);
     } finally {
-      if (autoCommit != null)
+      if (autoCommit != null) {
         try {
           conn.setAutoCommit(autoCommit);
         } catch (Exception e) {
-          log.error(e.getMessage(), e);
+          throw new ActiveRecordException(e.getMessage(),e);
         }
+      }
       config.close(conn);
     }
   }
@@ -2584,7 +2585,7 @@ public class DbPro {
     }
     Set<String> modifyFlag = model._getModifyFlag();
 
-    Table table = TableMapping.me().getTable(model.getClass());
+    Table table = model._getTable();
     String[] pKeys = table.getPrimaryKey();
     Map<String, Object> attrs = model._getAttrs();
     List<String> attrNames = new ArrayList<String>();
@@ -2592,11 +2593,14 @@ public class DbPro {
     // attrs
     for (Entry<String, Object> e : attrs.entrySet()) {
       String attr = e.getKey();
-      if (modifyFlag.contains(attr) && !config.dialect.isPrimaryKey(attr, pKeys) && table.hasColumnLabel(attr))
+      if (modifyFlag.contains(attr) && !config.dialect.isPrimaryKey(attr, pKeys) && table.hasColumnLabel(attr)) {
         attrNames.add(attr);
+
+      }
     }
-    for (String pKey : pKeys)
+    for (String pKey : pKeys) {
       attrNames.add(pKey);
+    }
     String columns = StrKit.join(attrNames.toArray(new String[attrNames.size()]), ",");
 
     // update all attrs of the model not use the midifyFlag of every single model
@@ -2604,7 +2608,7 @@ public class DbPro {
 
     StringBuilder sql = new StringBuilder();
     List<Object> parasNoUse = new ArrayList<Object>();
-    config.dialect.forModelUpdate(TableMapping.me().getTable(model.getClass()), attrs, modifyFlag, sql, parasNoUse);
+    config.dialect.forModelUpdate(model._getTable(), attrs, modifyFlag, sql, parasNoUse);
     return batch(sql.toString(), columns, modelList, batchSize);
   }
 
@@ -2821,4 +2825,9 @@ public class DbPro {
     return Db.queryLong(stringBuffer.toString());
   }
 
+  public Long countBySql(String sql, Object... paras) {
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append("SELECT count(*) from (").append(sql).append(") AS subquery;");
+    return Db.queryLong(stringBuffer.toString(), paras);
+  }
 }

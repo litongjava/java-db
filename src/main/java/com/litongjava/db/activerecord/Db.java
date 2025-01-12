@@ -2111,6 +2111,13 @@ public class Db {
     return MAIN.countTable(table);
   }
 
+  public Long countBySql(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryLong(sql, paras);
+    }
+    return MAIN.queryLong(sql, paras);
+  }
+
   public static List<String> queryListString(String sql) {
     if (replicas != null) {
       return useReplica().query(sql);
