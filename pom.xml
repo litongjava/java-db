@@ -16,15 +16,9 @@
     <logback-version>1.4.11</logback-version>
     <lombok-version>1.18.30</lombok-version>
     <java-model.version>1.1.6</java-model.version>
-    <tio.version>3.7.3.v20250101-RELEASE</tio.version>
+    <tio.version>3.7.3.v20250201-RELEASE</tio.version>
   </properties>
   <dependencies>
-    <dependency>
-      <groupId>com.litongjava</groupId>
-      <artifactId>java-model</artifactId>
-      <version>${java-model.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>com.litongjava</groupId>
       <artifactId>tio-utils</artifactId>
