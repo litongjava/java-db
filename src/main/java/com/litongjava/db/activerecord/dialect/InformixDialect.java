@@ -115,7 +115,16 @@ public class InformixDialect extends Dialect {
     }
     return sql.toString();
   }
-
+  
+  public String forDbDeleteByField(String tableName, String field) {
+    StringBuilder sql = new StringBuilder(45);
+    sql.append("delete from ");
+    sql.append(tableName);
+    sql.append(" where ");
+    sql.append(field).append(" = ?");
+    return sql.toString();
+  }
+  
   public void forDbSave(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);

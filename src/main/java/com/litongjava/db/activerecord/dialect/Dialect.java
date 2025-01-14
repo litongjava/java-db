@@ -45,6 +45,8 @@ public abstract class Dialect {
 
   public abstract String forModelDeleteById(Table table);
 
+  public abstract String forDbDeleteByField(String tableName, String field);
+
   public abstract void forModelSave(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras);
 
   public abstract void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras);

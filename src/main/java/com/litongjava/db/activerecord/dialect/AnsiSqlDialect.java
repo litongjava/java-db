@@ -72,6 +72,15 @@ public class AnsiSqlDialect extends Dialect {
     return sql.toString();
   }
 
+  public String forDbDeleteByField(String tableName, String field) {
+    StringBuilder sql = new StringBuilder(45);
+    sql.append("delete from ");
+    sql.append(tableName);
+    sql.append(" where ");
+    sql.append(field).append(" = ?");
+    return sql.toString();
+  }
+
   public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras) {
     sql.append("update ").append(table.getName()).append(" set ");
     String[] pKeys = table.getPrimaryKey();

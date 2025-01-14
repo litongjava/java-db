@@ -150,6 +150,19 @@ public class MysqlDialect extends Dialect {
     return sql.toString();
   }
 
+  public String forDbDeleteByField(String tableName, String field) {
+    StringBuilder sql = new StringBuilder(45);
+    sql.append("delete from ");
+    if (tableName.contains(".")) {
+      sql.append(tableName);
+    } else {
+      sql.append("`").append(tableName).append("`");
+    }
+    sql.append(" where ");
+    sql.append('`').append(field).append("` = ?");
+    return sql.toString();
+  }
+
   /**
    * Do not delete the String[] pKeys parameter, the element of pKeys needs to trim()
    */

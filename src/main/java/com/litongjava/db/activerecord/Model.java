@@ -704,6 +704,14 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     return deleteById(_getTable(), idValue);
   }
 
+  public boolean deleteByField(String field, String value) {
+    if (field == null) {
+      throw new IllegalArgumentException("field can not be null");
+    }
+    return deleteByField(_getTable(), field, value);
+
+  }
+
   /**
    * Delete model by composite id values.
    * @param idValues the composite id values of the model
@@ -726,6 +734,20 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
       return Db.update(config, conn, sql, idValues) >= 1;
     } catch (Exception e) {
       throw new ActiveRecordException(e);
+    } finally {
+      config.close(conn);
+    }
+  }
+
+  protected boolean deleteByField(Table table, String field, String value) {
+    Config config = _getWriteConfig();
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
+      String sql = config.dialect.forDbDeleteByField(table.getName(), field);
+      return Db.update(config, conn, sql, value) >= 1;
+    } catch (Exception e) {
+      throw new ActiveRecordException(e.getMessage(), e);
     } finally {
       config.close(conn);
     }
