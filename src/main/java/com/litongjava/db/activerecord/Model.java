@@ -518,11 +518,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
 
   protected Page<M> doPaginate(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
 
-    if (sqlExceptSelect.contains("$table_name")) {
-      sqlExceptSelect = sqlExceptSelect.replace("$table_name", _getTableName());
-    } else if (sqlExceptSelect.contains("$tableName")) {
-      sqlExceptSelect = sqlExceptSelect.replace("$tableName", _getTableName());
-    }
+    sqlExceptSelect = replaceTableName(sqlExceptSelect);
 
     Config config = _getReadConfig();
     Connection conn = null;
@@ -537,6 +533,15 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     } finally {
       config.close(conn);
     }
+  }
+
+  private String replaceTableName(String sqlExceptSelect) {
+    if (sqlExceptSelect.contains("$table_name")) {
+      sqlExceptSelect = sqlExceptSelect.replace("$table_name", _getTableName());
+    } else if (sqlExceptSelect.contains("$tableName")) {
+      sqlExceptSelect = sqlExceptSelect.replace("$tableName", _getTableName());
+    }
+    return sqlExceptSelect;
   }
 
   protected Page<M> doPaginateByFullSql(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras)
@@ -816,11 +821,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    *      关闭掉，否则将出现 Connection 资源不能及时回收的问题
    */
   protected List<M> find(Config config, Connection conn, String sql, Object... paras) {
-    if (sql.contains("$table_name")) {
-      sql = sql.replace("$table_name", _getTableName());
-    } else if (sql.contains("$tableName")) {
-      sql = sql.replace("$tableName", _getTableName());
-    }
+    sql = replaceTableName(sql);
 
     PreparedStatement pst = null;
     try {
@@ -992,6 +993,26 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   public M findFirst() {
     Table table = _getTable();
     return findFirst(table.getName(), toRecord());
+  }
+
+  /**
+   * Execute sql query and return the first result. I recommend add "limit 1" in
+   * your sql.
+   * 
+   * @param sql   an SQL statement that may contain one or more '?' IN parameter
+   *              placeholders
+   * @param paras the parameters of sql
+   * @return Object[] if your sql has select more than one column, and it return
+   *         Object if your sql has select only one column.
+   */
+  public <T> T queryFirst(String sql, Object... paras) {
+    sql = replaceTableName(sql);
+    return Db.queryFirst(sql, paras);
+  }
+
+  public <T> List<T> query(String sql, Object... paras) {
+    sql = replaceTableName(sql);
+    return Db.query(sql, paras);
   }
 
   public M findColumnsFirst(String columns) {

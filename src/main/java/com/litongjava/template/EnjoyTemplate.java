@@ -15,5 +15,4 @@ public class EnjoyTemplate {
     String html = template.renderToString(by);
     return html;
   }
-
 }
