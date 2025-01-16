@@ -71,8 +71,8 @@ public class RecordBuilder {
       record.setColumnsMap(config.containerFactory.getColumnsMap());
       Map<String, Object> columns = record.getColumns();
       for (int i = 1; i <= columnCount; i++) {
-        Object value = BuilderKit.getColumnValue(types, rs, i);
         String labelName = labelNames[i];
+        Object value = BuilderKit.getColumnValue(types, rs, i);
 
         // add suport for mysql
         for (String jsonField : jsonFields) {
