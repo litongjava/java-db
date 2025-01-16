@@ -138,25 +138,49 @@ public class MetaBuilder {
     System.out.println("Build TableMeta ...");
     try {
       conn = dataSource.getConnection();
-      dbMeta = conn.getMetaData();
-
-      List<TableMeta> ret = new ArrayList<TableMeta>();
-      buildTableNames(ret);
-      for (TableMeta tableMeta : ret) {
-        buildPrimaryKey(tableMeta);
-        buildColumnMetas(tableMeta);
-      }
-      removeNoPrimaryKeyTable(ret);
-      return ret;
     } catch (SQLException e) {
+      close();
       throw new RuntimeException(e);
-    } finally {
-      if (conn != null) {
-        try {
-          conn.close();
-        } catch (SQLException e) {
-          throw new RuntimeException(e);
-        }
+    }
+    try {
+      dbMeta = conn.getMetaData();
+    } catch (SQLException e) {
+      close();
+      throw new RuntimeException(e);
+    }
+    List<TableMeta> ret = new ArrayList<TableMeta>();
+    try {
+      buildTableNames(ret);
+    } catch (SQLException e) {
+      close();
+      throw new RuntimeException(e);
+    }
+
+    for (TableMeta tableMeta : ret) {
+      try {
+        buildPrimaryKey(tableMeta);
+      } catch (SQLException e) {
+        close();
+        throw new RuntimeException(e);
+      }
+      try {
+        buildColumnMetas(tableMeta);
+      } catch (SQLException e) {
+        close();
+        throw new RuntimeException(e);
+      }
+    }
+    removeNoPrimaryKeyTable(ret);
+    close();
+    return ret;
+  }
+
+  private void close() {
+    if (conn != null) {
+      try {
+        conn.close();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
       }
     }
   }
@@ -326,10 +350,10 @@ public class MetaBuilder {
    * http://dev.mysql.com/doc/connector-j/en/connector-j-reference-type-conversions.html
    *
    * JDBC 与时间有关类型转换规则，mysql 类型到 java 类型如下对应关系：
-   * DATE				java.sql.Date
-   * DATETIME			java.sql.Timestamp
-   * TIMESTAMP[(M)]	java.sql.Timestamp
-   * TIME				java.sql.Time
+   * DATE				      java.sql.Date
+   * DATETIME			    java.sql.Timestamp
+   * TIMESTAMP[(M)]	  java.sql.Timestamp
+   * TIME				      java.sql.Time
    *
    * 对数据库的 DATE、DATETIME、TIMESTAMP、TIME 四种类型注入 new java.util.Date()对象保存到库以后可以达到“秒精度”
    * 为了便捷性，getter、setter 方法中对上述四种字段类型采用 java.util.Date，可通过定制 TypeMapping 改变此映射规则
