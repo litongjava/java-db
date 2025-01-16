@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -832,7 +833,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     try {
       config.dialect.fillStatement(pst, paras);
     } catch (SQLException e) {
-      throw new ActiveRecordException(e);
+      throw new ActiveRecordException("sql:" + sql + " params:" + Arrays.toString(paras), e);
     }
     ResultSet rs = null;
     try {
@@ -937,12 +938,10 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   }
 
   protected List<M> find(Config config, String sql, Object... paras) {
-    Connection conn = null;
+    Connection conn = config.getConnection();
+
     try {
-      conn = config.getConnection();
       return find(config, conn, sql, paras);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e);
     } finally {
       config.close(conn);
     }

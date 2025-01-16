@@ -15,4 +15,8 @@ public class EnjoyTemplate {
     String html = template.renderToString(by);
     return html;
   }
+
+  public static String renderToString(String fileName) {
+    return Engine.use().getTemplate(fileName).renderToString();
+  }
 }
