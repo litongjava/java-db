@@ -1009,6 +1009,34 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     return Db.queryFirst(sql, paras);
   }
 
+  public Long queryLong(String sql, Object... paras) {
+    sql = replaceTableName(sql);
+    return Db.queryLong(sql, paras);
+  }
+  
+  public String queryString(String sql, Object... paras) {
+    sql = replaceTableName(sql);
+    return Db.queryStr(sql, paras);
+  }
+  
+  public Integer queryInt(String sql, Object... paras) {
+    sql = replaceTableName(sql);
+    return Db.queryInt(sql, paras);
+  }
+
+  public boolean existsBySql(String sql, Object... paras) {
+    sql = replaceTableName(sql);
+    return Db.existsBySql(sql, paras);
+  }
+
+  public boolean existsById(Object... paras) {
+    return Db.exists(_getTableName(), _getPrimaryKey(), paras);
+  }
+
+  public boolean exist(String fields, Object... paras) {
+    return Db.exists(_getTableName(), fields, paras);
+  }
+
   public <T> List<T> query(String sql, Object... paras) {
     sql = replaceTableName(sql);
     return Db.query(sql, paras);

@@ -495,6 +495,20 @@ public class Db {
     }
     return MAIN.queryColumnById(tableName, column, id);
   }
+  
+  public static Long queryLongById(String tableName, String column, Object id) {
+    if (replicas != null) {
+      return useReplica().queryColumnById(tableName, column, id);
+    }
+    return MAIN.queryColumnById(tableName, column, id);
+  }
+  
+  public static Long queryStrById(String tableName, String column, Object id) {
+    if (replicas != null) {
+      return useReplica().queryColumnById(tableName, column, id);
+    }
+    return MAIN.queryColumnById(tableName, column, id);
+  }
 
   public static <T> T queryColumnByField(String tableName, String column, String field, Object value) {
 
