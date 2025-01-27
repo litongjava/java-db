@@ -26,4 +26,8 @@ public class PromptEngine {
   public static String renderToString(String fileName, Kv kv) {
     return engine.getTemplate(fileName).renderToString(kv);
   }
+  
+  public static String renderToString(String fileName) {
+    return engine.getTemplate(fileName).renderToString();
+  }
 }
