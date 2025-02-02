@@ -12,13 +12,13 @@ import com.litongjava.db.activerecord.Row;
 import com.litongjava.tio.utils.hutool.StrUtil;
 import com.litongjava.tio.utils.json.JsonUtils;
 
-public class JsonFieldUtils {
+public class PgObjectUtils {
 
   public static PGobject json(Object obj) {
     if (obj == null) {
       return null;
     }
-    String json = JsonUtils.toJson(obj);
+    String json = JsonUtils.toSkipNullJson(obj);
     return json(json);
 
   }
@@ -38,7 +38,7 @@ public class JsonFieldUtils {
     if (obj == null) {
       return null;
     }
-    String json = JsonUtils.toJson(obj);
+    String json = JsonUtils.toSkipNullJson(obj);
     return jsonb(json);
   }
 
