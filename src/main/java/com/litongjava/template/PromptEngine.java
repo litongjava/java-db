@@ -2,6 +2,7 @@ package com.litongjava.template;
 
 import com.jfinal.kit.Kv;
 import com.jfinal.template.Engine;
+import com.jfinal.template.Template;
 import com.litongjava.tio.utils.environment.EnvUtils;
 
 public class PromptEngine {
@@ -23,11 +24,16 @@ public class PromptEngine {
     Engine.setChineseExpression(true);
 
   }
+
   public static String renderToString(String fileName, Kv kv) {
     return engine.getTemplate(fileName).renderToString(kv);
   }
-  
+
   public static String renderToString(String fileName) {
     return engine.getTemplate(fileName).renderToString();
+  }
+
+  public static Template getTemplate(String filename) {
+    return engine.getTemplate(filename);
   }
 }
