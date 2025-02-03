@@ -47,20 +47,14 @@ public class RowUtils {
     return columnValues;
   }
 
-  @SuppressWarnings("unchecked")
-  public static Kv underscoreToCamel(Map<String, Object> map) {
-    Kv kv = new Kv();
-    map.forEach((key, value) -> kv.put(CamelNameUtils.toCamel(key), value));
-    return kv;
-  }
 
-  public static List<Kv> recordsToKv(List<Row> list, boolean underscoreToCamel) {
+  public static List<Kv> toKv(List<Row> list, boolean underscoreToCamel) {
     return list.stream().map(record -> {
-      return recordToKv(record, underscoreToCamel);
+      return toKv(record, underscoreToCamel);
     }).collect(Collectors.toList());
   }
 
-  public static Kv recordToKv(Row record, boolean underscoreToCamel) {
+  public static Kv toKv(Row record, boolean underscoreToCamel) {
     if (record == null) {
       return null;
     }
@@ -82,7 +76,15 @@ public class RowUtils {
     }
   }
 
-  public static List<Map<String, Object>> recordsToMap(List<Row> records) {
+  public static List<Map<String, Object>> toMap(List<Row> records) {
     return records.stream().map(record -> record.toMap()).collect(Collectors.toList());
   }
+  
+  @SuppressWarnings("unchecked")
+  public static Kv underscoreToCamel(Map<String, Object> map) {
+    Kv kv = new Kv();
+    map.forEach((key, value) -> kv.put(CamelNameUtils.toCamel(key), value));
+    return kv;
+  }
+
 }
