@@ -273,6 +273,11 @@ public class Row implements IRow<Row>, Serializable {
     return s != null ? s.toString() : null;
   }
 
+  public String getString(String column) {
+    Object s = getColumns().get(column);
+    return s != null ? s.toString() : null;
+  }
+
   /**
    * Get column of mysql type: int, integer, tinyint(n) n > 1, smallint, mediumint
    */

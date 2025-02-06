@@ -319,20 +319,20 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   /**
    * Put record to the model without check attribute name.
    */
-  public M put(Row record) {
-    attrs.putAll(record.getColumns());
+  public M put(Row row) {
+    attrs.putAll(row.getColumns());
     return (M) this;
   }
 
   /**
    * Convert model to record.
    */
-  public Row toRecord() {
+  public Row toRow() {
     return new Row().setColumns(_getAttrs());
   }
 
-  public M fromRecord(Row record) {
-    this._setAttrs(record.getColumns());
+  public M fromRow(Row row) {
+    this._setAttrs(row.getColumns());
     return (M) this;
   }
 
@@ -694,7 +694,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    */
   public boolean delete() {
     Table table = _getTable();
-    Row record = this.toRecord();
+    Row record = this.toRow();
     return Db.delete(table.getName(), record);
   }
 
@@ -868,7 +868,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   public List<M> find() {
     Config config = _getReadConfig();
     Table table = _getTable();
-    return find(config, table.getName(), toRecord());
+    return find(config, table.getName(), toRow());
   }
 
   public List<M> find(Config config, String tableName, Row record) {
@@ -991,7 +991,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
 
   public M findFirst() {
     Table table = _getTable();
-    return findFirst(table.getName(), toRecord());
+    return findFirst(table.getName(), toRow());
   }
 
   /**
@@ -1044,7 +1044,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
 
   public M findColumnsFirst(String columns) {
     Table table = _getTable();
-    return findFirst(table.getName(), columns, toRecord());
+    return findFirst(table.getName(), columns, toRow());
   }
 
   public M findFirst(String tableName, String columns, Row record) {
