@@ -56,6 +56,26 @@ public class EhCacheKit {
     return element != null ? (T) element.getObjectValue() : null;
   }
 
+  public static Boolean getBoolean(String cacheName, String key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (boolean) element.getObjectValue() : null;
+  }
+
+  public static String getString(String cacheName, String key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (String) element.getObjectValue() : null;
+  }
+
+  public static Long getLong(String cacheName, String key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (Long) element.getObjectValue() : null;
+  }
+
+  public static Integer getInteger(String cacheName, String key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (Integer) element.getObjectValue() : null;
+  }
+
   @SuppressWarnings("rawtypes")
   public static List getKeys(String cacheName) {
     return getOrAddCache(cacheName).getKeys();
@@ -93,4 +113,5 @@ public class EhCacheKit {
     }
     return (T) data;
   }
+
 }
