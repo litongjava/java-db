@@ -1,5 +1,6 @@
 package com.litongjava.ehcache;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.jfinal.kit.Kv;
@@ -58,9 +59,70 @@ public class EhCacheKit {
     return element != null ? (T) element.getObjectValue() : null;
   }
 
+  @SuppressWarnings("unchecked")
+  public static <T> T get(String cacheName, Serializable key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (T) element.getObjectValue() : null;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> T get(String cacheName, String key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (T) element.getObjectValue() : null;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> T get(String cacheName, Long key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (T) element.getObjectValue() : null;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> T get(String cacheName, Integer key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (T) element.getObjectValue() : null;
+  }
+
+  //Boolean 类型
+  public static Boolean getBoolean(String cacheName, String key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (boolean) element.getObjectValue() : null;
+  }
+
+  public static Boolean getBoolean(String cacheName, Long key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (boolean) element.getObjectValue() : null;
+  }
+
+  public static Boolean getBoolean(String cacheName, Integer key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (boolean) element.getObjectValue() : null;
+  }
+
+  public static Boolean getBoolean(String cacheName, Serializable key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (boolean) element.getObjectValue() : null;
+  }
+
   public static Boolean getBoolean(String cacheName, Object key) {
     Element element = getOrAddCache(cacheName).get(key);
     return element != null ? (boolean) element.getObjectValue() : null;
+  }
+
+  //String 类型
+  public static String getString(String cacheName, String key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (String) element.getObjectValue() : null;
+  }
+
+  public static String getString(String cacheName, Long key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (String) element.getObjectValue() : null;
+  }
+
+  public static String getString(String cacheName, Integer key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (String) element.getObjectValue() : null;
   }
 
   public static String getString(String cacheName, Object key) {
@@ -68,9 +130,51 @@ public class EhCacheKit {
     return element != null ? (String) element.getObjectValue() : null;
   }
 
+  public static String getString(String cacheName, Serializable key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (String) element.getObjectValue() : null;
+  }
+
+  //Long 类型
+  public static Long getLong(String cacheName, String key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (Long) element.getObjectValue() : null;
+  }
+
+  public static Long getLong(String cacheName, Long key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (Long) element.getObjectValue() : null;
+  }
+
+  public static Long getLong(String cacheName, Integer key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (Long) element.getObjectValue() : null;
+  }
+
   public static Long getLong(String cacheName, Object key) {
     Element element = getOrAddCache(cacheName).get(key);
     return element != null ? (Long) element.getObjectValue() : null;
+  }
+
+  public static Long getLong(String cacheName, Serializable key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (Long) element.getObjectValue() : null;
+  }
+
+  //Integer 类型
+  public static Integer getInteger(String cacheName, String key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (Integer) element.getObjectValue() : null;
+  }
+
+  public static Integer getInteger(String cacheName, Long key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (Integer) element.getObjectValue() : null;
+  }
+
+  public static Integer getInteger(String cacheName, Integer key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (Integer) element.getObjectValue() : null;
   }
 
   public static Integer getInteger(String cacheName, Object key) {
@@ -78,8 +182,19 @@ public class EhCacheKit {
     return element != null ? (Integer) element.getObjectValue() : null;
   }
 
+  public static Integer getInteger(String cacheName, Serializable key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (Integer) element.getObjectValue() : null;
+  }
+
   @SuppressWarnings("unchecked")
   public static List<Kv> getListKv(String cacheName, Object key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (List<Kv>) element.getObjectValue() : null;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static List<Kv> getListKv(String cacheName, Serializable key) {
     Element element = getOrAddCache(cacheName).get(key);
     return element != null ? (List<Kv>) element.getObjectValue() : null;
   }
@@ -121,6 +236,5 @@ public class EhCacheKit {
     }
     return (T) data;
   }
-
 
 }
