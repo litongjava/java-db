@@ -2,6 +2,8 @@ package com.litongjava.ehcache;
 
 import java.util.List;
 
+import com.jfinal.kit.Kv;
+
 import lombok.extern.slf4j.Slf4j;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -56,24 +58,30 @@ public class EhCacheKit {
     return element != null ? (T) element.getObjectValue() : null;
   }
 
-  public static Boolean getBoolean(String cacheName, String key) {
+  public static Boolean getBoolean(String cacheName, Object key) {
     Element element = getOrAddCache(cacheName).get(key);
     return element != null ? (boolean) element.getObjectValue() : null;
   }
 
-  public static String getString(String cacheName, String key) {
+  public static String getString(String cacheName, Object key) {
     Element element = getOrAddCache(cacheName).get(key);
     return element != null ? (String) element.getObjectValue() : null;
   }
 
-  public static Long getLong(String cacheName, String key) {
+  public static Long getLong(String cacheName, Object key) {
     Element element = getOrAddCache(cacheName).get(key);
     return element != null ? (Long) element.getObjectValue() : null;
   }
 
-  public static Integer getInteger(String cacheName, String key) {
+  public static Integer getInteger(String cacheName, Object key) {
     Element element = getOrAddCache(cacheName).get(key);
     return element != null ? (Integer) element.getObjectValue() : null;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static List<Kv> getListKv(String cacheName, Object key) {
+    Element element = getOrAddCache(cacheName).get(key);
+    return element != null ? (List<Kv>) element.getObjectValue() : null;
   }
 
   @SuppressWarnings("rawtypes")
@@ -113,5 +121,6 @@ public class EhCacheKit {
     }
     return (T) data;
   }
+
 
 }

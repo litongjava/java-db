@@ -542,4 +542,8 @@ public class Row implements IRow<Row>, Serializable {
     return record.setColumns(recordMap);
   }
 
+  public static Row create() {
+    return new Row();
+  }
+
 }

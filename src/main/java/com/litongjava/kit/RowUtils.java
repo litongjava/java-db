@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.postgresql.util.PGobject;
 
@@ -16,12 +15,12 @@ import com.litongjava.tio.utils.name.CamelNameUtils;
 
 public class RowUtils {
 
-  public static boolean isExistsPGobject=true;
+  public static boolean isExistsPGobject = true;
   static {
     try {
       Class.forName("org.postgresql.util.PGobject");
     } catch (ClassNotFoundException e) {
-      isExistsPGobject=false;
+      isExistsPGobject = false;
     }
   }
 
@@ -47,11 +46,12 @@ public class RowUtils {
     return columnValues;
   }
 
-
   public static List<Kv> toKv(List<Row> list, boolean underscoreToCamel) {
-    return list.stream().map(record -> {
-      return toKv(record, underscoreToCamel);
-    }).collect(Collectors.toList());
+    List<Kv> result = new ArrayList<>(list.size());
+    for (Row row : list) {
+      result.add(toKv(row, underscoreToCamel));
+    }
+    return result;
   }
 
   public static Kv toKv(Row record, boolean underscoreToCamel) {
@@ -77,9 +77,13 @@ public class RowUtils {
   }
 
   public static List<Map<String, Object>> toMap(List<Row> records) {
-    return records.stream().map(record -> record.toMap()).collect(Collectors.toList());
+    List<Map<String, Object>> list = new ArrayList<>(records.size());
+    for (Row row : records) {
+      list.add(row.toMap());
+    }
+    return list;
   }
-  
+
   @SuppressWarnings("unchecked")
   public static Kv underscoreToCamel(Map<String, Object> map) {
     Kv kv = new Kv();
