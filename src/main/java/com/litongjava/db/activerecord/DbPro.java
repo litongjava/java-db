@@ -21,6 +21,8 @@ import java.util.concurrent.FutureTask;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.postgresql.util.PGobject;
+
 import com.jfinal.kit.StrKit;
 import com.jfinal.kit.TimeKit;
 import com.litongjava.cache.IDbCache;
@@ -411,6 +413,10 @@ public class DbPro {
   public Number queryNumber(String sql) {
     return (Number) queryColumn(sql, DbKit.NULL_PARA_ARRAY);
   }
+  
+  public PGobject queryPGobject(String sql, Object... paras) {
+    return queryColumn(sql, paras);
+  }
   // 26 queryXxx method under -----------------------------------------------
 
   /**
@@ -440,7 +446,7 @@ public class DbPro {
         try {
           pst.close();
         } catch (SQLException e) {
-          throw new ActiveRecordException(e.getMessage(),e);
+          throw new ActiveRecordException(e.getMessage(), e);
         }
       }
     }
@@ -1424,7 +1430,7 @@ public class DbPro {
         try {
           pst.close();
         } catch (SQLException e) {
-          throw new ActiveRecordException(e.getMessage(),e);
+          throw new ActiveRecordException(e.getMessage(), e);
         }
       }
     }
@@ -1478,7 +1484,7 @@ public class DbPro {
         try {
           pst.close();
         } catch (SQLException e) {
-          throw new ActiveRecordException(e.getMessage(),e);
+          throw new ActiveRecordException(e.getMessage(), e);
         }
       }
     }
@@ -2237,7 +2243,7 @@ public class DbPro {
           try {
             r = pst.executeBatch();
           } catch (SQLException e1) {
-            throw new ActiveRecordException(e1.getMessage(),e1);
+            throw new ActiveRecordException(e1.getMessage(), e1);
           }
           ISqlStatementStat stat = config.getSqlStatementStat();
           if (stat != null) {
@@ -2287,7 +2293,7 @@ public class DbPro {
         try {
           pst.close();
         } catch (SQLException e) {
-          throw new ActiveRecordException(e.getMessage(),e);
+          throw new ActiveRecordException(e.getMessage(), e);
         }
       }
     }
@@ -2326,7 +2332,7 @@ public class DbPro {
         try {
           conn.setAutoCommit(autoCommit);
         } catch (Exception e) {
-          throw new ActiveRecordException(e.getMessage(),e);
+          throw new ActiveRecordException(e.getMessage(), e);
         }
       }
       config.close(conn);
@@ -2830,4 +2836,5 @@ public class DbPro {
     stringBuffer.append("SELECT count(*) from (").append(sql).append(") AS subquery;");
     return Db.queryLong(stringBuffer.toString(), paras);
   }
+
 }

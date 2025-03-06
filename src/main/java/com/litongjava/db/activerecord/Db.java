@@ -495,14 +495,14 @@ public class Db {
     }
     return MAIN.queryColumnById(tableName, column, id);
   }
-  
+
   public static Long queryLongById(String tableName, String column, Object id) {
     if (replicas != null) {
       return useReplica().queryColumnById(tableName, column, id);
     }
     return MAIN.queryColumnById(tableName, column, id);
   }
-  
+
   public static Long queryStrById(String tableName, String column, Object id) {
     if (replicas != null) {
       return useReplica().queryColumnById(tableName, column, id);
@@ -2178,4 +2178,10 @@ public class Db {
     return queryColumnById(tableName, column, id);
   }
 
+  public static PGobject queryPGobject(String sql, Object... paras) {
+    if (replicas != null) {
+      return useReplica().queryPGobject(sql, paras);
+    }
+    return MAIN.queryPGobject(sql, paras);
+  }
 }
