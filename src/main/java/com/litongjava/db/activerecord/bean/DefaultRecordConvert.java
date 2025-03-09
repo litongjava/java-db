@@ -38,7 +38,9 @@ public class DefaultRecordConvert implements RecordConvert {
           try {
             field.set(bean, fieldValue);
           } catch (java.lang.IllegalArgumentException e) {
-            throw new RuntimeException("Failed to set:" + columnName + ":" + fieldValue, e);
+            String name = fieldValue.getClass().getName();
+            String message = "Failed to set " + columnName + ",the value is " + fieldValue + " and value type is " + name;
+            throw new RuntimeException(message, e);
           }
 
         }
