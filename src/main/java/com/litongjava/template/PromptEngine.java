@@ -3,10 +3,12 @@ package com.litongjava.template;
 import com.jfinal.kit.Kv;
 import com.jfinal.template.Engine;
 import com.jfinal.template.Template;
+import com.litongjava.db.activerecord.Db;
 import com.litongjava.tio.utils.environment.EnvUtils;
 
 public class PromptEngine {
-
+  public static final String llm_chat_prompt = "llm_chat_prompt";
+  public static final String sql = "select prompt from " + llm_chat_prompt + " where name=? and env=?";
   public static final String RESOURCE_BASE_PATH = "/prompts/";
   public static Engine engine;
   static {
@@ -25,6 +27,10 @@ public class PromptEngine {
 
   }
 
+  public static Template getTemplate(String filename) {
+    return engine.getTemplate(filename);
+  }
+
   public static String renderToString(String fileName, Kv kv) {
     return engine.getTemplate(fileName).renderToString(kv);
   }
@@ -33,7 +39,15 @@ public class PromptEngine {
     return engine.getTemplate(fileName).renderToString();
   }
 
-  public static Template getTemplate(String filename) {
-    return engine.getTemplate(filename);
+  public static String renderToStringFromDb(String fileName) {
+    String queryStr = Db.queryStr(sql, fileName, EnvUtils.env());
+    Template template = engine.getTemplateByString(queryStr);
+    return template.renderToString();
+  }
+
+  public static String renderToStringFromDb(String fileName, Kv kv) {
+    String queryStr = Db.queryStr(sql, fileName, EnvUtils.env());
+    Template template = engine.getTemplateByString(queryStr);
+    return template.renderToString(kv);
   }
 }
