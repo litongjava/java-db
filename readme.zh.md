@@ -1,27 +1,27 @@
 # java‑db
 
-> A lightweight, zero-configuration Java database operation framework supporting multiple data sources, read‑write splitting, SQL template management, ActiveRecord ORM, batch operations, transactions, statistics, and more.
+> 一个轻量级、零配置、支持多数据源、读写分离、SQL 模板管理、ActiveRecord ORM、批量操作、事务、统计等功能的 Java 数据库操作框架。
 
-## 🚀 Features
+## 🚀 特性
 
-- ✅ Supports MySQL, PostgreSQL, Oracle, SQLite, and more  
-- ✅ Built‑in Druid/HikariCP connection pools  
-- ✅ ActiveRecord ORM + generic Row mode  
-- ✅ Enjoy SQL template management (#namespace/#sql/#para)  
-- ✅ Read‑write splitting (automatic master‑slave routing)  
-- ✅ Batch Save/Update/Delete  
-- ✅ Flexible transactions (Db.tx, declarative Tx)  
-- ✅ SQL execution statistics (LiteSqlStatementStat)  
-- ✅ Guava Striped locks for concurrency control  
-- ✅ Multi‑data source & sharding support  
-- ✅ Spring Boot integration / JUnit testing  
-- ✅ Native Ehcache & Redis caching integration  
+- ✅ 支持 MySQL、PostgreSQL、Oracle、SQLite 等多种数据库
+- ✅ 内置 Druid/HikariCP 连接池
+- ✅ ActiveRecord ORM + 通用 Row 模式
+- ✅ Enjoy SQL 模板管理（#namespace/#sql/#para）
+- ✅ 读写分离（主从自动路由）
+- ✅ 支持批量 Save/Update/Delete
+- ✅ 灵活事务（Db.tx、声明式 Tx）
+- ✅ SQL 执行统计（LiteSqlStatementStat）
+- ✅ Guava Striped 分段锁并发控制
+- ✅ 多数据源 & 分片支持
+- ✅ 集成 Spring Boot／JUnit 测试
+- ✅ 原生集成 Ehcache & Redis 缓存
 
 ---
 
-## 📦 Quick Start
+## 📦 快速开始
 
-### Maven Dependencies
+### Maven 依赖
 
 ```xml
 <dependency>
@@ -51,13 +51,14 @@
   <artifactId>jedis</artifactId>
   <version>4.3.1</version>
 </dependency>
+
 ```
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ 配置
 
-`app.properties`:
+`app.properties` ：
 
 ```properties
 DATABASE_DSN=postgresql://user:pass@127.0.0.1:5432/dbname
@@ -70,7 +71,7 @@ redis.cacheName=main
 redis.timeout=15000
 ```
 
-### Java Initialization (Spring Boot example)
+### Java 初始化（示例：Spring Boot）
 
 ```java
 @Configuration
@@ -104,9 +105,9 @@ public class DbConfig {
 
 ---
 
-## 🎯 Core API
+## 🎯 核心 API
 
-### CRUD (Row Mode)
+### CRUD（Row 模式）
 
 ```java
 Row r = new Row().set("name","Alice").set("age",30);
@@ -118,7 +119,7 @@ Db.update("update user set age=? where id=?", 31, 1);
 Db.deleteById("user", 1);
 ```
 
-### ActiveRecord (Model Mode)
+### ActiveRecord（Model 模式）
 
 ```java
 public class User extends Model<User> {
@@ -128,7 +129,7 @@ User.dao.findById(1);
 new User().set("name","Bob").save();
 ```
 
-### SQL Templates (Enjoy)
+### SQL 模板（Enjoy）
 
 ```sql
 -- src/main/resources/sql/all.sql
@@ -148,7 +149,7 @@ new User().set("name","Bob").save();
 List<Row> users = Db.template("user.findByName", Kv.by("name","%John%")).find();
 ```
 
-### Batch Operations
+### 批量
 
 ```java
 List<Row> rows = ...;
@@ -156,7 +157,7 @@ Db.batchSave("user", rows, 500);
 Db.batchUpdate("user", rows, 500);
 ```
 
-### Transactions
+### 事务
 
 ```java
 Db.tx(() -> {
@@ -166,14 +167,14 @@ Db.tx(() -> {
 });
 ```
 
-### Read‑Write Splitting
+### 读写分离
 
 ```java
-Db.countTable("student");            // automatically uses replica (read)
-Db.use("main").update(...);          // forces write to master
+Db.countTable("student");            // 自动走读库
+Db.use("main").update(...);          // 强制写库
 ```
 
-### SQL Statistics
+### SQL 统计
 
 ```java
 Lite.querySqlStatementStats();
@@ -181,11 +182,11 @@ Lite.querySqlStatementStats();
 
 ---
 
-## 💾 Caching
+## 💾 缓存
 
 ### Ehcache
 
-Loads configuration from `classpath:ehcache.xml` by default.
+默认从 `classpath:ehcache.xml` 加载配置。
 
 ```java
 CacheKit.put("users","key","value");
@@ -195,7 +196,7 @@ CacheKit.remove("users","key");
 
 ### Redis
 
-#### Basic Usage
+#### Redis
 
 ```java
 // String
@@ -206,15 +207,15 @@ String foo = Redis.use().getStr("foo");
 Redis.use().setBean("user:1",3600,new User(1,"Alice"));
 User u = Redis.use().getBean("user:1",User.class);
 
-// Native Jedis lambda
+// Lambda 原生 Jedis
 Long counter = Redis.call(j -> j.incr("counter"));
 
-// Distributed lock
+// 分布式锁
 String lockId = Redis.use().lock("lockName",30,5);
 if(lockId!=null){ try{/*...*/} finally{ Redis.use().unlock("lockName",lockId);} }
 ```
 
-#### Cacheable Annotation
+#### Cacheable 注解
 
 ```java
 @Before(RedisCacheInterceptor.class)
@@ -224,7 +225,7 @@ public User findById(Long id){ ... }
 
 ---
 
-## 🧪 Unit Testing
+## 🧪 单元测试
 
 ```java
 @BeforeClass
@@ -241,12 +242,14 @@ public void testFind() {
 
 ---
 
-## 📖 Documentation & Links
+## 📖 文档 & 链接
 
-- GitHub: https://github.com/litongjava/java-db  
-- Document : https://www.tio-boot.com/zh/09_java-db/01.html
+- GitHub：https://github.com/litongjava/java-db
+- Document https://www.tio-boot.com/zh/09_java-db/01.html
+
+
 ---
 
-## 📝 License
+## 📝 许可证
 
 Apache‑2.0
