@@ -27,7 +27,7 @@
 <dependency>
   <groupId>com.litongjava</groupId>
   <artifactId>java-db</artifactId>
-  <version>1.5.1</version>
+  <version>1.5.0</version>
 </dependency>
 <dependency>
   <groupId>mysql</groupId>
@@ -246,7 +246,6 @@ public void testFind() {
 
 - GitHub：https://github.com/litongjava/java-db
 - Document https://www.tio-boot.com/zh/09_java-db/01.html
-
 
 ---
 
