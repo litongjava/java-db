@@ -27,7 +27,7 @@
 <dependency>
   <groupId>com.litongjava</groupId>
   <artifactId>java-db</artifactId>
-  <version>1.5.0</version>
+  <version>1.5.1</version>
 </dependency>
 <dependency>
   <groupId>mysql</groupId>
@@ -77,8 +77,26 @@ redis.timeout=15000
 @Configuration
 public class DbConfig {
   @Bean(destroyMethod="stop")
-  public ActiveRecordPlugin arp(DataSource ds) {
-    ActiveRecordPlugin arp = new ActiveRecordPlugin(ds);
+  public ActiveRecordPlugin arp() {
+
+     String dsn = EnvUtils.get("DATABASE_DSN");
+    if (dsn == null) {
+      return null;
+    }
+
+    JdbcInfo jdbc = new DbDSNParser().parse(dsn);
+    int maximumPoolSize = EnvUtils.getInt("jdbc.MaximumPoolSize", 1);
+    HikariConfig config = new HikariConfig();
+    config.setJdbcUrl(jdbc.getUrl());
+    config.setUsername(jdbc.getUser());
+    config.setPassword(jdbc.getPswd());
+    config.setMaximumPoolSize(maximumPoolSize);
+    HikariDataSource hikariDataSource = new HikariDataSource(config);
+
+    // 设置数据源
+    DsContainer.setDataSource(hikariDataSource);
+
+    ActiveRecordPlugin arp = new ActiveRecordPlugin(hikariDataSource);
     arp.setDialect(new PostgreSqlDialect());
     arp.setShowSql(true);
     arp.getEngine().setSourceFactory(new ClassPathSourceFactory());
