@@ -83,30 +83,26 @@ public class EhCacheKit {
     return element != null ? (T) element.getObjectValue() : null;
   }
 
-  //Boolean 类型
-  public static boolean getBoolean(String cacheName, String key) {
+  public static boolean getBoolean(String cacheName, Object key) {
     Element element = getOrAddCache(cacheName).get(key);
-    return element != null ? (boolean) element.getObjectValue() : null;
+    Object value = (element != null) ? element.getObjectValue() : null;
+    return Boolean.TRUE.equals(value);
+  }
+
+  public static boolean getBoolean(String cacheName, String key) {
+    return getBoolean(cacheName, (Object) key);
   }
 
   public static boolean getBoolean(String cacheName, Long key) {
-    Element element = getOrAddCache(cacheName).get(key);
-    return element != null ? (boolean) element.getObjectValue() : null;
+    return getBoolean(cacheName, (Object) key);
   }
 
   public static boolean getBoolean(String cacheName, Integer key) {
-    Element element = getOrAddCache(cacheName).get(key);
-    return element != null ? (boolean) element.getObjectValue() : null;
+    return getBoolean(cacheName, (Object) key);
   }
 
   public static boolean getBoolean(String cacheName, Serializable key) {
-    Element element = getOrAddCache(cacheName).get(key);
-    return element != null ? (boolean) element.getObjectValue() : null;
-  }
-
-  public static boolean getBoolean(String cacheName, Object key) {
-    Element element = getOrAddCache(cacheName).get(key);
-    return element != null ? (boolean) element.getObjectValue() : null;
+    return getBoolean(cacheName, (Object) key);
   }
 
   //String 类型
