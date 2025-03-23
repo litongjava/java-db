@@ -305,4 +305,43 @@ public class InformixDialect extends Dialect {
     return DialectUtils.forColumns(columns);
   }
 
+  @Override
+  public void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
+    tableName = tableName.trim();
+    trimPrimaryKeys(pKeys);
+
+    StringBuilder columns = new StringBuilder();
+    StringBuilder values = new StringBuilder();
+    StringBuilder select = new StringBuilder();
+
+    int count = 0;
+    for (Entry<String, Object> entry : record.getColumns().entrySet()) {
+      if (count++ > 0) {
+        columns.append(", ");
+        values.append(", ");
+        select.append(", ");
+      }
+      String colName = entry.getKey();
+      columns.append(colName);
+      values.append("?");
+      select.append("?");
+      paras.add(entry.getValue());
+    }
+
+    sql.append("INSERT INTO ").append(tableName)
+       .append(" (").append(columns).append(")")
+       .append(" SELECT ").append(select)
+       .append(" FROM systables WHERE NOT EXISTS (SELECT 1 FROM ")
+       .append(tableName).append(" WHERE ");
+
+    for (int i = 0; i < pKeys.length; i++) {
+      if (i > 0) {
+        sql.append(" AND ");
+      }
+      sql.append(pKeys[i]).append(" = ?");
+      paras.add(record.get(pKeys[i]));
+    }
+    sql.append(") AND tabid = 1");
+  }
+
 }

@@ -389,4 +389,26 @@ public class MysqlDialect extends Dialect {
     return DialectUtils.forColumns(columns);
   }
 
+  @Override
+  public void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
+    tableName = tableName.trim();
+    trimPrimaryKeys(pKeys);
+
+    sql.append("INSERT IGNORE INTO ").append(tableName).append("(");
+    StringBuilder values = new StringBuilder(") VALUES(");
+
+    int count = 0;
+    for (Entry<String, Object> entry : record.getColumns().entrySet()) {
+      if (count++ > 0) {
+        sql.append(", ");
+        values.append(", ");
+      }
+      sql.append(entry.getKey());
+      values.append("?");
+      paras.add(entry.getValue());
+    }
+
+    sql.append(values).append(")");
+  }
+
 }

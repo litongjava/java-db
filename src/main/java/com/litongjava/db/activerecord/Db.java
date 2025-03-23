@@ -157,6 +157,10 @@ public class Db {
   public static boolean save(String tableName, Row record) {
     return MAIN.save(tableName, record);
   }
+  
+  public static boolean saveIfAbset(String tableName, Row record) {
+    return MAIN.saveIfAbset(tableName, record);
+  }
 
   /**
    * @param tableName

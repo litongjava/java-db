@@ -66,6 +66,8 @@ public abstract class Dialect {
 
   public abstract void forDbSave(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras);
 
+  public abstract void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras);
+
   public abstract void forDbDelete(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras);
 
   public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras);

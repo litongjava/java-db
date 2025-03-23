@@ -501,4 +501,9 @@ public class AnsiSqlDialect extends Dialect {
     return DialectUtils.forColumns(columns);
   }
 
+  @Override
+  public void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
+    throw new UnsupportedOperationException("AnsiSqlDialect does not support forDbSaveIfAbset. Use database-specific dialect like PostgreSqlDialect instead.");
+  }
+
 }

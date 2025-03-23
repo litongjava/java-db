@@ -13,7 +13,7 @@ import com.litongjava.db.activerecord.Table;
 import com.litongjava.tio.utils.json.Json;
 
 /**
- * MysqlDialect.
+ * TdEngineDialect.
  */
 public class TdEngineDialect extends Dialect {
 
@@ -327,6 +327,43 @@ public class TdEngineDialect extends Dialect {
   @Override
   public String forColumns(String columns) {
     return DialectUtils.forColumns(columns);
+  }
+
+  @Override
+  public void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
+    tableName = tableName.trim();
+    DialectUtils.trimPrimaryKeys(pKeys);
+
+    // 构造字段部分
+    StringBuilder fieldsPart = new StringBuilder();
+    StringBuilder valuesPart = new StringBuilder();
+    StringBuilder wherePart = new StringBuilder();
+
+    int index = 0;
+    for (Entry<String, Object> e : record.getColumns().entrySet()) {
+      String col = e.getKey();
+      Object val = e.getValue();
+
+      if (index++ > 0) {
+        fieldsPart.append(", ");
+        valuesPart.append(", ");
+      }
+
+      fieldsPart.append('`').append(col).append('`');
+      valuesPart.append('?');
+      paras.add(val);
+    }
+
+    for (int i = 0; i < pKeys.length; i++) {
+      if (i > 0) {
+        wherePart.append(" and ");
+      }
+      wherePart.append('`').append(pKeys[i]).append("` = ?");
+      paras.add(record.get(pKeys[i]));
+    }
+
+    sql.append("insert into `").append(tableName).append("` (").append(fieldsPart).append(") ").append("select ").append(valuesPart).append(" from dual where not exists (select 1 from `")
+        .append(tableName).append("` where ").append(wherePart).append(")");
   }
 
 }

@@ -209,6 +209,20 @@ public class PostgreSqlDialect extends Dialect {
     sql.append(temp.toString()).append(')');
   }
 
+  @Override
+  public void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
+    forDbSave(tableName, pKeys, record, sql, paras);
+
+    sql.append(" ON CONFLICT (");
+    for (int i = 0; i < pKeys.length; i++) {
+      if (i > 0) {
+        sql.append(", ");
+      }
+      sql.append('"').append(pKeys[i].trim()).append('"');
+    }
+    sql.append(") DO NOTHING");
+  }
+
   public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);

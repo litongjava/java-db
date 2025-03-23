@@ -133,7 +133,7 @@ public class OracleDialect extends Dialect {
     }
     return sql.toString();
   }
-  
+
   public String forDbDeleteByField(String tableName, String field) {
     StringBuilder sql = new StringBuilder(45);
     sql.append("delete from ");
@@ -328,6 +328,45 @@ public class OracleDialect extends Dialect {
   @Override
   public String forColumns(String columns) {
     return DialectUtils.forColumns(columns);
+  }
+
+  @Override
+  public void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
+    tableName = tableName.trim();
+    trimPrimaryKeys(pKeys);
+
+    StringBuilder selectPart = new StringBuilder("select ");
+    int index = 0;
+    for (Entry<String, Object> entry : record.getColumns().entrySet()) {
+      if (index++ > 0) {
+        selectPart.append(", ");
+      }
+      selectPart.append("? as ").append(entry.getKey());
+      paras.add(entry.getValue());
+    }
+
+    StringBuilder onPart = new StringBuilder();
+    for (int i = 0; i < pKeys.length; i++) {
+      if (i > 0) {
+        onPart.append(" and ");
+      }
+      onPart.append("target.").append(pKeys[i]).append(" = source.").append(pKeys[i]);
+    }
+
+    StringBuilder insertCols = new StringBuilder();
+    StringBuilder insertVals = new StringBuilder();
+    index = 0;
+    for (String col : record.getColumns().keySet()) {
+      if (index++ > 0) {
+        insertCols.append(", ");
+        insertVals.append(", ");
+      }
+      insertCols.append(col);
+      insertVals.append("source.").append(col);
+    }
+
+    sql.append("MERGE INTO ").append(tableName).append(" target USING (").append(selectPart).append(" FROM dual) source ON (").append(onPart).append(") WHEN NOT MATCHED THEN INSERT (")
+        .append(insertCols).append(") VALUES (").append(insertVals).append(")");
   }
 
 }

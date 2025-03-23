@@ -125,7 +125,7 @@ public class Sqlite3Dialect extends Dialect {
     }
     return sql.toString();
   }
-  
+
   public String forDbDeleteByField(String tableName, String field) {
     StringBuilder sql = new StringBuilder(45);
     sql.append("delete from ");
@@ -301,6 +301,30 @@ public class Sqlite3Dialect extends Dialect {
   @Override
   public String forColumns(String columns) {
     return DialectUtils.forColumns(columns);
+  }
+
+  @Override
+  public void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
+    tableName = tableName.trim();
+    trimPrimaryKeys(pKeys);
+
+    sql.append("INSERT OR IGNORE INTO ");
+    sql.append(tableName).append(" (");
+
+    StringBuilder values = new StringBuilder(") VALUES (");
+
+    int index = 0;
+    for (Entry<String, Object> entry : record.getColumns().entrySet()) {
+      if (index++ > 0) {
+        sql.append(", ");
+        values.append(", ");
+      }
+      sql.append(entry.getKey());
+      values.append("?");
+      paras.add(entry.getValue());
+    }
+
+    sql.append(values).append(")");
   }
 
 }

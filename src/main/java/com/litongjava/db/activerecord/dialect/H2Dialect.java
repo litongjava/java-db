@@ -188,7 +188,7 @@ public class H2Dialect extends Dialect {
     }
     return sql.toString();
   }
-  
+
   public String forDbDeleteByField(String tableName, String field) {
     StringBuilder sql = new StringBuilder(45);
     sql.append("delete from ");
@@ -197,7 +197,7 @@ public class H2Dialect extends Dialect {
     sql.append(field).append(" = ?");
     return sql.toString();
   }
-  
+
   @Override
   public void forDbSave(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
     tableName = tableName.trim();
@@ -365,6 +365,44 @@ public class H2Dialect extends Dialect {
   @Override
   public String forColumns(String columns) {
     return DialectUtils.forColumns(columns);
+  }
+
+  @Override
+  public void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
+    tableName = tableName.trim();
+    trimPrimaryKeys(pKeys);
+
+    sql.append("MERGE INTO ").append(tableName).append(" (");
+
+    StringBuilder valuesPart = new StringBuilder(") KEY(");
+    StringBuilder placeholders = new StringBuilder(" VALUES (");
+
+    int count = 0;
+    for (Entry<String, Object> entry : record.getColumns().entrySet()) {
+      String colName = entry.getKey();
+      Object value = entry.getValue();
+
+      if (count++ > 0) {
+        sql.append(", ");
+        placeholders.append(", ");
+      }
+
+      sql.append(colName);
+      placeholders.append("?");
+      paras.add(value);
+    }
+
+    for (int i = 0; i < pKeys.length; i++) {
+      if (i > 0) {
+        valuesPart.append(", ");
+      }
+      valuesPart.append(pKeys[i]);
+    }
+
+    placeholders.append(")");
+    valuesPart.append(")");
+
+    sql.append(valuesPart.toString()).append(placeholders.toString());
   }
 
 }

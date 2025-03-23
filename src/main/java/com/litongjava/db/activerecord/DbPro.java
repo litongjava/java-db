@@ -1451,16 +1451,30 @@ public class DbPro {
     config.dialect.forDbSave(tableName, pKeys, record, sql, paras);
 
     String sqlString = sql.toString();
+    return save(config, conn, sqlString, pKeys, paras, record);
+  }
+  
+
+  protected boolean saveIfAbset(Config config, Connection conn, String tableName, String primaryKey, Row record) {
+    String[] pKeys = primaryKey.split(",");
+    List<Object> paras = new ArrayList<Object>();
+    StringBuilder sql = new StringBuilder();
+    config.dialect.forDbSaveIfAbset(tableName, pKeys, record, sql, paras);
+    String executedSql = sql.toString();
+    return save(config, conn, executedSql, pKeys, paras, record);
+  }
+
+  private boolean save(Config config, Connection conn, String sql, String[] pKeys, List<Object> paras, Row record) {
     PreparedStatement pst = null;
     if (config.dialect.isOracle()) {
       try {
-        pst = conn.prepareStatement(sqlString, pKeys);
+        pst = conn.prepareStatement(sql, pKeys);
       } catch (SQLException e) {
         throw new ActiveRecordException(e);
       }
     } else {
       try {
-        pst = conn.prepareStatement(sqlString, Statement.RETURN_GENERATED_KEYS);
+        pst = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       } catch (SQLException e) {
         throw new ActiveRecordException(e);
       }
@@ -1478,7 +1492,7 @@ public class DbPro {
       result = pst.executeUpdate();
       config.dialect.getRecordGeneratedKey(pst, record, pKeys);
     } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage() + " " + sqlString + " " + paras.toString(), e);
+      throw new ActiveRecordException(e.getMessage() + " " + sql + " " + paras.toString(), e);
     } finally {
       if (pst != null) {
         try {
@@ -1493,11 +1507,12 @@ public class DbPro {
     if (stat != null) {
       long end = System.currentTimeMillis();
       long elapsed = end - start;
-      stat.save(config.name, "save", sqlString, paras.toArray(), result, start, elapsed, config.writeSync);
+      stat.save(config.name, "save", sql, paras.toArray(), result, start, elapsed, config.writeSync);
     }
     record.clearModifyFlag();
     return result >= 1;
   }
+
 
   protected boolean save(Config config, Connection conn, String tableName, String primaryKey, Row record, String[] jsonFields) {
     String[] pKeys = primaryKey.split(",");
@@ -1548,7 +1563,16 @@ public class DbPro {
       config.close(conn);
     }
   }
-
+  
+  public boolean saveIfAbset(String tableName, String primaryKey, Row record) {
+    Connection conn = null;
+    try {
+      conn = config.getConnection();
+      return saveIfAbset(config, conn, tableName, primaryKey, record);
+    } finally {
+      config.close(conn);
+    }
+  }
   public boolean save(String sql, Object... paras) {
     Connection conn = null;
     try {
@@ -1575,6 +1599,11 @@ public class DbPro {
   public boolean save(String tableName, Row record) {
     return save(tableName, config.dialect.getDefaultPrimaryKey(), record);
   }
+  
+  public boolean saveIfAbset(String tableName, Row record) {
+    return saveIfAbset(tableName, config.dialect.getDefaultPrimaryKey(), record);
+  }
+
 
   /**
    * @param tableName
@@ -2836,5 +2865,4 @@ public class DbPro {
     stringBuffer.append("SELECT count(*) from (").append(sql).append(") AS subquery;");
     return Db.queryLong(stringBuffer.toString(), paras);
   }
-
 }

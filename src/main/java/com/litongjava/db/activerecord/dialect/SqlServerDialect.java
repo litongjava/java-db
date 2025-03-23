@@ -125,7 +125,7 @@ public class SqlServerDialect extends Dialect {
     }
     return sql.toString();
   }
-  
+
   public String forDbDeleteByField(String tableName, String field) {
     StringBuilder sql = new StringBuilder(45);
     sql.append("delete from ");
@@ -316,6 +316,47 @@ public class SqlServerDialect extends Dialect {
   @Override
   public String forColumns(String columns) {
     return DialectUtils.forColumns(columns);
+  }
+
+  @Override
+  public void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras) {
+    tableName = tableName.trim();
+    trimPrimaryKeys(pKeys);
+
+    // Build columns and values
+    StringBuilder insertColumns = new StringBuilder();
+    StringBuilder insertValues = new StringBuilder();
+    StringBuilder sourceColumns = new StringBuilder();
+    StringBuilder onCondition = new StringBuilder();
+
+    int index = 0;
+    for (Entry<String, Object> entry : record.getColumns().entrySet()) {
+      String col = entry.getKey();
+      Object val = entry.getValue();
+
+      if (index++ > 0) {
+        insertColumns.append(", ");
+        insertValues.append(", ");
+        sourceColumns.append(", ");
+      }
+
+      insertColumns.append("[").append(col).append("]");
+      insertValues.append("source.").append(col);
+      sourceColumns.append("? AS ").append(col);
+      paras.add(val);
+    }
+
+    // Build ON condition based on primary keys
+    for (int i = 0; i < pKeys.length; i++) {
+      if (i > 0) {
+        onCondition.append(" AND ");
+      }
+      onCondition.append("target.[").append(pKeys[i]).append("] = source.").append(pKeys[i]);
+    }
+
+    // Assemble full MERGE SQL
+    sql.append("MERGE INTO [").append(tableName).append("] AS target ").append("USING (SELECT ").append(sourceColumns).append(") AS source ").append("ON ").append(onCondition).append(" ")
+        .append("WHEN NOT MATCHED THEN INSERT (").append(insertColumns).append(") ").append("VALUES (").append(insertValues).append(");");
   }
 
 }
