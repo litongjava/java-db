@@ -3,7 +3,10 @@ package com.litongjava.db.activerecord;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -343,6 +346,14 @@ public class Row implements IRow<Row>, Serializable {
   public java.sql.Timestamp getTimestamp(String column) {
     return (java.sql.Timestamp) getColumns().get(column);
   }
+  
+  public OffsetDateTime getOffsetDateTime(String column) {
+    Timestamp ts = getTimestamp(column);
+    if (ts != null) {
+      return ts.toInstant().atOffset(ZoneOffset.UTC); 
+    }
+    return null;
+  }
 
   /**
    * Get column of mysql type: real, double
@@ -545,5 +556,7 @@ public class Row implements IRow<Row>, Serializable {
   public static Row create() {
     return new Row();
   }
+
+
 
 }
