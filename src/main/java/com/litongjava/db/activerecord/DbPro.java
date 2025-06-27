@@ -43,7 +43,7 @@ public class DbPro {
 
   private String queryColumnByField = "select %s from %s where %s=?";
 
-  protected final Config config;
+  public final Config config;
 
   public DbPro() {
     if (DbKit.config == null) {
@@ -63,7 +63,7 @@ public class DbPro {
     return config;
   }
 
-  protected List<byte[]> queryListBytes(Config config, Connection conn, String sql, Object... paras) {
+  public List<byte[]> queryListBytes(Config config, Connection conn, String sql, Object... paras) {
     List<byte[]> result = new ArrayList();
     PreparedStatement pst = null;
     try {
@@ -111,7 +111,7 @@ public class DbPro {
     return result;
   }
 
-  protected <T> List<T> query(Config config, Connection conn, String sql, Object... paras) {
+  public <T> List<T> query(Config config, Connection conn, String sql, Object... paras) {
     List result = new ArrayList();
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
@@ -413,7 +413,7 @@ public class DbPro {
   public Number queryNumber(String sql) {
     return (Number) queryColumn(sql, DbKit.NULL_PARA_ARRAY);
   }
-  
+
   public PGobject queryPGobject(String sql, Object... paras) {
     return queryColumn(sql, paras);
   }
@@ -422,7 +422,7 @@ public class DbPro {
   /**
    * Execute sql update
    */
-  protected int update(Config config, Connection conn, String sql, Object... paras) {
+  public int update(Config config, Connection conn, String sql, Object... paras) {
     PreparedStatement pst;
     try {
       pst = conn.prepareStatement(sql);
@@ -488,7 +488,7 @@ public class DbPro {
     return update(sql, DbKit.NULL_PARA_ARRAY);
   }
 
-  protected List<Row> findJsonField(Config config, Connection conn, String sql, String[] jsonFields, Object... paras) {
+  public List<Row> findJsonField(Config config, Connection conn, String sql, String[] jsonFields, Object... paras) {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
       List<Row> result = null;
@@ -508,7 +508,7 @@ public class DbPro {
     }
   }
 
-  protected List<Row> find(Config config, Connection conn, String sql, Object... paras) {
+  public List<Row> find(Config config, Connection conn, String sql, Object... paras) {
     PreparedStatement pst;
     try {
       pst = conn.prepareStatement(sql);
@@ -560,7 +560,7 @@ public class DbPro {
 
   }
 
-  protected List<Row> find(Config config, Connection conn, String tableName, String columns, Row record) {
+  public List<Row> find(Config config, Connection conn, String tableName, String columns, Row record) {
     List<Object> paras = new ArrayList<>();
 
     StringBuffer sqlBuffer = config.dialect.forDbFind(tableName, columns, record, paras);
@@ -669,7 +669,7 @@ public class DbPro {
     return result;
   }
 
-  protected List<Row> find(Config config, Connection conn, String sql, List paras) {
+  public List<Row> find(Config config, Connection conn, String sql, List paras) {
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
       List<Row> result = null;
@@ -689,7 +689,7 @@ public class DbPro {
     }
   }
 
-  protected <T> List<T> find(Class<T> clazz, Config config, Connection conn, String sql, Object... paras) {
+  public <T> List<T> find(Class<T> clazz, Config config, Connection conn, String sql, Object... paras) {
     List<Row> result = null;
     try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
@@ -1262,7 +1262,7 @@ public class DbPro {
     return doPaginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
-  protected Page<Row> doPaginateJsonFields(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, String[] jsonFields, Object... paras) {
+  public Page<Row> doPaginateJsonFields(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, String[] jsonFields, Object... paras) {
 
     Connection conn = null;
     try {
@@ -1276,7 +1276,7 @@ public class DbPro {
     }
   }
 
-  protected Page<Row> doPaginate(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+  public Page<Row> doPaginate(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -1302,8 +1302,8 @@ public class DbPro {
     }
   }
 
-  protected Page<Row> doPaginateByFullSqlWithJsonFields(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql,
-      String[] jsonFields, Object... paras) {
+  public Page<Row> doPaginateByFullSqlWithJsonFields(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, String[] jsonFields,
+      Object... paras) {
     String sql = config.dialect.forPaginate(pageNumber, pageSize, findSql);
 
     Page<Row> page = null;
@@ -1319,7 +1319,7 @@ public class DbPro {
     return page;
   }
 
-  protected Page<Row> doPaginateByFullSql(Config config, Connection conn, int pageNumber, int pageSize,
+  public Page<Row> doPaginateByFullSql(Config config, Connection conn, int pageNumber, int pageSize,
       //
       Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) {
     Page<Row> page = null;
@@ -1351,14 +1351,14 @@ public class DbPro {
     return page;
   }
 
-  protected Page<Row> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws SQLException {
+  public Page<Row> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws SQLException {
     String totalRowSql = config.dialect.forPaginateTotalRow(select, sqlExceptSelect, null);
     StringBuilder findSql = new StringBuilder();
     findSql.append(select).append(' ').append(sqlExceptSelect);
     return doPaginateByFullSql(config, conn, pageNumber, pageSize, null, totalRowSql, findSql, paras);
   }
 
-  protected Page<Row> doPaginateByFullSql(int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+  public Page<Row> doPaginateByFullSql(int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -1369,7 +1369,7 @@ public class DbPro {
     }
   }
 
-  protected <T> Page<T> doPaginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+  public <T> Page<T> doPaginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -1396,8 +1396,7 @@ public class DbPro {
     return doPaginateByFullSql(clazz, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
-  protected boolean save(Config config, Connection conn, String sql, Object... paras) {
-
+  public boolean save(Config config, Connection conn, String sql, Object... paras) {
     PreparedStatement pst = null;
     if (config.dialect.isOracle()) {
       try {
@@ -1444,7 +1443,7 @@ public class DbPro {
     return result >= 1;
   }
 
-  protected boolean save(Config config, Connection conn, String tableName, String primaryKey, Row record) {
+  public boolean save(Config config, Connection conn, String tableName, String primaryKey, Row record) {
     String[] pKeys = primaryKey.split(",");
     List<Object> paras = new ArrayList<Object>();
     StringBuilder sql = new StringBuilder();
@@ -1453,9 +1452,8 @@ public class DbPro {
     String sqlString = sql.toString();
     return save(config, conn, sqlString, pKeys, paras, record);
   }
-  
 
-  protected boolean saveIfAbset(Config config, Connection conn, String tableName, String primaryKey, Row record) {
+  public boolean saveIfAbset(Config config, Connection conn, String tableName, String primaryKey, Row record) {
     String[] pKeys = primaryKey.split(",");
     List<Object> paras = new ArrayList<Object>();
     StringBuilder sql = new StringBuilder();
@@ -1513,8 +1511,7 @@ public class DbPro {
     return result >= 1;
   }
 
-
-  protected boolean save(Config config, Connection conn, String tableName, String primaryKey, Row record, String[] jsonFields) {
+  public boolean save(Config config, Connection conn, String tableName, String primaryKey, Row record, String[] jsonFields) {
     String[] pKeys = primaryKey.split(",");
     List<Object> paras = new ArrayList<Object>();
     StringBuilder sql = new StringBuilder();
@@ -1563,7 +1560,7 @@ public class DbPro {
       config.close(conn);
     }
   }
-  
+
   public boolean saveIfAbset(String tableName, String primaryKey, Row record) {
     Connection conn = null;
     try {
@@ -1573,6 +1570,7 @@ public class DbPro {
       config.close(conn);
     }
   }
+
   public boolean save(String sql, Object... paras) {
     Connection conn = null;
     try {
@@ -1599,11 +1597,10 @@ public class DbPro {
   public boolean save(String tableName, Row record) {
     return save(tableName, config.dialect.getDefaultPrimaryKey(), record);
   }
-  
+
   public boolean saveIfAbset(String tableName, Row record) {
     return saveIfAbset(tableName, config.dialect.getDefaultPrimaryKey(), record);
   }
-
 
   /**
    * @param tableName
@@ -1615,7 +1612,7 @@ public class DbPro {
     return save(tableName, config.dialect.getDefaultPrimaryKey(), record, jsonFields);
   }
 
-  protected boolean update(Config config, Connection conn, String tableName, String primaryKeys, Row record) {
+  public boolean update(Config config, Connection conn, String tableName, String primaryKeys, Row record) {
     if (record.modifyFlag == null || record.modifyFlag.isEmpty()) {
       return false;
     }
@@ -1645,7 +1642,7 @@ public class DbPro {
     return false;
   }
 
-  protected boolean update(Config config, Connection conn, String tableName, String primaryKey, Row record,
+  public boolean update(Config config, Connection conn, String tableName, String primaryKey, Row record,
       //
       String[] jsonFields) {
     if (record.modifyFlag == null || record.modifyFlag.isEmpty()) {
@@ -1739,7 +1736,7 @@ public class DbPro {
    * @param config   the Config object
    * @param callback the ICallback interface
    */
-  protected Object execute(Config config, ICallback callback) {
+  public Object execute(Config config, ICallback callback) {
     Connection conn = null;
     try {
       conn = config.getConnection();
@@ -1759,15 +1756,16 @@ public class DbPro {
    * @param atom             the atom operation
    * @return true if transaction executing succeed otherwise false
    */
-  protected boolean tx(Config config, int transactionLevel, IAtom atom) {
+  public boolean tx(Config config, int transactionLevel, IAtom atom) {
     Connection conn = config.getThreadLocalConnection();
     if (conn != null) { // Nested transaction support
       try {
         if (conn.getTransactionIsolation() < transactionLevel)
           conn.setTransactionIsolation(transactionLevel);
         boolean result = atom.run();
-        if (result)
+        if (result) {
           return true;
+        }
         throw new NestedTransactionHelpException("Notice the outer transaction that the nested transaction return false"); // important:can not return false
       } catch (SQLException e) {
         throw new ActiveRecordException(e);
@@ -1781,10 +1779,11 @@ public class DbPro {
       conn.setTransactionIsolation(transactionLevel);
       conn.setAutoCommit(false);
       boolean result = atom.run();
-      if (result)
+      if (result) {
         conn.commit();
-      else
+      } else {
         conn.rollback();
+      }
       return result;
     } catch (NestedTransactionHelpException e) {
       if (conn != null)
@@ -1793,7 +1792,6 @@ public class DbPro {
         } catch (Exception e1) {
           log.error(e1.getMessage(), e1);
         }
-      // LogKit.logNothing(e);
       return false;
     } catch (Throwable t) {
       if (conn != null)
@@ -2089,7 +2087,7 @@ public class DbPro {
     return doPaginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
-  protected int[] batch(Config config, Connection conn, String sql, Object[][] paras, int batchSize) throws SQLException {
+  public int[] batch(Config config, Connection conn, String sql, Object[][] paras, int batchSize) throws SQLException {
     if (paras == null || paras.length == 0)
       return new int[0];
     if (batchSize < 1)
@@ -2192,7 +2190,7 @@ public class DbPro {
     }
   }
 
-  protected int[] batch(Config config, Connection conn, String sql, String columns, List list, int batchSize) {
+  public int[] batch(Config config, Connection conn, String sql, String columns, List list, int batchSize) {
     if (list == null || list.size() == 0) {
       return new int[0];
     }
@@ -2392,7 +2390,7 @@ public class DbPro {
     }
   }
 
-  protected int[] batch(Config config, Connection conn, List<String> sqlList, int batchSize) throws SQLException {
+  public int[] batch(Config config, Connection conn, List<String> sqlList, int batchSize) throws SQLException {
     if (sqlList == null || sqlList.size() == 0)
       return new int[0];
     if (batchSize < 1)
