@@ -1,7 +1,5 @@
 package com.litongjava.db.activerecord;
 
-import java.sql.SQLException;
-
 /**
  * ActiveRecordException
  */
@@ -29,7 +27,8 @@ public class ActiveRecordException extends RuntimeException {
     this.sql = sql;
   }
 
-  public ActiveRecordException(String message, String sql, Object[] paras, SQLException e) {
+  public ActiveRecordException(String message, String sql, Object[] paras, Throwable cause) {
+    super(message, cause);
     this.sql = sql;
     this.paras = paras;
   }
