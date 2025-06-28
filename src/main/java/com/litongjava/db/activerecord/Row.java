@@ -249,6 +249,14 @@ public class Row implements IRow<Row>, Serializable {
     return (T) getColumns().get(column);
   }
 
+  public String[] getStringArray(String column) {
+    Object object = getColumns().get(column);
+    if(object!=null) {
+      return (String[]) object;
+    }
+    return null;
+  }
+
   /**
    * Get column of any mysql type. Returns defaultValue if null.
    */
