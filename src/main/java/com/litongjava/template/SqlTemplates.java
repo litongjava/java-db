@@ -55,11 +55,16 @@ public class SqlTemplates {
         return;
       }
       List<String> listResources = ResourceUtil.listResources(DEFAULT_SQL_DIR, ".sql");
-      for (String sqlFile : listResources) {
-        log.info("Loading SQL templates from file: {}", sqlFile);
-        // 在扫描模式下，不允许 --@ 指令，以避免混乱
-        parseSQLFile(sqlFile, false);
+      if (listResources.size() > 0) {
+        for (String sqlFile : listResources) {
+          log.info("Loading SQL templates from file: {}", sqlFile);
+          // 在扫描模式下，不允许 --@ 指令，以避免混乱
+          parseSQLFile(sqlFile, false);
+        }
+      } else {
+        log.warn("not found SQL sql in  directory:{}", DEFAULT_SQL_DIR);
       }
+
     }
     loaded = true;
   }
