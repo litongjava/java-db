@@ -21,8 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SqlTemplates {
 
-  private static final String DEFAULT_MAIN_FILE = "sql-templates/main.sql";
-  private static final String DEFAULT_SQL_DIR = "sql-templates";
+  public static final String DEFAULT_MAIN_FILE = "sql-templates/main.sql";
+  public static final String DEFAULT_SQL_DIR = "sql-templates";
+  
   private static Map<String, String> sqlTemplates = null;
   private static boolean loaded = false;
 
