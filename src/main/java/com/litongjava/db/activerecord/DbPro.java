@@ -219,8 +219,9 @@ public class DbPro {
     List<T> result = query(sql, paras);
     if (result.size() > 0) {
       T temp = result.get(0);
-      if (temp instanceof Object[])
+      if (temp instanceof Object[]) {
         throw new ActiveRecordException("Only ONE COLUMN can be queried.");
+      }
       return temp;
     }
     return null;
