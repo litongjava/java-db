@@ -62,7 +62,7 @@ public class SqlTemplates {
           parseSQLFile(sqlFile, false);
         }
       } else {
-        log.warn("not found SQL sql in  directory:{}", DEFAULT_SQL_DIR);
+        log.warn("not found SQL in  directory:{}", DEFAULT_SQL_DIR);
       }
 
     }
