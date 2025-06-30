@@ -1,9 +1,11 @@
 package com.litongjava.template;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,7 +25,7 @@ public class SqlTemplates {
 
   public static final String DEFAULT_MAIN_FILE = "sql-templates/main.sql";
   public static final String DEFAULT_SQL_DIR = "sql-templates";
-  
+
   private static Map<String, String> sqlTemplates = null;
   private static boolean loaded = false;
 
@@ -34,7 +36,15 @@ public class SqlTemplates {
       return;
     }
     sqlTemplates = new HashMap<>();
-    parseSQLFile(mainFilePath, true);
+    File file = new File(mainFilePath);
+    URL fileUrl;
+    try {
+      fileUrl = file.toURI().toURL();
+      parseSQLFile(fileUrl, true);
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+    }
+
     loaded = true;
   }
 
@@ -46,7 +56,7 @@ public class SqlTemplates {
     URL mainFileUrl = ResourceUtil.getResource(DEFAULT_MAIN_FILE);
     if (mainFileUrl != null) {
       log.info("Loading SQL templates from main file: {}", DEFAULT_MAIN_FILE);
-      parseSQLFile(DEFAULT_MAIN_FILE, true);
+      parseSQLFile(mainFileUrl, true);
     } else {
       log.info("{} not found. Scanning directory: {}", DEFAULT_MAIN_FILE, DEFAULT_SQL_DIR);
       URL dirUrl = ResourceUtil.getResource(DEFAULT_SQL_DIR);
@@ -55,9 +65,9 @@ public class SqlTemplates {
         loaded = true;
         return;
       }
-      List<String> listResources = ResourceUtil.listResources(DEFAULT_SQL_DIR, ".sql");
+      List<URL> listResources = ResourceUtil.listResources(DEFAULT_SQL_DIR, ".sql");
       if (listResources.size() > 0) {
-        for (String sqlFile : listResources) {
+        for (URL sqlFile : listResources) {
           log.info("Loading SQL templates from file: {}", sqlFile);
           // 在扫描模式下，不允许 --@ 指令，以避免混乱
           parseSQLFile(sqlFile, false);
@@ -73,11 +83,12 @@ public class SqlTemplates {
   /**
    * 终极修正版的 parseSQLFile 方法
    */
-  private static void parseSQLFile(String filePath, boolean allowInclude) {
-    URL resource = ResourceUtil.getResource(filePath);
+  private static void parseSQLFile(URL resource, boolean allowInclude) {
     if (resource == null) {
-      throw new RuntimeException("SQL file not found: " + filePath);
+      throw new RuntimeException("SQL file not found");
     }
+    
+    String filePath = resource.getFile();
 
     try (InputStream inputStream = resource.openStream(); BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
 
@@ -122,7 +133,8 @@ public class SqlTemplates {
           if (parts.length > 1) {
             String parentPath = getParentPath(filePath);
             String includedFilePath = parentPath.isEmpty() ? parts[1] : parentPath + "/" + parts[1];
-            parseSQLFile(includedFilePath, true);
+            URL url = new File(includedFilePath).toURI().toURL();
+            parseSQLFile(url, true);
           }
         } else {
           // 4. 将行内容添加到当前活动的 SQL 块
