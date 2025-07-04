@@ -68,7 +68,7 @@ public class SqlTemplates {
       List<URL> listResources = ResourceUtil.listResources(DEFAULT_SQL_DIR, ".sql");
       if (listResources.size() > 0) {
         for (URL sqlFile : listResources) {
-          log.info("Loading SQL templates from file: {}", sqlFile);
+          log.info("Loading SQL template: {}", sqlFile);
           // 在扫描模式下，不允许 --@ 指令，以避免混乱
           parseSQLFile(sqlFile, false);
         }
