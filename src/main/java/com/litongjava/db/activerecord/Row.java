@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -251,7 +252,7 @@ public class Row implements IRow<Row>, Serializable {
 
   public String[] getStringArray(String column) {
     Object object = getColumns().get(column);
-    if(object!=null) {
+    if (object != null) {
       return (String[]) object;
     }
     return null;
@@ -273,6 +274,64 @@ public class Row implements IRow<Row>, Serializable {
   public Object getObject(String column, Object defaultValue) {
     Object result = getColumns().get(column);
     return result != null ? result : defaultValue;
+  }
+
+  // get array
+  public Integer[] getArrayInteger(String column) {
+    Object result = getColumns().get(column);
+    return result != null ? (Integer[]) result : null;
+  }
+
+  public Long[] getArrayLong(String column) {
+    Object result = getColumns().get(column);
+    return result != null ? (Long[]) result : null;
+  }
+
+  public String[] getArrayString(String column) {
+    Object result = getColumns().get(column);
+    return result != null ? (String[]) result : null;
+  }
+
+  public List<Long> getListLong(String column) {
+    Object result = getColumns().get(column);
+    if (result == null) {
+      return null;
+    }
+    Long[] ints = (Long[]) result;
+    List<Long> list = new ArrayList<>(ints.length);
+    for (int i = 0; i < ints.length; i++) {
+      list.add(ints[i]);
+    }
+
+    return list;
+  }
+
+  public List<String> getListString(String column) {
+    Object result = getColumns().get(column);
+    if (result == null) {
+      return null;
+    }
+    String[] ints = (String[]) result;
+    List<String> list = new ArrayList<>(ints.length);
+    for (int i = 0; i < ints.length; i++) {
+      list.add(ints[i]);
+    }
+
+    return list;
+  }
+
+  public List<Integer> getListInteger(String column) {
+    Object result = getColumns().get(column);
+    if (result == null) {
+      return null;
+    }
+    Integer[] ints = (Integer[]) result;
+    List<Integer> list = new ArrayList<>(ints.length);
+    for (int i = 0; i < ints.length; i++) {
+      list.add(ints[i]);
+    }
+
+    return list;
   }
 
   /**
@@ -354,11 +413,11 @@ public class Row implements IRow<Row>, Serializable {
   public java.sql.Timestamp getTimestamp(String column) {
     return (java.sql.Timestamp) getColumns().get(column);
   }
-  
+
   public OffsetDateTime getOffsetDateTime(String column) {
     Timestamp ts = getTimestamp(column);
     if (ts != null) {
-      return ts.toInstant().atOffset(ZoneOffset.UTC); 
+      return ts.toInstant().atOffset(ZoneOffset.UTC);
     }
     return null;
   }
@@ -564,7 +623,5 @@ public class Row implements IRow<Row>, Serializable {
   public static Row create() {
     return new Row();
   }
-
-
 
 }
