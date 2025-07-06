@@ -1,5 +1,6 @@
 package com.litongjava.redis;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -53,7 +54,9 @@ public class RedisCacheInterceptor implements AopInterceptor {
 
   private void putIfNotExists(AopInvocation inv, RedisDb cache, Jedis jedis) {
     Object target = inv.getTarget();
-    CacheableModel cacheableModel = CacheableModel.buildCacheModel(inv, target);
+    Method method = inv.getMethod();
+    Object[] args = inv.getArgs();
+    CacheableModel cacheableModel = CacheableModel.buildCacheModel(target,method,args);
     String redisKey = cacheableModel.getName() + "_" + cacheableModel.getKey();
     String cacheData = cache.get(redisKey);
 

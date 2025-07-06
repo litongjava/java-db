@@ -1,5 +1,6 @@
 package com.litongjava.ehcache;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -28,7 +29,9 @@ public class EhCacheInterceptor implements AopInterceptor {
 
   final public void intercept(AopInvocation inv) {
     Object target = inv.getTarget();
-    CacheableModel cacheableModel = CacheableModel.buildCacheModel(inv, target);
+    Method method = inv.getMethod();
+    Object[] args = inv.getArgs();
+    CacheableModel cacheableModel = CacheableModel.buildCacheModel(target, method, args);
     String cacheName = cacheableModel.getName();
     String cacheKey = cacheableModel.getKey();
     Object cacheData = EhCacheKit.get(cacheName, cacheKey);
