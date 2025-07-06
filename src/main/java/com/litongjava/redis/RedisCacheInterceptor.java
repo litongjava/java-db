@@ -56,7 +56,7 @@ public class RedisCacheInterceptor implements AopInterceptor {
     Object target = inv.getTarget();
     Method method = inv.getMethod();
     Object[] args = inv.getArgs();
-    CacheableModel cacheableModel = CacheableModel.buildCacheModel(target,method,args);
+    CacheableModel cacheableModel = CacheableModel.buildCacheModel(target, method, args);
     String redisKey = cacheableModel.getName() + "_" + cacheableModel.getKey();
     String cacheData = cache.get(redisKey);
 
