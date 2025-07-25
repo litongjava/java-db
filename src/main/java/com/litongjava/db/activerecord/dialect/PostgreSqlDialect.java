@@ -601,9 +601,20 @@ public class PostgreSqlDialect extends Dialect {
       Array sqlArray = pst.getConnection().createArrayOf("text", (Object[]) value);
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof List<?>) {
-      // Assuming list of strings; adjust type as needed
-      Array sqlArray = pst.getConnection().createArrayOf("text", ((List<?>) value).toArray());
-      pst.setArray(i + 1, sqlArray);
+      if(value!=null) {
+        Object object = ((List<?>) value).get(0);
+        if(object instanceof String) {
+          Array sqlArray = pst.getConnection().createArrayOf("text", ((List<?>) value).toArray());
+          pst.setArray(i + 1, sqlArray);
+        }else {
+          String json = JsonUtils.toJson(value);
+          PGobject pgObject = new PGobject();
+          pgObject.setType("jsonb");
+          pgObject.setValue(json);
+          pst.setObject(i + 1, pgObject);
+        }
+      }
+      
 
     } else if (value instanceof PGobject) {
       pst.setObject(i + 1, value);
