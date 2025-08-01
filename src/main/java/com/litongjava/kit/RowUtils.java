@@ -90,5 +90,4 @@ public class RowUtils {
     map.forEach((key, value) -> kv.put(CamelNameUtils.toCamel(key), value));
     return kv;
   }
-
 }

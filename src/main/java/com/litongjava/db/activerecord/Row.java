@@ -13,10 +13,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.postgresql.util.PGobject;
-
 import com.jfinal.kit.Kv;
 import com.jfinal.kit.TypeKit;
+import com.litongjava.db.DbJsonObject;
 import com.litongjava.model.db.IRow;
 
 /**
@@ -25,7 +24,8 @@ import com.litongjava.model.db.IRow;
 public class Row implements IRow<Row>, Serializable {
 
   private static final long serialVersionUID = 905784513600884082L;
-  private Map<String, Object> columns; // = getColumnsMap(); // getConfig().containerFactory.getColumnsMap(); // new HashMap<String, Object>();
+  private Map<String, Object> columns; // = getColumnsMap(); // getConfig().containerFactory.getColumnsMap(); // new
+                                       // HashMap<String, Object>();
   private String tableName;
 
   public String getTableName() {
@@ -62,8 +62,9 @@ public class Row implements IRow<Row>, Serializable {
   }
 
   /**
-   * Set the containerFactory by configName.
-   * Only the containerFactory of the config used by Record for getColumnsMap()
+   * Set the containerFactory by configName. Only the containerFactory of the
+   * config used by Record for getColumnsMap()
+   * 
    * @param configName the config name
    */
   public Row setContainerFactoryByConfigName(String configName) {
@@ -109,6 +110,7 @@ public class Row implements IRow<Row>, Serializable {
 
   /**
    * Set columns value with map.
+   * 
    * @param columns the columns map
    */
   public Row setColumns(Map<String, Object> columns) {
@@ -120,6 +122,7 @@ public class Row implements IRow<Row>, Serializable {
 
   /**
    * Set columns value with Record.
+   * 
    * @param record the Record object
    */
   public Row setColumns(Row record) {
@@ -128,6 +131,7 @@ public class Row implements IRow<Row>, Serializable {
 
   /**
    * Set columns value with Model object.
+   * 
    * @param model the Model object
    */
   public Row setColumns(Model<?> model) {
@@ -136,6 +140,7 @@ public class Row implements IRow<Row>, Serializable {
 
   /**
    * Remove attribute of this record.
+   * 
    * @param column the column name of the record
    */
   public Row remove(String column) {
@@ -146,6 +151,7 @@ public class Row implements IRow<Row>, Serializable {
 
   /**
    * Remove columns of this record.
+   * 
    * @param columns the column names of the record
    */
   public Row remove(String... columns) {
@@ -174,6 +180,7 @@ public class Row implements IRow<Row>, Serializable {
 
   /**
    * Keep columns of this record and remove other columns.
+   * 
    * @param columns the column names of the record
    */
   @SuppressWarnings("unchecked")
@@ -202,6 +209,7 @@ public class Row implements IRow<Row>, Serializable {
 
   /**
    * Keep column of this record and remove other columns.
+   * 
    * @param column the column names of the record
    */
   public Row keep(String column) {
@@ -233,8 +241,9 @@ public class Row implements IRow<Row>, Serializable {
 
   /**
    * Set column to record.
+   * 
    * @param column the column name
-   * @param value the value of the column
+   * @param value  the value of the column
    */
   public Row set(String column, Object value) {
     getColumns().put(column, value);
@@ -335,7 +344,8 @@ public class Row implements IRow<Row>, Serializable {
   }
 
   /**
-   * Get column of mysql type: varchar, char, enum, set, text, tinytext, mediumtext, longtext
+   * Get column of mysql type: varchar, char, enum, set, text, tinytext,
+   * mediumtext, longtext
    */
   public String getStr(String column) {
     // return (String)getColumns().get(column);
@@ -468,8 +478,8 @@ public class Row implements IRow<Row>, Serializable {
   }
 
   /**
-   * Get column of mysql type: binary, varbinary, tinyblob, blob, mediumblob, longblob
-   * I have not finished the test.
+   * Get column of mysql type: binary, varbinary, tinyblob, blob, mediumblob,
+   * longblob I have not finished the test.
    */
   public byte[] getBytes(String column) {
     return (byte[]) getColumns().get(column);
@@ -493,9 +503,12 @@ public class Row implements IRow<Row>, Serializable {
     }
   }
 
-  public PGobject getPGobject(String column) {
+  public DbJsonObject getJsonObject(String column) {
     Object object = getColumns().get(column);
-    return (PGobject) object;
+    if (object != null) {
+      return new DbJsonObject(object.toString());
+    }
+    return null;
   }
 
   @SuppressWarnings("unchecked")
@@ -588,10 +601,11 @@ public class Row implements IRow<Row>, Serializable {
   }
 
   /**
-  * Converts a Record object to the specified Java bean type.
-  * @param beanClass The type of Java Bean to convert to.
-  * @return The converted Java Bean object.
-  */
+   * Converts a Record object to the specified Java bean type.
+   * 
+   * @param beanClass The type of Java Bean to convert to.
+   * @return The converted Java Bean object.
+   */
   public <T> T toBean(Class<T> beanClass) {
     return DbKit.getConfig().getRecordConvert().toJavaBean(this, beanClass);
   }
@@ -600,7 +614,9 @@ public class Row implements IRow<Row>, Serializable {
     return Kv.create().set(columns);
   }
 
-  /**将
+  /**
+   * 将
+   * 
    * @param bean
    * @return
    */

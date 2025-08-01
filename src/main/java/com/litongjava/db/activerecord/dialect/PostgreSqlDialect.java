@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import org.postgresql.util.PGobject;
 
+import com.litongjava.db.DbJsonObject;
 import com.litongjava.db.activerecord.CPI;
 import com.litongjava.db.activerecord.Model;
 import com.litongjava.db.activerecord.Row;
@@ -88,7 +89,8 @@ public class PostgreSqlDialect extends Dialect {
     return sql.toString();
   }
 
-  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras) {
+  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
+      List<Object> paras) {
     sql.append("update \"").append(table.getName()).append("\" set ");
     String[] pKeys = table.getPrimaryKey();
     for (Entry<String, Object> e : attrs.entrySet()) {
@@ -223,7 +225,8 @@ public class PostgreSqlDialect extends Dialect {
     sql.append(") DO NOTHING");
   }
 
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql,
+      List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -416,7 +419,8 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql,
+      List<Object> paras, String[] jsonFields) {
     if (jsonFields != null && jsonFields.length > 0) {
       for (String f : jsonFields) {
         Object object = record.get(f);
@@ -601,12 +605,12 @@ public class PostgreSqlDialect extends Dialect {
       Array sqlArray = pst.getConnection().createArrayOf("text", (Object[]) value);
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof List<?>) {
-      if(value!=null) {
+      if (value != null) {
         Object object = ((List<?>) value).get(0);
-        if(object instanceof String) {
+        if (object instanceof String) {
           Array sqlArray = pst.getConnection().createArrayOf("text", ((List<?>) value).toArray());
           pst.setArray(i + 1, sqlArray);
-        }else {
+        } else {
           String json = JsonUtils.toJson(value);
           PGobject pgObject = new PGobject();
           pgObject.setType("jsonb");
@@ -614,12 +618,15 @@ public class PostgreSqlDialect extends Dialect {
           pst.setObject(i + 1, pgObject);
         }
       }
-      
 
     } else if (value instanceof PGobject) {
       pst.setObject(i + 1, value);
+    } else if (value instanceof DbJsonObject) {
+      PGobject pgObject = new PGobject();
+      pgObject.setType("jsonb");
+      pgObject.setValue(((DbJsonObject) value).getValue());
+      pst.setObject(i + 1, pgObject);
     } else {
-      // Assume it's an entity, convert to JSON and store as jsonb
       String json = JsonUtils.toJson(value);
       PGobject pgObject = new PGobject();
       pgObject.setType("jsonb");
@@ -652,7 +659,8 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
-  public StringBuffer forDbFindByField(String tableName, String columns, String field, Object fieldValue, List<Object> paras) {
+  public StringBuffer forDbFindByField(String tableName, String columns, String field, Object fieldValue,
+      List<Object> paras) {
     StringBuffer sql = new StringBuffer();
     tableName = tableName.trim();
     sql.append("select ").append(columns).append(" from \"").append(tableName).append("\"");

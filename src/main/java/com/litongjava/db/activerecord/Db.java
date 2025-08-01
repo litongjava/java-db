@@ -16,6 +16,7 @@ import org.postgresql.util.PGobject;
 
 import com.jfinal.kit.SyncWriteMap;
 import com.litongjava.db.SqlPara;
+import com.litongjava.kit.DbTableNameUtils;
 import com.litongjava.model.db.IAtom;
 import com.litongjava.model.db.ICallback;
 import com.litongjava.model.page.Page;
@@ -124,7 +125,8 @@ public class Db {
    * @return
    * @throws SQLException
    */
-  static boolean save(Config config, Connection conn, String tableName, String primaryKey, Row record) throws SQLException {
+  static boolean save(Config config, Connection conn, String tableName, String primaryKey, Row record)
+      throws SQLException {
     return MAIN.save(config, conn, tableName, primaryKey, record);
   }
 
@@ -157,7 +159,7 @@ public class Db {
   public static boolean save(String tableName, Row record) {
     return MAIN.save(tableName, record);
   }
-  
+
   public static boolean saveIfAbset(String tableName, Row record) {
     return MAIN.saveIfAbset(tableName, record);
   }
@@ -224,7 +226,8 @@ public class Db {
    * @return
    * @throws SQLException
    */
-  static boolean update(Config config, Connection conn, String tableName, String primaryKey, Row record) throws SQLException {
+  static boolean update(Config config, Connection conn, String tableName, String primaryKey, Row record)
+      throws SQLException {
     return MAIN.update(config, conn, tableName, primaryKey, record);
   }
 
@@ -235,11 +238,11 @@ public class Db {
    * Example: Db.update("user_role", "user_id, role_id", record);
    * </pre>
    * 
-   * @param tableName  the table name of the Record save to
+   * @param tableName   the table name of the Record save to
    * @param primaryKeys the primary key of the table, composite primary key is
-   *                   separated by comma character: ","
-   * @param record     the Record object
-   * @param true       if update succeed otherwise false
+   *                    separated by comma character: ","
+   * @param record      the Record object
+   * @param true        if update succeed otherwise false
    */
   public static boolean update(String tableName, String primaryKeys, Row record) {
     return MAIN.update(tableName, primaryKeys, record);
@@ -822,17 +825,6 @@ public class Db {
     return MAIN.find(clazz, sql, paras);
   }
 
-  /**
-   * @param tableName
-   * @return
-   */
-  public static List<Row> findAll(String tableName) {
-    if (replicas != null) {
-      return useReplica().findAll(tableName);
-    }
-    return MAIN.findAll(tableName);
-  }
-
   public static List<Row> findIn(String tableName, String primayKey, Object... paras) {
     if (replicas != null) {
       return useReplica().findIn(tableName, primayKey, paras);
@@ -854,6 +846,11 @@ public class Db {
     return MAIN.findColumnsIn(tableName, columns, primayKey, paras);
   }
 
+  public static <T> List<T> findAll(Class<T> clazz) {
+    String tableName = DbTableNameUtils.getTableName(clazz);
+    return findAll(clazz, tableName);
+  }
+
   /**
    * 
    * @param <T>
@@ -866,6 +863,17 @@ public class Db {
       return useReplica().findAll(clazz, tableName);
     }
     return MAIN.findAll(clazz, tableName);
+  }
+
+  /**
+   * @param tableName
+   * @return
+   */
+  public static List<Row> findAll(String tableName) {
+    if (replicas != null) {
+      return useReplica().findAll(tableName);
+    }
+    return MAIN.findAll(tableName);
   }
 
   /**
@@ -1116,7 +1124,8 @@ public class Db {
    * @param idValues
    * @return
    */
-  public static <T> T findColumnsByIds(Class<T> clazz, String tableName, String columns, String primaryKey, Object... idValues) {
+  public static <T> T findColumnsByIds(Class<T> clazz, String tableName, String columns, String primaryKey,
+      Object... idValues) {
     if (replicas != null) {
       return useReplica().findColumnsByIds(clazz, tableName, columns, primaryKey, idValues);
     }
@@ -1142,7 +1151,8 @@ public class Db {
    * @return
    * @throws SQLException
    */
-  static Page<Row> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws SQLException {
+  static Page<Row> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select,
+      String sqlExceptSelect, Object... paras) throws SQLException {
     if (replicas != null) {
       return useReplica().paginate(config, conn, pageNumber, pageSize, select, sqlExceptSelect, paras);
     }
@@ -1199,7 +1209,8 @@ public class Db {
    * @param sqlExceptSelect
    * @return
    */
-  public static Page<Row> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect) {
+  public static Page<Row> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select,
+      String sqlExceptSelect) {
     if (replicas != null) {
       return useReplica().paginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
     }
@@ -1216,7 +1227,8 @@ public class Db {
    * @param paras           the parameters of sql
    * @return the Page object
    */
-  public static Page<Row> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
+  public static Page<Row> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect,
+      Object... paras) {
     if (replicas != null) {
       return useReplica().paginate(pageNumber, pageSize, select, sqlExceptSelect, paras);
     }
@@ -1232,7 +1244,8 @@ public class Db {
    * @param paras
    * @return
    */
-  public static Page<Row> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+  public static Page<Row> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select,
+      String sqlExceptSelect, Object... paras) {
     if (replicas != null) {
       return useReplica().paginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
     }
@@ -1247,7 +1260,8 @@ public class Db {
    * @param paras
    * @return
    */
-  public static Page<Row> paginateByFullSql(int pageNumber, int pageSize, String totalRowSql, String findSql, Object... paras) {
+  public static Page<Row> paginateByFullSql(int pageNumber, int pageSize, String totalRowSql, String findSql,
+      Object... paras) {
     if (replicas != null) {
       return useReplica().paginateByFullSql(pageNumber, pageSize, totalRowSql, findSql, paras);
     }
@@ -1263,7 +1277,8 @@ public class Db {
    * @param paras
    * @return
    */
-  public static Page<Row> paginateByFullSql(int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+  public static Page<Row> paginateByFullSql(int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql,
+      String findSql, Object... paras) {
     if (replicas != null) {
       return useReplica().paginateByFullSql(pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     }
@@ -1294,7 +1309,8 @@ public class Db {
    * @param sqlPara
    * @return
    */
-  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, SqlPara sqlPara) {
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql,
+      SqlPara sqlPara) {
     if (replicas != null) {
       return useReplica().paginate(clazz, pageNumber, pageSize, isGroupBySql, sqlPara);
     }
@@ -1310,7 +1326,8 @@ public class Db {
    * @param sqlExceptSelect
    * @return
    */
-  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, String select, String sqlExceptSelect) {
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, String select,
+      String sqlExceptSelect) {
     if (replicas != null) {
       return useReplica().paginate(clazz, pageNumber, pageSize, select, sqlExceptSelect);
     }
@@ -1327,7 +1344,8 @@ public class Db {
    * @param sqlExceptSelect
    * @return
    */
-  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect) {
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select,
+      String sqlExceptSelect) {
     if (replicas != null) {
       return useReplica().paginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
     }
@@ -1344,7 +1362,8 @@ public class Db {
    * @param paras
    * @return
    */
-  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, String select,
+      String sqlExceptSelect, Object... paras) {
     if (replicas != null) {
       return useReplica().paginate(clazz, pageNumber, pageSize, select, sqlExceptSelect, paras);
     }
@@ -1362,7 +1381,8 @@ public class Db {
    * @param paras
    * @return
    */
-  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+  public static <T> Page<T> paginate(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String select,
+      String sqlExceptSelect, Object... paras) {
     if (replicas != null) {
       return useReplica().paginate(clazz, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
     }
@@ -1377,7 +1397,8 @@ public class Db {
    * @param paras
    * @return
    */
-  public static <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, String totalRowSql, String findSql, Object... paras) {
+  public static <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, String totalRowSql,
+      String findSql, Object... paras) {
     if (replicas != null) {
       return useReplica().paginateByFullSql(clazz, pageNumber, pageSize, totalRowSql, findSql, paras);
     }
@@ -1393,7 +1414,8 @@ public class Db {
    * @param paras
    * @return
    */
-  public static <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+  public static <T> Page<T> paginateByFullSql(Class<T> clazz, int pageNumber, int pageSize, boolean isGroupBySql,
+      String totalRowSql, String findSql, Object... paras) {
     if (replicas != null) {
       return useReplica().paginateByFullSql(clazz, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
     }
@@ -1424,7 +1446,8 @@ public class Db {
    * @param sqlPara
    * @return
    */
-  public static Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, SqlPara sqlPara) {
+  public static Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, SqlPara sqlPara) {
     if (replicas != null) {
       return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, sqlPara);
     }
@@ -1443,7 +1466,8 @@ public class Db {
    * @param paras
    * @return
    */
-  public static Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
+  public static Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
+      String sqlExceptSelect, Object... paras) {
     if (replicas != null) {
       return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect, paras);
     }
@@ -1461,9 +1485,11 @@ public class Db {
    * @param paras
    * @return
    */
-  public static Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+  public static Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     if (replicas != null) {
-      return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
+      return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect,
+          paras);
     }
     return MAIN.paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
@@ -1477,7 +1503,8 @@ public class Db {
    * @param sqlExceptSelect
    * @return
    */
-  public static Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect) {
+  public static Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
+      String sqlExceptSelect) {
     if (replicas != null) {
       return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
     }
@@ -1494,7 +1521,8 @@ public class Db {
    * @param sqlExceptSelect
    * @return
    */
-  public static Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect) {
+  public static Page<Row> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, String select, String sqlExceptSelect) {
     if (replicas != null) {
       return useReplica().paginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
     }
@@ -1509,7 +1537,8 @@ public class Db {
    * @param paras
    * @return
    */
-  public static Page<Row> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize, String totalRowSql, String findSql, Object... paras) {
+  public static Page<Row> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize,
+      String totalRowSql, String findSql, Object... paras) {
     if (replicas != null) {
       return useReplica().paginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, totalRowSql, findSql, paras);
     }
@@ -1525,11 +1554,14 @@ public class Db {
    * @param paras
    * @return
    */
-  public static Page<Row> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+  public static Page<Row> paginateByCacheByFullSql(String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     if (replicas != null) {
-      return useReplica().paginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+      return useReplica().paginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, isGroupBySql, totalRowSql,
+          findSql, paras);
     }
-    return MAIN.paginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+    return MAIN.paginateByCacheByFullSql(cacheName, key, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql,
+        paras);
   }
 
   /**
@@ -1545,9 +1577,11 @@ public class Db {
    * @param sqlExceptSelect
    * @return
    */
-  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect) {
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, String select, String sqlExceptSelect) {
     if (replicas != null) {
-      return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
+      return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select,
+          sqlExceptSelect);
     }
     return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect);
   }
@@ -1564,7 +1598,8 @@ public class Db {
    * @param sqlPara
    * @return
    */
-  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, SqlPara sqlPara) {
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, SqlPara sqlPara) {
     if (replicas != null) {
       return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, sqlPara);
     }
@@ -1582,7 +1617,8 @@ public class Db {
    * @param sqlPara
    * @return
    */
-  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, SqlPara sqlPara) {
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      SqlPara sqlPara) {
     if (replicas != null) {
       return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, sqlPara);
     }
@@ -1601,7 +1637,8 @@ public class Db {
    * @param sqlExceptSelect
    * @return
    */
-  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect) {
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      String select, String sqlExceptSelect) {
     if (replicas != null) {
       return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, select, sqlExceptSelect);
     }
@@ -1621,7 +1658,8 @@ public class Db {
    * @param paras
    * @return
    */
-  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      String select, String sqlExceptSelect, Object... paras) {
     if (replicas != null) {
       return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, select, sqlExceptSelect, paras);
     }
@@ -1642,11 +1680,14 @@ public class Db {
    * @param paras
    * @return
    */
-  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+  public static <T> Page<T> paginateByCache(Class<T> clazz, String cacheName, Object key, int pageNumber, int pageSize,
+      boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
     if (replicas != null) {
-      return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
+      return useReplica().paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select,
+          sqlExceptSelect, paras);
     }
-    return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
+    return MAIN.paginateByCache(clazz, cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect,
+        paras);
   }
 
   /**
@@ -1661,9 +1702,11 @@ public class Db {
    * @param paras
    * @return
    */
-  public static <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object cacheKey, int pageNumber, int pageSize, String totalRowSql, String findSql, Object... paras) {
+  public static <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object cacheKey, int pageNumber,
+      int pageSize, String totalRowSql, String findSql, Object... paras) {
     if (replicas != null) {
-      return useReplica().paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, totalRowSql, findSql, paras);
+      return useReplica().paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, totalRowSql,
+          findSql, paras);
     }
     return MAIN.paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, totalRowSql, findSql, paras);
   }
@@ -1681,12 +1724,14 @@ public class Db {
    * @param paras
    * @return
    */
-  public static <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object cacheKey, int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql, String findSql,
-      Object... paras) {
+  public static <T> Page<T> paginateByCacheByFullSql(Class<T> clazz, String cacheName, Object cacheKey, int pageNumber,
+      int pageSize, boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
     if (replicas != null) {
-      return useReplica().paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+      return useReplica().paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, isGroupBySql,
+          totalRowSql, findSql, paras);
     }
-    return MAIN.paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+    return MAIN.paginateByCacheByFullSql(clazz, cacheName, cacheKey, pageNumber, pageSize, isGroupBySql, totalRowSql,
+        findSql, paras);
   }
 
   /**
@@ -1852,7 +1897,8 @@ public class Db {
     return MAIN.findFirstByCache(clazz, cacheName, key, ttl, sql);
   }
 
-  public static <T> T findFirstByCache(Class<T> clazz, String cacheName, Object key, int ttl, String sql, Object... paras) {
+  public static <T> T findFirstByCache(Class<T> clazz, String cacheName, Object key, int ttl, String sql,
+      Object... paras) {
     if (replicas != null) {
       return useReplica().findFirstByCache(clazz, cacheName, key, ttl, sql, paras);
     }
@@ -2188,4 +2234,5 @@ public class Db {
     }
     return MAIN.queryPGobject(sql, paras);
   }
+
 }
