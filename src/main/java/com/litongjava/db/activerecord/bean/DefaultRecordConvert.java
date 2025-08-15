@@ -47,30 +47,33 @@ public class DefaultRecordConvert implements RecordConvert {
 
         Object fieldValue = record.get(columnName);
         if (fieldValue != null) {
+          Class<?> javaFieldType = javaField.getType();
           // 进行类型转换
           if (tableFieldAnnotation != null && tableFieldAnnotation.targetType() != Object.class) {
             fieldValue = convertType(fieldValue, tableFieldAnnotation.targetType());
-          } else if (javaField.getType().equals(Short.class)) {
-            fieldValue = convertShortObject(fieldValue);
+          } else {
+            if (javaFieldType.equals(Short.class)) {
+              fieldValue = convertShortObject(fieldValue);
 
-          } else if (javaField.getType().equals(Long.class)) {
-            fieldValue = convertLongObject(fieldValue);
+            } else if (javaFieldType.equals(Long.class)) {
+              fieldValue = convertLongObject(fieldValue);
 
-          } else if (javaField.getType().equals(Boolean.class)) {
-            fieldValue = convertBooleanObject(fieldValue);
+            } else if (javaFieldType.equals(Boolean.class)) {
+              fieldValue = convertBooleanObject(fieldValue);
 
-          } else if (javaField.getType().equals(Timestamp.class)) {
-            fieldValue = convertTimestampObject(fieldValue);
+            } else if (javaFieldType.equals(Timestamp.class)) {
+              fieldValue = convertTimestampObject(fieldValue);
 
-          } else if (javaField.getType().equals(DbJsonObject.class)) {
-            fieldValue = convertDbJsonObject(fieldValue);
+            } else if (javaFieldType.equals(DbJsonObject.class)) {
+              fieldValue = convertDbJsonObject(fieldValue);
+            }
           }
           try {
             javaField.set(bean, fieldValue);
           } catch (java.lang.IllegalArgumentException e) {
             String name = fieldValue.getClass().getName();
             String message = "Failed to set " + columnName + ",the value is " + fieldValue + " and value type is "
-                + name;
+                + name + ", but taget value type is " + javaFieldType.toString();
             throw new RuntimeException(message, e);
           }
         }
@@ -97,7 +100,7 @@ public class DefaultRecordConvert implements RecordConvert {
 
   private Object convertShortObject(Object fieldValue) {
     if (fieldValue != null && fieldValue instanceof Integer) {
-      return ((Integer)fieldValue).shortValue();
+      return ((Integer) fieldValue).shortValue();
     }
     return fieldValue;
   }

@@ -991,6 +991,14 @@ public class Db {
     }
     return MAIN.findById(tableName, idValue);
   }
+  
+
+  public static <T> T findById(Class<T> clazz, Object idValue) {
+    if (replicas != null) {
+      return useReplica().findById(clazz, idValue);
+    }
+    return MAIN.findById(clazz, idValue); 
+  }
 
   /**
    * @param <T>
@@ -2238,5 +2246,6 @@ public class Db {
     }
     return MAIN.queryPGobject(sql, paras);
   }
+
 
 }
