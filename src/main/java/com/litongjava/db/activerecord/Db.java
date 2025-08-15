@@ -231,6 +231,10 @@ public class Db {
     return MAIN.update(config, conn, tableName, primaryKey, record);
   }
 
+  public static boolean update(Row row) {
+    return MAIN.update(row.getTableName(), "id", row);
+  }
+
   /**
    * Update Record.
    * 

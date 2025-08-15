@@ -2,6 +2,7 @@ package com.litongjava.db.activerecord.bean;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,6 +50,18 @@ public class DefaultRecordConvert implements RecordConvert {
           // 进行类型转换
           if (tableFieldAnnotation != null && tableFieldAnnotation.targetType() != Object.class) {
             fieldValue = convertType(fieldValue, tableFieldAnnotation.targetType());
+          } else if (javaField.getType().equals(Short.class)) {
+            fieldValue = convertShortObject(fieldValue);
+
+          } else if (javaField.getType().equals(Long.class)) {
+            fieldValue = convertLongObject(fieldValue);
+
+          } else if (javaField.getType().equals(Boolean.class)) {
+            fieldValue = convertBooleanObject(fieldValue);
+
+          } else if (javaField.getType().equals(Timestamp.class)) {
+            fieldValue = convertTimestampObject(fieldValue);
+
           } else if (javaField.getType().equals(DbJsonObject.class)) {
             fieldValue = convertDbJsonObject(fieldValue);
           }
@@ -66,6 +79,38 @@ public class DefaultRecordConvert implements RecordConvert {
     } catch (InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException("Error converting Record to Bean", e);
     }
+  }
+
+  private Object convertTimestampObject(Object fieldValue) {
+    if (fieldValue != null && fieldValue instanceof java.sql.Date) {
+      return new Timestamp(((java.sql.Date) fieldValue).getTime());
+    }
+    return fieldValue;
+  }
+
+  private Object convertLongObject(Object fieldValue) {
+    if (fieldValue != null && fieldValue instanceof Integer) {
+      return Long.valueOf((Integer) fieldValue);
+    }
+    return fieldValue;
+  }
+
+  private Object convertShortObject(Object fieldValue) {
+    if (fieldValue != null && fieldValue instanceof Integer) {
+      return ((Integer)fieldValue).shortValue();
+    }
+    return fieldValue;
+  }
+
+  private Boolean convertBooleanObject(Object fieldValue) {
+    if (fieldValue != null && fieldValue instanceof Number) {
+      if (fieldValue.equals(0)) {
+        return Boolean.FALSE;
+      } else {
+        return Boolean.TRUE;
+      }
+    }
+    return Boolean.FALSE;
   }
 
   private Object convertDbJsonObject(Object fieldValue) {
