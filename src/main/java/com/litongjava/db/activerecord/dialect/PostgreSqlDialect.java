@@ -25,6 +25,7 @@ import com.litongjava.db.activerecord.Row;
 import com.litongjava.db.activerecord.Table;
 import com.litongjava.db.activerecord.builder.TimestampProcessedModelBuilder;
 import com.litongjava.db.activerecord.builder.TimestampProcessedRecordBuilder;
+import com.litongjava.kit.PgObjectUtils;
 import com.litongjava.tio.utils.hutool.StrUtil;
 import com.litongjava.tio.utils.json.Json;
 import com.litongjava.tio.utils.json.JsonUtils;
@@ -206,7 +207,15 @@ public class PostgreSqlDialect extends Dialect {
       }
       sql.append('\"').append(e.getKey()).append('\"');
       temp.append('?');
-      paras.add(e.getValue());
+      Object value = e.getValue();
+      if (value instanceof DbJsonObject) {
+        String jsonText = ((DbJsonObject) value).getValue();
+        PgObjectUtils.jsonb(jsonText);
+        paras.add(value);
+      } else {
+        paras.add(e.getValue());
+      }
+
     }
     sql.append(temp.toString()).append(')');
   }
