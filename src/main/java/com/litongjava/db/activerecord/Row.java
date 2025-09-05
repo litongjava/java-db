@@ -149,6 +149,18 @@ public class Row implements IRow<Row>, Serializable {
     return this;
   }
 
+  public Object pop(String column) {
+    Object remove = getColumns().remove(column);
+    _getModifyFlag().remove(column);
+    return remove;
+  }
+
+  public String popString(String column) {
+    Object remove = getColumns().remove(column);
+    _getModifyFlag().remove(column);
+    return remove != null ? remove.toString() : null;
+  }
+
   /**
    * Remove columns of this record.
    * 
