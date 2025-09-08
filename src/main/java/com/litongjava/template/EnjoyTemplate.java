@@ -7,11 +7,13 @@ import java.io.IOException;
 import com.jfinal.kit.Kv;
 import com.jfinal.template.Engine;
 import com.jfinal.template.Template;
+import com.jfinal.template.ext.directive.NowDirective;
 
 public class EnjoyTemplate {
 
   static {
-    Engine.use().addDirective("localeDate", LocaleDateDirective.class);
+    Engine.use().addDirective("localeDate", LocaleDateDirective.class, true);
+    Engine.use().addDirective("now", NowDirective.class, true);
   }
 
   public static String renderToString(String fileName, Kv by) {
