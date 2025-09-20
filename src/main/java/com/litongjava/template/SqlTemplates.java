@@ -81,16 +81,20 @@ public class SqlTemplates {
   }
 
   /**
-   * 终极修正版的 parseSQLFile 方法
+   * parse sql file
+   * 
+   * @param resource
+   * @param allowInclude
    */
   private static void parseSQLFile(URL resource, boolean allowInclude) {
     if (resource == null) {
       throw new RuntimeException("SQL file not found");
     }
-    
-    String filePath = resource.getFile();
+      
+    String where = resource.toString(); // 仅用于日志
 
-    try (InputStream inputStream = resource.openStream(); BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+    try (InputStream inputStream = resource.openStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
 
       String currentID = null;
       StringBuilder sqlBuilder = new StringBuilder();
@@ -99,58 +103,41 @@ public class SqlTemplates {
         String trimmedLine = line.trim();
 
         if (trimmedLine.startsWith("--#") && !trimmedLine.startsWith("--#include")) {
-          // 1. 保存上一个 SQL 块
-          if (currentID != null) {
-            // 只有当 sqlBuilder 有内容时才存入
-            if (sqlBuilder.length() > 0) {
-              sqlTemplates.put(currentID, sqlBuilder.toString());
-            }
-          }
-
-          // 2. 开始一个新的 SQL 块
-          String[] parts = trimmedLine.split("\\s+", 2);
-          if (parts.length > 1) {
-            currentID = parts[1];
-            sqlBuilder = new StringBuilder(); // 重置 builder
-            if (sqlTemplates.containsKey(currentID)) {
-              log.warn("Duplicate SQL ID found: {}. It will be overwritten by content in file: {}", currentID, filePath);
-            }
-          } else {
-            // 如果 --# 后面没有ID，则当前没有活动的SQL块
-            currentID = null;
-          }
-        } else if (allowInclude && trimmedLine.startsWith("--@")) {
-          // 3. 处理文件包含指令
-          // 保存上一个SQL块（如果有）
           if (currentID != null && sqlBuilder.length() > 0) {
             sqlTemplates.put(currentID, sqlBuilder.toString());
           }
-          // 重置状态，因为 @ 是文件级指令
+          String[] parts = trimmedLine.split("\\s+", 2);
+          currentID = (parts.length > 1) ? parts[1] : null;
+          sqlBuilder = new StringBuilder();
+
+        } else if (allowInclude && trimmedLine.startsWith("--@")) {
+          // 保存当前块
+          if (currentID != null && sqlBuilder.length() > 0) {
+            sqlTemplates.put(currentID, sqlBuilder.toString());
+          }
           currentID = null;
           sqlBuilder = new StringBuilder();
 
           String[] parts = trimmedLine.split("\\s+", 2);
           if (parts.length > 1) {
-            String parentPath = getParentPath(filePath);
-            String includedFilePath = parentPath.isEmpty() ? parts[1] : parentPath + "/" + parts[1];
-            URL url = new File(includedFilePath).toURI().toURL();
-            parseSQLFile(url, true);
+            String rel = parts[1].trim().replace('\\', '/'); // 兼容 Windows
+            URL included = new URL(resource, rel);
+            parseSQLFile(included, true);
           }
+
         } else {
-          // 4. 将行内容添加到当前活动的 SQL 块
           if (currentID != null) {
             sqlBuilder.append(line).append(System.lineSeparator());
           }
         }
       }
 
-      // 5. 保存文件末尾的最后一个 SQL 块
       if (currentID != null && sqlBuilder.length() > 0) {
         sqlTemplates.put(currentID, sqlBuilder.toString());
       }
 
     } catch (IOException e) {
-      throw new RuntimeException("Failed to read SQL file: " + filePath, e);
+      throw new RuntimeException("Failed to read SQL file: " + where, e);
     }
   }
 
@@ -170,7 +157,8 @@ public class SqlTemplates {
     }
 
     if (!processingIds.add(sqlId)) {
-      throw new IllegalStateException("Circular SQL inclusion detected: " + String.join(" -> ", processingIds) + " -> " + sqlId);
+      throw new IllegalStateException(
+          "Circular SQL inclusion detected: " + String.join(" -> ", processingIds) + " -> " + sqlId);
     }
 
     Matcher matcher = INCLUDE_PATTERN.matcher(rawSql);
