@@ -9,11 +9,13 @@ import com.jfinal.template.Engine;
 import com.jfinal.template.Template;
 import com.jfinal.template.ext.directive.NowDirective;
 
-public class EnjoyTemplate {
+public class EnjoyEngine {
 
   static {
     Engine.use().addDirective("localeDate", LocaleDateDirective.class, true);
     Engine.use().addDirective("now", NowDirective.class, true);
+    // add RowFieldGetter
+    Engine.addFieldGetterToFirst(new RowFieldGetter());
   }
 
   public static String renderToString(String fileName, Kv by) {
