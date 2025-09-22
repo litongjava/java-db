@@ -12,10 +12,10 @@ import com.jfinal.template.ext.directive.NowDirective;
 public class EnjoyEngine {
 
   static {
-    Engine.use().addDirective("localeDate", LocaleDateDirective.class, true);
-    Engine.use().addDirective("now", NowDirective.class, true);
     // add RowFieldGetter
     Engine.addFieldGetterToFirst(new RowFieldGetter());
+    Engine.use().addDirective("localeDate", LocaleDateDirective.class, true);
+    Engine.use().addDirective("now", NowDirective.class, true);
   }
 
   public static String renderToString(String fileName, Kv by) {
