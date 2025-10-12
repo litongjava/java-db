@@ -205,6 +205,10 @@ public class Db {
    *         <code>DELETE</code> statements, or 0 for SQL statements that return
    *         nothing
    */
+  public static int update(String sql, Object... paras) {
+    return MAIN.update(sql, paras);
+  }
+  
   public static int updateBySql(String sql, Object... paras) {
     return MAIN.update(sql, paras);
   }
