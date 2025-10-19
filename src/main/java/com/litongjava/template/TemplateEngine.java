@@ -9,7 +9,7 @@ import com.litongjava.tio.utils.environment.EnvUtils;
 public class TemplateEngine {
   public static final String llm_chat_prompt = "llm_chat_prompt";
   public static final String sql = "select prompt from " + llm_chat_prompt + " where name=? and env=?";
-  public static final String RESOURCE_BASE_PATH = "/templates/";
+  public static final String RESOURCE_BASE_PATH = "templates/";
   public static Engine engine;
   static {
     engine = Engine.create("template");
