@@ -876,7 +876,7 @@ public class DbPro {
     return find(clazz, sql, DbKit.NULL_PARA_ARRAY);
   }
 
-  public List<Row> findByColumn(String tableName, String column, String value) {
+  public List<Row> findByColumn(String tableName, String column, Object value) {
     String sql = config.dialect.forDbFindById(tableName, new String[] { column });
     return find(sql, value);
   }

@@ -1148,7 +1148,7 @@ public class Db {
     return MAIN.findColumnsByIds(clazz, tableName, columns, primaryKey, idValues);
   }
 
-  public static List<Row> findByColumn(String tableName, String column, String value) {
+  public static List<Row> findByColumn(String tableName, String column, Object value) {
     if (replicas != null) {
       return useReplica().findByColumn(tableName, column, value);
     }
