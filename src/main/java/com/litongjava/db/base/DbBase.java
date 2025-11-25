@@ -146,6 +146,10 @@ public abstract class DbBase {
     return Db.findFirst(getTableName(), columns, where);
   }
 
+  public Row findOne() {
+    return Db.findOne(getTableName());
+  }
+
   public Row findById(Object id) {
     return Db.findById(getTableName(), id);
   }
