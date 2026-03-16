@@ -52,7 +52,8 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   /**
    * Attributes of this model
    */
-  private Map<String, Object> attrs = createAttrsMap(); // getConfig().containerFactory.getAttrsMap();	// new HashMap<String, Object>();
+  private Map<String, Object> attrs = createAttrsMap(); // getConfig().containerFactory.getAttrsMap(); // new
+                                                        // HashMap<String, Object>();
 
   protected abstract String _getPrimaryKey();
 
@@ -102,6 +103,16 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    */
   protected void filter(int filterBy) {
 
+  }
+
+  @Override
+  public Map<String, Object> toMap() {
+    return attrs;
+  }
+
+  @Override
+  public int size() {
+    return attrs.size();
   }
 
   /**
@@ -513,11 +524,13 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * paginate(1, 10, true, "select *", "from user where id>? group by age", 123);
    * </pre>
    */
-  public Page<M> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+  public Page<M> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect,
+      Object... paras) {
     return doPaginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
-  protected Page<M> doPaginate(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+  protected Page<M> doPaginate(int pageNumber, int pageSize, Boolean isGroupBySql, String select,
+      String sqlExceptSelect, Object... paras) {
 
     sqlExceptSelect = replaceTableName(sqlExceptSelect);
 
@@ -545,13 +558,14 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     return sqlExceptSelect;
   }
 
-  protected Page<M> doPaginateByFullSql(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras)
-      throws Exception {
+  protected Page<M> doPaginateByFullSql(Config config, Connection conn, int pageNumber, int pageSize,
+      Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws Exception {
     if (pageNumber < 1 || pageSize < 1) {
       throw new ActiveRecordException("pageNumber and pageSize must more than 0");
     }
     if (config.dialect.isTakeOverModelPaginate()) {
-      return config.dialect.takeOverModelPaginate(conn, _getUsefulClass(), pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
+      return config.dialect.takeOverModelPaginate(conn, _getUsefulClass(), pageNumber, pageSize, isGroupBySql,
+          totalRowSql, findSql, paras);
     }
 
     List result = Db.query(config, conn, totalRowSql, paras);
@@ -585,7 +599,8 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     return new Page<M>(list, pageNumber, pageSize, totalPage, (int) totalRow);
   }
 
-  protected Page<M> doPaginateByFullSql(int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+  protected Page<M> doPaginateByFullSql(int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql,
+      String findSql, Object... paras) {
     Config config = _getReadConfig();
     Connection conn = null;
     try {
@@ -603,7 +618,8 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     return doPaginateByFullSql(pageNumber, pageSize, null, totalRowSql, findSql, paras);
   }
 
-  public Page<M> paginateByFullSql(int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
+  public Page<M> paginateByFullSql(int pageNumber, int pageSize, boolean isGroupBySql, String totalRowSql,
+      String findSql, Object... paras) {
     return doPaginateByFullSql(pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
   }
 
@@ -937,9 +953,65 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     return result;
   }
 
+  public List<M> findByField(Config config, Connection conn, String tableName, String columns, String field,
+      Object fieldValue) {
+
+    List<Object> paras = new ArrayList<>();
+
+    StringBuffer sqlBuffer = config.dialect.forDbFindByField(tableName, columns, field, fieldValue, paras);
+    PreparedStatement pst;
+    String sql = sqlBuffer.toString();
+    try {
+      pst = conn.prepareStatement(sql);
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
+    }
+    try {
+      config.dialect.fillStatement(pst, paras);
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
+    }
+
+    List<M> result = null;
+    ResultSet rs;
+    long start = System.currentTimeMillis();
+    try {
+      rs = pst.executeQuery();
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
+    }
+    try {
+      result = config.dialect.buildModelList(rs, _getUsefulClass());
+    } catch (SQLException | ReflectiveOperationException e) {
+      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
+    } finally {
+      if (rs != null) {
+        try {
+          rs.close();
+        } catch (SQLException e) {
+          throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
+        }
+      }
+      if (pst != null) {
+        try {
+          pst.close();
+        } catch (SQLException e) {
+          throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
+        }
+      }
+    }
+
+    ISqlStatementStat stat = config.getSqlStatementStat();
+    if (stat != null) {
+      long end = System.currentTimeMillis();
+      long elapsed = end - start;
+      stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
+    }
+    return result;
+  }
+
   protected List<M> find(Config config, String sql, Object... paras) {
     Connection conn = config.getConnection();
-
     try {
       return find(config, conn, sql, paras);
     } finally {
@@ -968,6 +1040,20 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     Config config = _getReadConfig();
     String sql = config.dialect.forFindAll(_getTable().getName());
     return find(config, sql, NULL_PARA_ARRAY);
+  }
+
+  public List<M> findColumnsByField(String columns, String field, Object fieldValue) {
+    Config config = _getReadConfig();
+    Connection connection = config.getConnection();
+    String tableName = _getTable().getName();
+    return findByField(config, connection, tableName, columns, field, fieldValue);
+  }
+
+  public List<M> findByField(String field, Object fieldValue) {
+    Config config = _getReadConfig();
+    Connection connection = config.getConnection();
+    String tableName = _getTable().getName();
+    return findByField(config, connection, tableName, "*", field, fieldValue);
   }
 
   /**
@@ -1166,7 +1252,8 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
       if (config == null) { // 支持无数据库连接场景
         config = DbKit.brokenConfig;
       }
-      Map<String, Object> newAttrs = config.containerFactory.getAttrsMap(); // new HashMap<String, Object>(attrs.length);
+      Map<String, Object> newAttrs = config.containerFactory.getAttrsMap(); // new HashMap<String,
+                                                                            // Object>(attrs.length);
       Set<String> newModifyFlag = config.containerFactory.getModifyFlagSet(); // new HashSet<String>();
       for (String a : attrs) {
         if (this.attrs.containsKey(a)) // prevent put null value to the newColumns
@@ -1248,7 +1335,8 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
 
   // hashCode 用于在容器中定位落桶，确保有较好的散列值分布即可，没必要用上所有字段
   public int hashCode() {
-    // return (attrs == null ? 0 : attrs.hashCode()) ^ (_getModifyFlag() == null ? 0 : _getModifyFlag().hashCode());
+    // return (attrs == null ? 0 : attrs.hashCode()) ^ (_getModifyFlag() == null ? 0
+    // : _getModifyFlag().hashCode());
     return attrs.hashCode();
   }
 
@@ -1309,22 +1397,26 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * @param key the key used to get date from cache
    * @return Page
    */
-  public Page<M> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
+  public Page<M> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
+      String sqlExceptSelect, Object... paras) {
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect, paras);
   }
 
   /**
    * @see #paginateByCache(String, Object, int, int, String, String, Object...)
    */
-  public Page<M> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select, String sqlExceptSelect) {
+  public Page<M> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
+      String sqlExceptSelect) {
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect, NULL_PARA_ARRAY);
   }
 
-  public Page<M> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+  public Page<M> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
+      String select, String sqlExceptSelect, Object... paras) {
     return doPaginateByCache(cacheName, key, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
   }
 
-  protected Page<M> doPaginateByCache(String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
+  protected Page<M> doPaginateByCache(String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql,
+      String select, String sqlExceptSelect, Object... paras) {
     IDbCache cache = _getReadConfig().getCache();
     Page<M> result = cache.get(cacheName, key);
     if (result == null) {
@@ -1489,13 +1581,4 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     return templateByString(content, model.attrs);
   }
 
-  @Override
-  public Map<String, Object> toMap() {
-    return attrs;
-  }
-
-  @Override
-  public int size() {
-    return attrs.size();
-  }
 }

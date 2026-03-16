@@ -115,7 +115,7 @@ public abstract class DbBase {
   }
 
   public List<Row> findByField(String field, Object value) {
-    return Db.findByFied(getTableName(), field, value);
+    return Db.findByField(getTableName(), field, value);
   }
 
   public List<Row> findIn(String primaryKey, Object... ids) {
