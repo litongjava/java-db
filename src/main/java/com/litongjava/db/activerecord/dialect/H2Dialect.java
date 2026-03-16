@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.litongjava.db.activerecord.CPI;
 import com.litongjava.db.activerecord.Config;
 import com.litongjava.db.activerecord.Row;
 import com.litongjava.db.activerecord.Table;
@@ -254,6 +255,30 @@ public class H2Dialect extends Dialect {
     }
   }
 
+  @Override
+  public void forDbUpdateByField(String tableName, String fieldName, String fieldValue, Row record, StringBuilder sql,
+      List<Object> paras) {
+    tableName = tableName.trim();
+    fieldName = fieldName.trim();
+    // Record 新增支持 modifyFlag
+    Set<String> modifyFlag = CPI.getModifyFlag(record);
+
+    sql.append("update ").append(tableName).append(" set ");
+    for (Entry<String, Object> e : record.getColumns().entrySet()) {
+      String colName = e.getKey();
+      if (modifyFlag.contains(colName)) {
+        if (paras.size() > 0) {
+          sql.append(", ");
+        }
+        sql.append(colName).append(" = ? ");
+        paras.add(e.getValue());
+      }
+    }
+    sql.append(" where ");
+    sql.append(fieldName).append(" = ?");
+    paras.add(fieldValue);
+  }
+  
   /**
    * h2database is similar to oracle
    * @return

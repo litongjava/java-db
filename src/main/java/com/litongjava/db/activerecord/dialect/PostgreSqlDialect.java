@@ -263,6 +263,30 @@ public class PostgreSqlDialect extends Dialect {
     }
   }
 
+  @Override
+  public void forDbUpdateByField(String tableName, String fieldName, String fieldValue, Row record, StringBuilder sql,
+      List<Object> paras) {
+    tableName = tableName.trim();
+    fieldName = fieldName.trim();
+    // Record 新增支持 modifyFlag
+    Set<String> modifyFlag = CPI.getModifyFlag(record);
+
+    sql.append("update \"").append(tableName).append("\" set ");
+    for (Entry<String, Object> e : record.getColumns().entrySet()) {
+      String colName = e.getKey();
+      if (modifyFlag.contains(colName)) {
+        if (paras.size() > 0) {
+          sql.append(", ");
+        }
+        sql.append('\"').append(colName).append("\" = ? ");
+        paras.add(e.getValue());
+      }
+    }
+    sql.append(" where ");
+    sql.append('\"').append(fieldName).append("\" = ?");
+    paras.add(fieldValue);
+  }
+
   public String forPaginate(int pageNumber, int pageSize, StringBuilder findSql) {
     int offset = pageSize * (pageNumber - 1);
     findSql.append(" limit ").append(pageSize).append(" offset ").append(offset);

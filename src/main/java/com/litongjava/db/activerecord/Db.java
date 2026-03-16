@@ -256,6 +256,10 @@ public class Db {
     return MAIN.update(tableName, primaryKeys, record);
   }
 
+  public static boolean updateByField(String tableName, String fieldName, String fieldValue, Row row) {
+    return MAIN.updateByField(tableName, fieldName, fieldValue, row);
+  }
+
   /**
    * 
    * @param tableName

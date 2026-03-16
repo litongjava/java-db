@@ -194,6 +194,31 @@ public class AnsiSqlDialect extends Dialect {
       paras.add(ids[i]);
     }
   }
+  
+
+  @Override
+  public void forDbUpdateByField(String tableName, String fieldName, String fieldValue, Row record, StringBuilder sql,
+      List<Object> paras) {
+    tableName = tableName.trim();
+    fieldName = fieldName.trim();
+    // Record 新增支持 modifyFlag
+    Set<String> modifyFlag = CPI.getModifyFlag(record);
+
+    sql.append("update ").append(tableName).append(" set ");
+    for (Entry<String, Object> e : record.getColumns().entrySet()) {
+      String colName = e.getKey();
+      if (modifyFlag.contains(colName)) {
+        if (paras.size() > 0) {
+          sql.append(", ");
+        }
+        sql.append(colName).append(" = ? ");
+        paras.add(e.getValue());
+      }
+    }
+    sql.append(" where ");
+    sql.append(fieldName).append(" = ?");
+    paras.add(fieldValue);
+  }
 
   /**
    * SELECT * FROM subject t1 WHERE (SELECT count(*) FROM subject t2 WHERE t2.id < t1.id AND t2.key = '123') > = 10 AND (SELECT count(*) FROM subject t2 WHERE t2.id < t1.id AND t2.key = '123') < 20 AND t1.key = '123'

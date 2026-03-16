@@ -69,7 +69,8 @@ public class OracleDialect extends Dialect {
     return sql.toString();
   }
 
-  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras) {
+  public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
+      List<Object> paras) {
     sql.append("update ").append(table.getName()).append(" set ");
     String[] pKeys = table.getPrimaryKey();
     for (Entry<String, Object> e : attrs.entrySet()) {
@@ -172,7 +173,8 @@ public class OracleDialect extends Dialect {
     sql.append(temp.toString()).append(')');
   }
 
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql,
+      List<Object> paras) {
     tableName = tableName.trim();
     trimPrimaryKeys(pKeys);
 
@@ -198,6 +200,30 @@ public class OracleDialect extends Dialect {
       sql.append(pKeys[i]).append(" = ?");
       paras.add(ids[i]);
     }
+  }
+
+  @Override
+  public void forDbUpdateByField(String tableName, String fieldName, String fieldValue, Row record, StringBuilder sql,
+      List<Object> paras) {
+    tableName = tableName.trim();
+    fieldName = fieldName.trim();
+    // Record 新增支持 modifyFlag
+    Set<String> modifyFlag = CPI.getModifyFlag(record);
+
+    sql.append("update ").append(tableName).append(" set ");
+    for (Entry<String, Object> e : record.getColumns().entrySet()) {
+      String colName = e.getKey();
+      if (modifyFlag.contains(colName)) {
+        if (paras.size() > 0) {
+          sql.append(", ");
+        }
+        sql.append(colName).append(" = ? ");
+        paras.add(e.getValue());
+      }
+    }
+    sql.append(" where ");
+    sql.append(fieldName).append(" = ?");
+    paras.add(fieldValue);
   }
 
   public String forPaginate(int pageNumber, int pageSize, StringBuilder findSql) {
@@ -252,7 +278,8 @@ public class OracleDialect extends Dialect {
   }
 
   @Override
-  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras, String[] jsonFields) {
+  public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql,
+      List<Object> paras, String[] jsonFields) {
     if (jsonFields != null) {
       for (String f : jsonFields) {
         record.set(f, Json.getJson().toJson(record.get(f)));
@@ -315,7 +342,8 @@ public class OracleDialect extends Dialect {
   }
 
   @Override
-  public StringBuffer forDbFindByField(String tableName, String columns, String field, Object fieldValue, List<Object> paras) {
+  public StringBuffer forDbFindByField(String tableName, String columns, String field, Object fieldValue,
+      List<Object> paras) {
     StringBuffer sql = new StringBuffer();
     tableName = tableName.trim();
     sql.append("select ").append(columns).append(" from \"").append(tableName).append("\"");
@@ -365,8 +393,9 @@ public class OracleDialect extends Dialect {
       insertVals.append("source.").append(col);
     }
 
-    sql.append("MERGE INTO ").append(tableName).append(" target USING (").append(selectPart).append(" FROM dual) source ON (").append(onPart).append(") WHEN NOT MATCHED THEN INSERT (")
-        .append(insertCols).append(") VALUES (").append(insertVals).append(")");
+    sql.append("MERGE INTO ").append(tableName).append(" target USING (").append(selectPart)
+        .append(" FROM dual) source ON (").append(onPart).append(") WHEN NOT MATCHED THEN INSERT (").append(insertCols)
+        .append(") VALUES (").append(insertVals).append(")");
   }
 
 }

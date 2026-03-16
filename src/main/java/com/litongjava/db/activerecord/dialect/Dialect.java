@@ -49,9 +49,11 @@ public abstract class Dialect {
 
   public abstract void forModelSave(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras);
 
-  public abstract void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras);
+  public abstract void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql,
+      List<Object> paras);
 
-  // Methods for DbPro. Do not delete the String[] pKeys parameter, the element of pKeys needs to trim()
+  // Methods for DbPro. Do not delete the String[] pKeys parameter, the element of
+  // pKeys needs to trim()
   public abstract String forDbFindById(String tableName, String[] pKeys);
 
   public abstract String forDbFindColumnsById(String tableName, String columns, String[] pKeys);
@@ -62,17 +64,24 @@ public abstract class Dialect {
 
   public abstract StringBuffer forDbFind(String tableName, String columns, Row record, List<Object> paras);
 
-  public abstract StringBuffer forDbFindByField(String tableName, String columns, String field, Object fieldValue, List<Object> paras);
+  public abstract StringBuffer forDbFindByField(String tableName, String columns, String field, Object fieldValue,
+      List<Object> paras);
 
   public abstract void forDbSave(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras);
 
-  public abstract void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras);
+  public abstract void forDbSaveIfAbset(String tableName, String[] pKeys, Row record, StringBuilder sql,
+      List<Object> paras);
 
   public abstract void forDbDelete(String tableName, String[] pKeys, Row record, StringBuilder sql, List<Object> paras);
 
-  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras);
+  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql,
+      List<Object> paras);
 
-  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql, List<Object> paras, String[] jsonFields);
+  public abstract void forDbUpdateByField(String tableName, String fieldName, String fieldValue, Row record,
+      StringBuilder sql, List<Object> paras);
+
+  public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql,
+      List<Object> paras, String[] jsonFields);
 
   public abstract String forColumns(String columns);
 
@@ -151,12 +160,14 @@ public abstract class Dialect {
   }
 
   @SuppressWarnings("rawtypes")
-  public <T> List<T> buildModelList(ResultSet rs, Class<? extends Model> modelClass) throws SQLException, ReflectiveOperationException {
+  public <T> List<T> buildModelList(ResultSet rs, Class<? extends Model> modelClass)
+      throws SQLException, ReflectiveOperationException {
     return modelBuilder.build(rs, modelClass);
   }
 
   @SuppressWarnings("rawtypes")
-  public <T> void eachModel(ResultSet rs, Class<? extends Model> modelClass, Function<T, Boolean> func) throws SQLException, ReflectiveOperationException {
+  public <T> void eachModel(ResultSet rs, Class<? extends Model> modelClass, Function<T, Boolean> func)
+      throws SQLException, ReflectiveOperationException {
     modelBuilder.build(rs, modelClass, func);
   }
 
@@ -240,7 +251,8 @@ public abstract class Dialect {
     return false;
   }
 
-  public <T> Page<T> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
+  public <T> Page<T> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql,
+      String totalRowSql, StringBuilder findSql, Object... paras) throws SQLException {
     throw new RuntimeException("You should implements this method in " + getClass().getName());
   }
 
@@ -249,8 +261,8 @@ public abstract class Dialect {
   }
 
   @SuppressWarnings("rawtypes")
-  public Page takeOverModelPaginate(Connection conn, Class<? extends Model> modelClass, int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras)
-      throws Exception {
+  public Page takeOverModelPaginate(Connection conn, Class<? extends Model> modelClass, int pageNumber, int pageSize,
+      Boolean isGroupBySql, String totalRowSql, StringBuilder findSql, Object... paras) throws Exception {
     throw new RuntimeException("You should implements this method in " + getClass().getName());
   }
 
