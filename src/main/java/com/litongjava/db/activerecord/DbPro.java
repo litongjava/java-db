@@ -742,7 +742,7 @@ public class DbPro {
     }
   }
 
-  public List<Row> findByField(String tableName, String field, Object fieldValue) {
+  public List<Row> findByFied(String tableName, String field, Object fieldValue) {
     Connection conn = null;
     try {
       conn = config.getConnection();
