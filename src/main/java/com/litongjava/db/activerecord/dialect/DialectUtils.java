@@ -1,8 +1,10 @@
 package com.litongjava.db.activerecord.dialect;
 
 import java.util.List;
+import java.util.Set;
 import java.util.Map.Entry;
 
+import com.litongjava.db.activerecord.CPI;
 import com.litongjava.db.activerecord.Row;
 import com.litongjava.tio.utils.hutool.StrUtil;
 
@@ -86,6 +88,30 @@ public class DialectUtils {
       i++;
     }
   }
+  
+  public static void forDbUpdateByField(String tableName, String fieldName, Object fieldValue, Row record, StringBuilder sql,
+      List<Object> paras) {
+    tableName = tableName.trim();
+    fieldName = fieldName.trim();
+    // Record 新增支持 modifyFlag
+    Set<String> modifyFlag = CPI.getModifyFlag(record);
+
+    sql.append("update ").append(tableName).append(" set ");
+    for (Entry<String, Object> e : record.getColumns().entrySet()) {
+      String colName = e.getKey();
+      if (modifyFlag.contains(colName)) {
+        if (paras.size() > 0) {
+          sql.append(", ");
+        }
+        sql.append(colName).append(" = ? ");
+        paras.add(e.getValue());
+      }
+    }
+    sql.append(" where ");
+    sql.append(fieldName).append(" = ?");
+    paras.add(fieldValue);
+  }
+
 
   public static String forExistsByFields(String tableName, String fields) {
     StringBuffer stringBuffer = new StringBuffer();

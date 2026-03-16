@@ -264,7 +264,7 @@ public class PostgreSqlDialect extends Dialect {
   }
 
   @Override
-  public void forDbUpdateByField(String tableName, String fieldName, String fieldValue, Row record, StringBuilder sql,
+  public void forDbUpdateByField(String tableName, String fieldName, Object fieldValue, Row record, StringBuilder sql,
       List<Object> paras) {
     tableName = tableName.trim();
     fieldName = fieldName.trim();

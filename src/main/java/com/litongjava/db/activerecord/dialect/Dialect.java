@@ -77,7 +77,7 @@ public abstract class Dialect {
   public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql,
       List<Object> paras);
 
-  public abstract void forDbUpdateByField(String tableName, String fieldName, String fieldValue, Row record,
+  public abstract void forDbUpdateByField(String tableName, String fieldName, Object fieldValue, Row record,
       StringBuilder sql, List<Object> paras);
 
   public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Row record, StringBuilder sql,
