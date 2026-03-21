@@ -1,6 +1,7 @@
 package com.litongjava.db.utils;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import org.postgresql.util.PGobject;
 
@@ -16,5 +17,9 @@ public class PgVectorUtils {
       throw new RuntimeException(e);
     }
     return nameVector;
+  }
+
+  public static PGobject getPgVector(float[] embeddingArray) {
+    return getPgVector(Arrays.toString(embeddingArray));
   }
 }
