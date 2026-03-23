@@ -887,6 +887,12 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     return find(config, table.getName(), toRow());
   }
 
+  public List<M> find(Row row) {
+    Config config = _getReadConfig();
+    Table table = _getTable();
+    return find(config, table.getName(), toRow());
+  }
+
   public List<M> find(Config config, String tableName, Row record) {
     Connection conn = null;
     try {
@@ -1078,6 +1084,11 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
   public M findFirst() {
     Table table = _getTable();
     return findFirst(table.getName(), toRow());
+  }
+
+  public M findFirst(Row row) {
+    Table table = _getTable();
+    return findFirst(table.getName(), row);
   }
 
   /**
