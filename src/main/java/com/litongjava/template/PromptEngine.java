@@ -1,10 +1,14 @@
 package com.litongjava.template;
 
+import java.net.URL;
+
 import com.jfinal.kit.Kv;
 import com.jfinal.template.Engine;
 import com.jfinal.template.Template;
 import com.litongjava.db.activerecord.Db;
 import com.litongjava.tio.utils.environment.EnvUtils;
+import com.litongjava.tio.utils.hutool.FileUtil;
+import com.litongjava.tio.utils.hutool.ResourceUtil;
 
 public class PromptEngine {
   public static final String llm_chat_prompt = "llm_chat_prompt";
@@ -37,6 +41,14 @@ public class PromptEngine {
 
   public static String renderToString(String fileName) {
     return engine.getTemplate(fileName).renderToString();
+  }
+
+  public static String readString(String fileName) {
+    URL url = ResourceUtil.getResource(RESOURCE_BASE_PATH + fileName);
+    if (url != null) {
+      return FileUtil.readString(url);
+    }
+    return null;
   }
 
   public static String renderToStringFromDb(String fileName) {
