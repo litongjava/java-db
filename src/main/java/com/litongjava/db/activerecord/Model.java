@@ -1,6 +1,5 @@
 package com.litongjava.db.activerecord;
 
-import static com.litongjava.db.activerecord.DbKit.NULL_PARA_ARRAY;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -514,7 +513,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * @see #paginate(int, int, String, String, Object...)
    */
   public Page<M> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect) {
-    return doPaginate(pageNumber, pageSize, null, select, sqlExceptSelect, NULL_PARA_ARRAY);
+    return doPaginate(pageNumber, pageSize, null, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
   }
 
   /**
@@ -1039,13 +1038,13 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * @see #find(String, Object...)
    */
   public List<M> find(String sql) {
-    return find(sql, NULL_PARA_ARRAY);
+    return find(sql, DbKit.NULL_PARA_ARRAY);
   }
 
   public List<M> findAll() {
     Config config = _getReadConfig();
     String sql = config.dialect.forFindAll(_getTable().getName());
-    return find(config, sql, NULL_PARA_ARRAY);
+    return find(config, sql, DbKit.NULL_PARA_ARRAY);
   }
 
   public List<M> findColumnsByField(String columns, String field, Object fieldValue) {
@@ -1060,6 +1059,11 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
     Connection connection = config.getConnection();
     String tableName = _getTable().getName();
     return findByField(config, connection, tableName, "*", field, fieldValue);
+  }
+
+  public M findFirstByField(String field, Object fieldValue) {
+    List<M> result = findByField(field, fieldValue);
+    return result.size() > 0 ? result.get(0) : null;
   }
 
   /**
@@ -1078,7 +1082,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * @param sql an SQL statement
    */
   public M findFirst(String sql) {
-    return findFirst(sql, NULL_PARA_ARRAY);
+    return findFirst(sql, DbKit.NULL_PARA_ARRAY);
   }
 
   public M findFirst() {
@@ -1373,7 +1377,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * @see #findByCache(String, Object, String, Object...)
    */
   public List<M> findByCache(String cacheName, Object key, String sql) {
-    return findByCache(cacheName, key, sql, NULL_PARA_ARRAY);
+    return findByCache(cacheName, key, sql, DbKit.NULL_PARA_ARRAY);
   }
 
   /**
@@ -1398,7 +1402,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    * @see #findFirstByCache(String, Object, String, Object...)
    */
   public M findFirstByCache(String cacheName, Object key, String sql) {
-    return findFirstByCache(cacheName, key, sql, NULL_PARA_ARRAY);
+    return findFirstByCache(cacheName, key, sql, DbKit.NULL_PARA_ARRAY);
   }
 
   /**
@@ -1418,7 +1422,7 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    */
   public Page<M> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
       String sqlExceptSelect) {
-    return doPaginateByCache(cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect, NULL_PARA_ARRAY);
+    return doPaginateByCache(cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
   }
 
   public Page<M> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
