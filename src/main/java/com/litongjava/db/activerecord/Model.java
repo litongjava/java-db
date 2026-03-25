@@ -1,6 +1,5 @@
 package com.litongjava.db.activerecord;
 
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -1056,9 +1055,17 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
 
   public List<M> findByField(String field, Object fieldValue) {
     Config config = _getReadConfig();
-    Connection connection = config.getConnection();
     String tableName = _getTable().getName();
-    return findByField(config, connection, tableName, "*", field, fieldValue);
+    return findByField(config, tableName, "*", field, fieldValue);
+  }
+
+  private List<M> findByField(Config config, String tableName, String columns, String field, Object fieldValue) {
+    Connection conn = config.getConnection();
+    try {
+      return findByField(config, conn, tableName, columns, field, fieldValue);
+    } finally {
+      config.close(conn);
+    }
   }
 
   public M findFirstByField(String field, Object fieldValue) {
@@ -1422,7 +1429,8 @@ public abstract class Model<M extends Model> implements IRow<M>, Serializable {
    */
   public Page<M> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, String select,
       String sqlExceptSelect) {
-    return doPaginateByCache(cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
+    return doPaginateByCache(cacheName, key, pageNumber, pageSize, null, select, sqlExceptSelect,
+        DbKit.NULL_PARA_ARRAY);
   }
 
   public Page<M> paginateByCache(String cacheName, Object key, int pageNumber, int pageSize, boolean isGroupBySql,
