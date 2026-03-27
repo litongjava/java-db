@@ -27,7 +27,7 @@
 <dependency>
   <groupId>com.litongjava</groupId>
   <artifactId>java-db</artifactId>
-  <version>1.5.1</version>
+  <version>1.5.9</version>
 </dependency>
 <dependency>
   <groupId>mysql</groupId>
