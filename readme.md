@@ -25,7 +25,7 @@
 
 ```xml
 <dependency>
-  <groupId>com.litongjava</groupId>
+  <groupId>nexus.io</groupId>
   <artifactId>java-db</artifactId>
   <version>1.5.9</version>
 </dependency>
