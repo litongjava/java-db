@@ -3,7 +3,7 @@ package nexus.io.db.activerecord.tx;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import com.litongjava.jfinal.aop.AopInvocation;
+import nexus.io.jfinal.aop.AopInvocation;
 
 /**
  * 支持定制事务行为，否则 Tx 拦截器只会在抛出异常时回滚事务
@@ -32,8 +32,5 @@ import com.litongjava.jfinal.aop.AopInvocation;
  */
 @FunctionalInterface
 public interface TxFun {
-    void call(AopInvocation inv, Connection conn) throws SQLException;
+  void call(AopInvocation inv, Connection conn) throws SQLException;
 }
-
-
-

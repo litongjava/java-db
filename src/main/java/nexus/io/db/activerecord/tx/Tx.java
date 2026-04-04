@@ -3,14 +3,13 @@ package nexus.io.db.activerecord.tx;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import com.litongjava.jfinal.aop.AopInterceptor;
-import com.litongjava.jfinal.aop.AopInvocation;
-
 import lombok.extern.slf4j.Slf4j;
 import nexus.io.db.activerecord.ActiveRecordException;
 import nexus.io.db.activerecord.Config;
 import nexus.io.db.activerecord.DbKit;
 import nexus.io.db.activerecord.NestedTransactionHelpException;
+import nexus.io.jfinal.aop.AopInterceptor;
+import nexus.io.jfinal.aop.AopInvocation;
 
 /**
  * ActiveRecord declare transaction.
