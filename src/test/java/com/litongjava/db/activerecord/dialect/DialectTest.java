@@ -2,7 +2,7 @@ package com.litongjava.db.activerecord.dialect;
 
 import org.junit.Test;
 
-import com.litongjava.db.kit.SqlParseKit;
+import nexus.io.db.kit.SqlParseKit;
 
 public class DialectTest {
 

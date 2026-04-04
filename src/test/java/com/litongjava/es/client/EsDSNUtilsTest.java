@@ -4,6 +4,9 @@ import org.junit.Test;
 
 import com.litongjava.tio.utils.json.JsonUtils;
 
+import nexus.io.es.client.EsDSN;
+import nexus.io.es.client.EsDSNUtils;
+
 public class EsDSNUtilsTest {
 
   @Test
