@@ -19,11 +19,12 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.jfinal.kit.TypeKit;
-import com.litongjava.cache.IDbCache;
-import com.litongjava.db.SqlPara;
 import com.litongjava.db.activerecord.stat.ISqlStatementStat;
-import com.litongjava.model.db.IRow;
-import com.litongjava.model.page.Page;
+
+import nexus.io.cache.IDbCache;
+import nexus.io.db.SqlPara;
+import nexus.io.model.db.IRow;
+import nexus.io.model.page.Page;
 
 /**
  * Model.

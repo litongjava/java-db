@@ -9,7 +9,8 @@ import com.litongjava.db.activerecord.Db;
 import com.litongjava.db.activerecord.DbKit;
 import com.litongjava.jfinal.aop.AopInterceptor;
 import com.litongjava.jfinal.aop.AopInvocation;
-import com.litongjava.model.db.IAtom;
+
+import nexus.io.model.db.IAtom;
 
 /**
  * TxByMethodRegex.

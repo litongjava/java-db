@@ -1,7 +1,8 @@
 package com.litongjava.db.activerecord.cache;
 
-import com.litongjava.cache.IDbCache;
 import com.litongjava.ehcache.EhCacheKit;
+
+import nexus.io.cache.IDbCache;
 
 /**
  * EhCache.

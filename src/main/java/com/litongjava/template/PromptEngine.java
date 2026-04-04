@@ -52,13 +52,13 @@ public class PromptEngine {
   }
 
   public static String renderToStringFromDb(String fileName) {
-    String queryStr = Db.queryStr(sql, fileName, EnvUtils.env());
+    String queryStr = Db.queryStr(sql, fileName, EnvUtils.appEnv());
     Template template = engine.getTemplateByString(queryStr);
     return template.renderToString();
   }
 
   public static String renderToStringFromDb(String fileName, Kv kv) {
-    String queryStr = Db.queryStr(sql, fileName, EnvUtils.env());
+    String queryStr = Db.queryStr(sql, fileName, EnvUtils.appEnv());
     Template template = engine.getTemplateByString(queryStr);
     return template.renderToString(kv);
   }

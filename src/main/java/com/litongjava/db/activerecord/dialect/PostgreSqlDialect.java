@@ -18,7 +18,6 @@ import java.util.UUID;
 
 import org.postgresql.util.PGobject;
 
-import com.litongjava.db.DbJsonObject;
 import com.litongjava.db.activerecord.CPI;
 import com.litongjava.db.activerecord.Model;
 import com.litongjava.db.activerecord.Row;
@@ -29,6 +28,8 @@ import com.litongjava.kit.PgObjectUtils;
 import com.litongjava.tio.utils.hutool.StrUtil;
 import com.litongjava.tio.utils.json.Json;
 import com.litongjava.tio.utils.json.JsonUtils;
+
+import nexus.io.db.DbJsonObject;
 
 /**
  * PostgreSqlDialect.

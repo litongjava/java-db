@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.litongjava.db.SqlPara;
-import com.litongjava.model.page.Page;
+import nexus.io.db.SqlPara;
+import nexus.io.model.page.Page;
 
 /**
  * DbTemplate

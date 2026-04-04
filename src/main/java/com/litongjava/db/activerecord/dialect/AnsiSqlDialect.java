@@ -20,8 +20,9 @@ import com.litongjava.db.activerecord.Row;
 import com.litongjava.db.activerecord.Table;
 import com.litongjava.db.activerecord.builder.TimestampProcessedModelBuilder;
 import com.litongjava.db.activerecord.builder.TimestampProcessedRecordBuilder;
-import com.litongjava.model.page.Page;
 import com.litongjava.tio.utils.json.Json;
+
+import nexus.io.model.page.Page;
 
 /**
  * AnsiSqlDialect. Try to use ANSI SQL dialect with ActiveRecordPlugin.

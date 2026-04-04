@@ -7,7 +7,6 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import com.jfinal.kit.StrKit;
-import com.litongjava.cache.IDbCache;
 import com.litongjava.db.activerecord.cache.DefaultEhCache;
 import com.litongjava.db.activerecord.dialect.Dialect;
 import com.litongjava.db.activerecord.dialect.MysqlDialect;
@@ -16,6 +15,7 @@ import com.litongjava.db.activerecord.stat.ISqlStatementStat;
 import com.litongjava.plugin.IPlugin;
 
 import lombok.extern.slf4j.Slf4j;
+import nexus.io.cache.IDbCache;
 
 /**
  * ActiveRecord plugin. <br>

@@ -15,8 +15,9 @@ import java.util.Set;
 
 import com.jfinal.kit.Kv;
 import com.jfinal.kit.TypeKit;
-import com.litongjava.db.DbJsonObject;
-import com.litongjava.model.db.IRow;
+
+import nexus.io.db.DbJsonObject;
+import nexus.io.model.db.IRow;
 
 /**
  * Record

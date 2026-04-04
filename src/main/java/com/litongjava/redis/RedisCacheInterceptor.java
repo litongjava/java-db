@@ -5,10 +5,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.litongjava.cache.CacheableModel;
 import com.litongjava.jfinal.aop.AopInterceptor;
 import com.litongjava.jfinal.aop.AopInvocation;
 
+import nexus.io.cache.CacheableModel;
 import redis.clients.jedis.Jedis;
 
 /**

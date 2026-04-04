@@ -15,11 +15,12 @@ import java.util.function.Function;
 import org.postgresql.util.PGobject;
 
 import com.jfinal.kit.SyncWriteMap;
-import com.litongjava.db.SqlPara;
 import com.litongjava.kit.DbTableNameUtils;
-import com.litongjava.model.db.IAtom;
-import com.litongjava.model.db.ICallback;
-import com.litongjava.model.page.Page;
+
+import nexus.io.db.SqlPara;
+import nexus.io.model.db.IAtom;
+import nexus.io.model.db.ICallback;
+import nexus.io.model.page.Page;
 
 /**
  * Db. Powerful database query and update tool box.

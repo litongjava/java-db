@@ -22,8 +22,9 @@ import com.litongjava.db.activerecord.Table;
 import com.litongjava.db.activerecord.builder.KeepByteAndShortModelBuilder;
 import com.litongjava.db.activerecord.builder.KeepByteAndShortRecordBuilder;
 import com.litongjava.db.kit.SqlParseKit;
-import com.litongjava.model.page.Page;
 import com.litongjava.tio.utils.json.JsonUtils;
+
+import nexus.io.model.page.Page;
 
 /**
  * Dialect.

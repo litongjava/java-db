@@ -8,9 +8,8 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
 
-import com.litongjava.model.db.JavaType;
-
 import lombok.extern.slf4j.Slf4j;
+import nexus.io.model.db.JavaType;
 
 /**
  * TableBuilder build the mapping of model between class and table.

@@ -6,8 +6,9 @@ import org.postgresql.util.PGobject;
 
 import com.litongjava.db.activerecord.Db;
 import com.litongjava.db.activerecord.Row;
-import com.litongjava.db.SqlPara;
-import com.litongjava.model.page.Page;
+
+import nexus.io.db.SqlPara;
+import nexus.io.model.page.Page;
 
 public abstract class DbBase {
 

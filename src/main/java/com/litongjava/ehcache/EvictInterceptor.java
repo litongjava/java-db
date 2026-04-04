@@ -1,8 +1,9 @@
 package com.litongjava.ehcache;
 
-import com.litongjava.cache.Cacheable;
 import com.litongjava.jfinal.aop.AopInterceptor;
 import com.litongjava.jfinal.aop.AopInvocation;
+
+import nexus.io.cache.Cacheable;
 
 /**
  * EvictInterceptor.
