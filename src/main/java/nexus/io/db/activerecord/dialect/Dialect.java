@@ -13,8 +13,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
-import com.litongjava.tio.utils.json.JsonUtils;
-
 import nexus.io.db.activerecord.Config;
 import nexus.io.db.activerecord.Model;
 import nexus.io.db.activerecord.ModelBuilder;
@@ -25,6 +23,7 @@ import nexus.io.db.activerecord.builder.KeepByteAndShortModelBuilder;
 import nexus.io.db.activerecord.builder.KeepByteAndShortRecordBuilder;
 import nexus.io.db.kit.SqlParseKit;
 import nexus.io.model.page.Page;
+import nexus.io.tio.utils.json.JsonUtils;
 
 /**
  * Dialect.

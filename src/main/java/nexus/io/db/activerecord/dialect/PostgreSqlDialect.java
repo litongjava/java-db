@@ -18,10 +18,6 @@ import java.util.UUID;
 
 import org.postgresql.util.PGobject;
 
-import com.litongjava.tio.utils.hutool.StrUtil;
-import com.litongjava.tio.utils.json.Json;
-import com.litongjava.tio.utils.json.JsonUtils;
-
 import nexus.io.db.DbJsonObject;
 import nexus.io.db.activerecord.CPI;
 import nexus.io.db.activerecord.Model;
@@ -30,6 +26,9 @@ import nexus.io.db.activerecord.Table;
 import nexus.io.db.activerecord.builder.TimestampProcessedModelBuilder;
 import nexus.io.db.activerecord.builder.TimestampProcessedRecordBuilder;
 import nexus.io.kit.PgObjectUtils;
+import nexus.io.tio.utils.hutool.StrUtil;
+import nexus.io.tio.utils.json.Json;
+import nexus.io.tio.utils.json.JsonUtils;
 
 /**
  * PostgreSqlDialect.

@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.litongjava.tio.utils.snowflake.SnowflakeIdUtils;
+import nexus.io.tio.utils.snowflake.SnowflakeIdUtils;
 
 public class Lite {
   public static final String sql_statement_stat = "sql_statement_stat";

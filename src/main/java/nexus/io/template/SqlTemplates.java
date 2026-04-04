@@ -16,9 +16,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.litongjava.tio.utils.hutool.ResourceUtil;
-
 import lombok.extern.slf4j.Slf4j;
+import nexus.io.tio.utils.hutool.ResourceUtil;
 
 @Slf4j
 public class SqlTemplates {

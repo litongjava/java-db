@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.litongjava.tio.utils.json.Json;
-
 import nexus.io.db.activerecord.ActiveRecordException;
 import nexus.io.db.activerecord.CPI;
 import nexus.io.db.activerecord.Model;
@@ -23,6 +21,7 @@ import nexus.io.db.activerecord.Table;
 import nexus.io.db.activerecord.builder.TimestampProcessedModelBuilder;
 import nexus.io.db.activerecord.builder.TimestampProcessedRecordBuilder;
 import nexus.io.model.page.Page;
+import nexus.io.tio.utils.json.Json;
 
 /**
  * AnsiSqlDialect. Try to use ANSI SQL dialect with ActiveRecordPlugin.

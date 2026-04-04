@@ -7,13 +7,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.litongjava.tio.utils.json.Json;
-
 import nexus.io.db.activerecord.CPI;
 import nexus.io.db.activerecord.Row;
 import nexus.io.db.activerecord.Table;
 import nexus.io.db.activerecord.builder.TimestampProcessedModelBuilder;
 import nexus.io.db.activerecord.builder.TimestampProcessedRecordBuilder;
+import nexus.io.tio.utils.json.Json;
 
 /**
  * SqliteDialect.

@@ -7,13 +7,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.litongjava.tio.utils.name.CamelNameUtils;
-
 import nexus.io.db.DbJsonObject;
 import nexus.io.db.activerecord.Row;
 import nexus.io.db.annotation.ATableField;
 import nexus.io.db.annotation.ATableName;
 import nexus.io.record.RecordConvert;
+import nexus.io.tio.utils.name.CamelNameUtils;
 
 public class DefaultRecordConvert implements RecordConvert {
 

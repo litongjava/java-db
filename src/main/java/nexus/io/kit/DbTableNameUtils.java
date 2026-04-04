@@ -1,8 +1,7 @@
 package nexus.io.kit;
 
-import com.litongjava.tio.utils.name.CamelNameUtils;
-
 import nexus.io.db.annotation.ATableName;
+import nexus.io.tio.utils.name.CamelNameUtils;
 
 public class DbTableNameUtils {
 

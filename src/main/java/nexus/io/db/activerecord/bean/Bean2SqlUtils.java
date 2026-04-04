@@ -5,10 +5,9 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.litongjava.tio.utils.name.CamelNameUtils;
-
 import nexus.io.db.annotation.ATableField;
 import nexus.io.db.annotation.ATableName;
+import nexus.io.tio.utils.name.CamelNameUtils;
 
 public class Bean2SqlUtils {
 
