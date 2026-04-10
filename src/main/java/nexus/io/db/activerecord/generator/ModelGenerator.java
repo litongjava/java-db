@@ -17,7 +17,7 @@ import com.jfinal.template.Engine;
 public class ModelGenerator {
 	
 	protected Engine engine;
-	protected String template = "/com/litongjava/db/activerecord/generator/model_template.jf";
+	protected String template = "/nexus/io/db/activerecord/generator/model_template.jf";
 	
 	protected String modelPackageName;
 	protected String baseModelPackageName;
