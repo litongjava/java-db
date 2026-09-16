@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import nexus.io.db.activerecord.CPI;
 import nexus.io.db.activerecord.Config;
 import nexus.io.db.activerecord.Row;
 import nexus.io.db.activerecord.Table;

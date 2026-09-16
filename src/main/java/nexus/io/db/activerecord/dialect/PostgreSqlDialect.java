@@ -565,6 +565,14 @@ public class PostgreSqlDialect extends Dialect {
     }
   }
 
+  private static Object[] toObjectArray(Object value) {
+    if (value instanceof Object[]) return (Object[]) value;
+    int length = java.lang.reflect.Array.getLength(value);
+    Object[] boxed = new Object[length];
+    for (int i = 0; i < length; i++) boxed[i] = java.lang.reflect.Array.get(value, i);
+    return boxed;
+  }
+
   public void fillPst(PreparedStatement pst, int i, Object value) throws SQLException {
     if (value instanceof String) {
       pst.setString(i + 1, (String) value);
@@ -617,29 +625,29 @@ public class PostgreSqlDialect extends Dialect {
       Array sqlArray = pst.getConnection().createArrayOf("varchar", (String[]) value);
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof int[] || value instanceof Integer[]) {
-      Array sqlArray = pst.getConnection().createArrayOf("integer", (Integer[]) value);
+      Array sqlArray = pst.getConnection().createArrayOf("integer", toObjectArray(value));
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof long[] || value instanceof Long[]) {
-      Array sqlArray = pst.getConnection().createArrayOf("bigint", (Long[]) value);
+      Array sqlArray = pst.getConnection().createArrayOf("bigint", toObjectArray(value));
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof double[] || value instanceof Double[]) {
-      Array sqlArray = pst.getConnection().createArrayOf("float8", (Double[]) value);
+      Array sqlArray = pst.getConnection().createArrayOf("float8", toObjectArray(value));
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof float[] || value instanceof Float[]) {
-      Array sqlArray = pst.getConnection().createArrayOf("real", (Float[]) value);
+      Array sqlArray = pst.getConnection().createArrayOf("float4", toObjectArray(value));
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof boolean[] || value instanceof Boolean[]) {
-      Array sqlArray = pst.getConnection().createArrayOf("boolean", (Boolean[]) value);
+      Array sqlArray = pst.getConnection().createArrayOf("boolean", toObjectArray(value));
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof short[] || value instanceof Short[]) {
-      Array sqlArray = pst.getConnection().createArrayOf("smallint", (Short[]) value);
+      Array sqlArray = pst.getConnection().createArrayOf("smallint", toObjectArray(value));
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof Object[]) {
       Array sqlArray = pst.getConnection().createArrayOf("text", (Object[]) value);
       pst.setArray(i + 1, sqlArray);
     } else if (value instanceof List<?>) {
       if (value != null) {
-        Object object = ((List<?>) value).get(0);
+        Object object = ((List<?>) value).isEmpty() ? null : ((List<?>) value).get(0);
         if (object instanceof String) {
           Array sqlArray = pst.getConnection().createArrayOf("text", ((List<?>) value).toArray());
           pst.setArray(i + 1, sqlArray);

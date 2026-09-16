@@ -1,5 +1,6 @@
 package nexus.io.db.activerecord;
 
+import com.jfinal.kit.Kv;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -104,7 +105,10 @@ public class Db {
   }
 
   public static DbPro useReplica() {
-    int index = counter.getAndIncrement() % replicaSize;
+    // Automatic read routing must see writes and locks on the transaction connection.
+    if (MAIN != null && MAIN.config.isInTransaction()) return MAIN;
+    if (replicas == null || replicas.isEmpty()) return MAIN;
+    int index = Math.floorMod(counter.getAndIncrement(), replicaSize);
     return replicas.get(index);
   }
 
@@ -815,6 +819,11 @@ public class Db {
       return useReplica().find(tableName, columns, record);
     }
     return MAIN.find(tableName, columns, record);
+  }
+
+  /** Find the first row with explicitly decoded JSON fields; returns null if absent. */
+  public static Row findFirstWithJsonField(String sql, String[] jsonFields, Object... paras) {
+    return useRead().findFirstWithJsonField(sql, jsonFields, paras);
   }
 
   public static List<Row> findWithJsonField(String sql, String[] jsonFields, Object... paras) {
@@ -1796,6 +1805,14 @@ public class Db {
    * 
    * @see #tx(int, IAtom)
    */
+  public static <T> T txResult(nexus.io.db.activerecord.tx.TransactionCallback<T> callback) {
+    return MAIN.txResult(callback);
+  }
+
+  public static <T> T txResult(int transactionLevel, nexus.io.db.activerecord.tx.TransactionCallback<T> callback) {
+    return MAIN.txResult(transactionLevel, callback);
+  }
+
   public static boolean tx(IAtom atom) {
     return MAIN.tx(atom);
   }
@@ -2262,4 +2279,39 @@ public class Db {
     return MAIN.queryPGobject(sql, paras);
   }
 
+
+  /** Map reads use the primary connection, preserving write-returning and locking semantics. */
+  public static List<Kv> findMaps(String sql, String[] jsonFields, Object... paras) {
+    return MAIN.findMaps(sql, jsonFields, paras);
+  }
+
+  public static Kv findFirstMap(String sql, String[] jsonFields, Object... paras) {
+    return MAIN.findFirstMap(sql, jsonFields, paras);
+  }
+
+  public static Kv paginateMap(int pageNumber, int pageSize, String countSql,
+      String findSql, String[] jsonFields, Object... paras) {
+    return MAIN.paginateMap(pageNumber, pageSize, countSql, findSql, jsonFields, paras);
+  }
+
+  public static Kv insertMapReturning(String table, Kv fields, String[] jsonFields) {
+    return MAIN.insertMapReturning(table, fields, jsonFields);
+  }
+
+  public static int updateMapByColumns(String table, Kv fields,
+      Kv conditions, String... timestampColumns) {
+    return MAIN.updateMapByColumns(table, fields, conditions, timestampColumns);
+  }
+
+  /** Opt-in JSONB conversion; never mutates the input array or changes regular JDBC array binding. */
+  public static Object[] toJsonbParameters(Object... paras) {
+    Object[] result = paras.clone();
+    for (int i = 0; i < result.length; i++) {
+      Object value = result[i];
+      if (value instanceof Map || value instanceof List) {
+        result[i] = nexus.io.kit.PgObjectUtils.jsonb(nexus.io.tio.utils.json.JsonUtils.toJson(value));
+      }
+    }
+    return result;
+  }
 }

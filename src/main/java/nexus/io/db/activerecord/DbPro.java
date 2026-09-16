@@ -1,5 +1,6 @@
 package nexus.io.db.activerecord;
 
+import com.jfinal.kit.Kv;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -902,6 +903,11 @@ public class DbPro {
   public Row findFirst(String tableName, String columns, Row record) {
     List<Row> result = find(tableName, columns, record);
     return result.size() > 0 ? result.get(0) : null;
+  }
+
+  /** Matches the naming of findWithJsonField. No row returns null; SQL can include LIMIT 1. */
+  public Row findFirstWithJsonField(String sql, String[] jsonFields, Object... paras) {
+    return findFirstJsonField(sql, jsonFields, paras);
   }
 
   public Row findFirstJsonField(String sql, String[] jsonFields, Object... paras) {
@@ -1896,6 +1902,36 @@ public class DbPro {
    *
    * @see #tx(int, IAtom)
    */
+  public <T> T txResult(nexus.io.db.activerecord.tx.TransactionCallback<T> callback) {
+    Connection connection = config.getThreadLocalConnection();
+    if (connection != null) {
+      try {
+        return txResult(connection.getTransactionIsolation(), callback);
+      } catch (SQLException e) {
+        throw new ActiveRecordException(e);
+      }
+    }
+    return txResult(config.getTransactionLevel(), callback);
+  }
+
+  /** null and Boolean.FALSE are valid data; only an exception requests rollback. */
+  public <T> T txResult(int transactionLevel, nexus.io.db.activerecord.tx.TransactionCallback<T> callback) {
+    java.util.Objects.requireNonNull(callback, "callback");
+    java.util.concurrent.atomic.AtomicReference<T> result = new java.util.concurrent.atomic.AtomicReference<>();
+    boolean committed = tx(transactionLevel, () -> {
+      try {
+        result.set(callback.run());
+        return true;
+      } catch (RuntimeException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new ActiveRecordException(e);
+      }
+    });
+    if (!committed) throw new ActiveRecordException("Transaction rolled back without a result");
+    return result.get();
+  }
+
   public boolean tx(IAtom atom) {
     return tx(config, config.getTransactionLevel(), atom);
   }
@@ -2968,4 +3004,107 @@ public class DbPro {
     return Db.findFirst(sql);
   }
 
+
+  /** Query Kv rows on this data source; explicitly decode the named JSON columns. */
+  public List<Kv> findMaps(String sql, String[] jsonFields, Object... paras) {
+    List<Kv> result = new ArrayList<>();
+    for (Row row : findWithJsonField(sql, jsonFields, paras)) {
+      Kv values = Kv.create().set(row.getColumns());
+      result.add(values);
+    }
+    return result;
+  }
+
+  /** Return null when no row matches. Also supports PostgreSQL RETURNING statements. */
+  public Kv findFirstMap(String sql, String[] jsonFields, Object... paras) {
+    Row row = findFirstWithJsonField(sql, jsonFields, paras);
+    return row == null ? null : Kv.create().set(row.getColumns());
+  }
+
+  /** PostgreSQL pagination. SQL and count SQL must accept the same parameters. */
+  public Kv paginateMap(int pageNumber, int pageSize, String countSql,
+      String findSql, String[] jsonFields, Object... paras) {
+    requirePostgreSqlMaps();
+    if (pageNumber < 1 || pageSize < 1) {
+      throw new IllegalArgumentException("pageNumber and pageSize must be positive");
+    }
+    Object[] pageParas = java.util.Arrays.copyOf(paras, paras.length + 2);
+    pageParas[paras.length] = pageSize;
+    pageParas[paras.length + 1] = ((long) pageNumber - 1) * pageSize;
+    Kv result = Kv.create();
+    result.put("list", findMaps(findSql + " limit ? offset ?", jsonFields, pageParas));
+    result.put("total", queryLong(countSql, paras));
+    result.put("page", pageNumber);
+    result.put("pageSize", pageSize);
+    return result;
+  }
+
+  /** PostgreSQL INSERT RETURNING. Does not inject IDs, tenants or other defaults. */
+  public Kv insertMapReturning(String table, Kv fields, String[] jsonFields) {
+    requirePostgreSqlMaps();
+    if (fields == null || fields.isEmpty()) {
+      throw new IllegalArgumentException("Insert fields must not be empty");
+    }
+    List<String> columns = new ArrayList<>();
+    for (Object key : fields.keySet()) {
+      String column = String.valueOf(key);
+      if (!(key instanceof String)) {
+        throw new IllegalArgumentException("Column names must be strings");
+      }
+      columns.add(mapIdentifier(column));
+    }
+    String sql = "insert into " + mapIdentifier(table) + " (" + String.join(",", columns)
+        + ") values (" + String.join(",", java.util.Collections.nCopies(fields.size(), "?")) + ") returning *";
+    return findFirstMap(sql, jsonFields, Db.toJsonbParameters(fields.values().toArray()));
+  }
+
+  /** Equality predicates are mandatory. Timestamp columns use CURRENT_TIMESTAMP explicitly. */
+  public int updateMapByColumns(String table, Kv fields,
+      Kv conditions, String... timestampColumns) {
+    requirePostgreSqlMaps();
+    if (fields == null || conditions == null || conditions.isEmpty()) {
+      throw new IllegalArgumentException("Update fields and non-empty conditions are required");
+    }
+    List<String> assignments = new ArrayList<>();
+    List<String> predicates = new ArrayList<>();
+    List<Object> paras = new ArrayList<>();
+    for (Map.Entry<?, ?> field : fields.<Object, Object>toMap().entrySet()) {
+      assignments.add(mapIdentifier(field.getKey()) + "=?");
+      paras.add(field.getValue());
+    }
+    for (String column : timestampColumns) {
+      if (fields.containsKey(column)) {
+        throw new IllegalArgumentException("Duplicate timestamp assignment: " + column);
+      }
+      assignments.add(mapIdentifier(column) + "=current_timestamp");
+    }
+    for (Map.Entry<?, ?> condition : conditions.<Object, Object>toMap().entrySet()) {
+      String column = mapIdentifier(condition.getKey());
+      if (condition.getValue() == null) {
+        predicates.add(column + " is null");
+      } else {
+        predicates.add(column + "=?");
+        paras.add(condition.getValue());
+      }
+    }
+    String tableName = mapIdentifier(table);
+    if (assignments.isEmpty()) {
+      return 0;
+    }
+    return update("update " + tableName + " set " + String.join(",", assignments)
+        + " where " + String.join(" and ", predicates), Db.toJsonbParameters(paras.toArray()));
+  }
+
+  private String mapIdentifier(Object name) {
+    if (!(name instanceof String) || !((String) name).matches("[a-z_][a-z0-9_]*")) {
+      throw new IllegalArgumentException("Invalid SQL identifier: " + name);
+    }
+    return "\"" + name + "\"";
+  }
+
+  private void requirePostgreSqlMaps() {
+    if (!(config.dialect instanceof nexus.io.db.activerecord.dialect.PostgreSqlDialect)) {
+      throw new IllegalArgumentException("This Map operation requires the PostgreSQL dialect");
+    }
+  }
 }

@@ -128,7 +128,9 @@ public final class DbKit {
   }
 
   public static Config useReplica() {
-    int index = counter.getAndIncrement() % replicaConfigs.size();
+    if (config != null && config.isInTransaction()) return config;
+    if (replicaConfigs == null || replicaConfigs.isEmpty()) return config;
+    int index = Math.floorMod(counter.getAndIncrement(), replicaConfigs.size());
     return replicaConfigs.get(index);
   }
 
