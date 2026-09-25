@@ -2285,6 +2285,11 @@ public class Db {
     return MAIN.findMaps(sql, jsonFields, paras);
   }
 
+  /** Query on the primary without JSON column parsing; return null when no row matches. */
+  public static Kv findFirstMap(String sql, Object... paras) {
+    return MAIN.findFirstMap(sql, paras);
+  }
+
   public static Kv findFirstMap(String sql, String[] jsonFields, Object... paras) {
     return MAIN.findFirstMap(sql, jsonFields, paras);
   }

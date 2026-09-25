@@ -3015,6 +3015,11 @@ public class DbPro {
     return result;
   }
 
+  /** Query without JSON column parsing; return null when no row matches. */
+  public Kv findFirstMap(String sql, Object... paras) {
+    return findFirstMap(sql, new String[0], paras);
+  }
+
   /** Return null when no row matches. Also supports PostgreSQL RETURNING statements. */
   public Kv findFirstMap(String sql, String[] jsonFields, Object... paras) {
     Row row = findFirstWithJsonField(sql, jsonFields, paras);

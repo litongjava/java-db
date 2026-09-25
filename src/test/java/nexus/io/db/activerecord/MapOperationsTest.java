@@ -44,6 +44,26 @@ public class MapOperationsTest {
   }
   @After public void cleanup() { DbKit.removeConfig("map-tests"); }
 
+  @Test public void simpleFirstMapPreservesBindingsAndNullResults() {
+    DbPro query = new DbPro("map-tests") {
+      @Override
+      public Row findFirstWithJsonField(String sql, String[] fields, Object... paras) {
+        assertArrayEquals(new String[0], fields);
+        if (paras.length == 0) {
+          return null;
+        }
+        assertArrayEquals(new Object[] {"19900000001", 2}, paras);
+        return new Row().set("id", 7L);
+      }
+    };
+    assertNull(query.findFirstMap("select * from sample where false"));
+    assertEquals(Long.valueOf(7L), query.findFirstMap("select * from sample where phone=? and purpose=?",
+        "19900000001", 2).getLong("id"));
+    assertEquals(Long.valueOf(7L), query.findFirstMap("select * from sample where phone=? and purpose=?",
+        new Object[] {"19900000001", 2}).getLong("id"));
+    assertNull(query.findFirstMap("select * from sample where false", new String[0], new Object[0]));
+  }
+
   @Test public void insertKeepsCallerMapAndUsesBoundJsonb() {
     Kv input = Kv.create();
     input.put("payload", Kv.by("value", "quoted'value"));

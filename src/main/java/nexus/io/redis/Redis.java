@@ -137,6 +137,14 @@ public class Redis {
     return Redis.use().getStr(key);
   }
 
+  /**
+   * Deletes a native string key, using the same key encoding as setStr/getStr.
+   * @return 1 if the key was deleted, or 0 if it did not exist
+   */
+  public static Long del(String key) {
+    return Redis.call(jedis -> jedis.del(key));
+  }
+
   public static String setInt(String key, int value) {
     return Redis.use().setInt(key, value);
   }
