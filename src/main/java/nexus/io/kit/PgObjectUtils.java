@@ -1,7 +1,7 @@
 package nexus.io.kit;
 
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -55,14 +55,16 @@ public class PgObjectUtils {
   }
 
   public static <T> void toBean(Kv kv, String key, Class<T> clazz) {
-    PGobject pgObject1 = kv.getAs(key);
-    String value = pgObject1.getValue();
-    if (StrUtil.isNotBlank(value)) {
-      T setting = JsonUtils.parse(value, clazz);
-      kv.set(key, setting);
+    Object object = kv.get(key);
+    String value;
+    if (object instanceof PGobject) {
+      value = ((PGobject) object).getValue();
+    } else if (object instanceof String) {
+      value = (String) object;
     } else {
-      kv.set(key, new HashMap<>(1));
+      return;
     }
+    kv.set(key, StrUtil.isNotBlank(value) ? JsonUtils.parse(value, clazz) : null);
   }
 
   public static <T> void toBean(Row row, String key, Class<T> clazz) {
@@ -74,7 +76,7 @@ public class PgObjectUtils {
         T setting = JsonUtils.parse(value, clazz);
         row.set(key, setting);
       } else {
-        row.set(key, new HashMap<>(1));
+        row.set(key, null);
       }
     } else if (object instanceof String) {
       String value = (String) object;
@@ -82,7 +84,7 @@ public class PgObjectUtils {
         T setting = JsonUtils.parse(value, clazz);
         row.set(key, setting);
       } else {
-        row.set(key, new HashMap<>(1));
+        row.set(key, null);
       }
     } else {
       return;
@@ -98,7 +100,7 @@ public class PgObjectUtils {
         List<T> setting = JsonUtils.parseArray(value, clazz);
         row.set(key, setting);
       } else {
-        row.set(key, new HashMap<>(1));
+        row.set(key, new ArrayList<T>());
       }
     } else if (object instanceof String) {
       String value = (String) object;
@@ -106,7 +108,7 @@ public class PgObjectUtils {
         List<T> setting = JsonUtils.parseArray(value, clazz);
         row.set(key, setting);
       } else {
-        row.set(key, new HashMap<>(1));
+        row.set(key, new ArrayList<T>());
       }
     } else {
       return;
@@ -122,7 +124,7 @@ public class PgObjectUtils {
         Map<?, ?> map = JsonUtils.parseToMap(value);
         row.set(key, map);
       } else {
-        row.set(key, new HashMap<>(1));
+        row.set(key, Kv.create());
       }
     } else if (object instanceof String) {
       String value = (String) object;
@@ -130,7 +132,7 @@ public class PgObjectUtils {
         Map<?, ?> map = JsonUtils.parseToMap(value);
         row.set(key, map);
       } else {
-        row.set(key, new HashMap<>(1));
+        row.set(key, Kv.create());
       }
     } else {
       return;
@@ -146,7 +148,7 @@ public class PgObjectUtils {
         List<Map<String, Object>> maps = JsonUtils.parseToListMap(value, String.class, Object.class);
         row.set(key, maps);
       } else {
-        row.set(key, new HashMap<>(1));
+        row.set(key, new ArrayList<>());
       }
     } else if (object instanceof String) {
       String value = (String) object;
@@ -154,7 +156,7 @@ public class PgObjectUtils {
         List<Map<String, Object>> maps = JsonUtils.parseToListMap(value, String.class, Object.class);
         row.set(key, maps);
       } else {
-        row.set(key, new HashMap<>(1));
+        row.set(key, new ArrayList<>());
       }
     } else {
       return;
@@ -162,6 +164,9 @@ public class PgObjectUtils {
   }
 
   public static <T> T toBean(PGobject pgObject, Class<T> clazz) {
+    if (pgObject == null) {
+      return null;
+    }
     String value = pgObject.getValue();
     if (StrUtil.isNotBlank(value)) {
       return JsonUtils.parse(value, clazz);
@@ -171,6 +176,9 @@ public class PgObjectUtils {
   }
 
   public static <T> List<T> toListBean(PGobject pgObject, Class<T> clazz) {
+    if (pgObject == null) {
+      return null;
+    }
     String value = pgObject.getValue();
     if (StrUtil.isNotBlank(value)) {
       return JsonUtils.parseArray(value, clazz);

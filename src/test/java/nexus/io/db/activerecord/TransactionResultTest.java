@@ -85,4 +85,30 @@ public class TransactionResultTest {
     });
     assertSame(replica, Db.useRead().getConfig());
   }
+  @Test public void runtimeExceptionKeepsIdentityAfterRollback() {
+    IllegalArgumentException original = new IllegalArgumentException("business validation");
+    try {
+      Db.txResult(() -> Db.txResult(() -> { throw original; }));
+      fail();
+    } catch (IllegalArgumentException actual) {
+      assertSame(original, actual);
+    }
+    assertEquals(1, rollbacks);
+    assertEquals(0, commits);
+    assertEquals(1, closes);
+    assertNull(config.getThreadLocalConnection());
+  }
+
+  @Test public void errorIsNotConvertedToApplicationException() {
+    AssertionError original = new AssertionError("fatal");
+    try {
+      Db.tx(() -> { throw original; });
+      fail();
+    } catch (AssertionError actual) {
+      assertSame(original, actual);
+    }
+    assertEquals(1, rollbacks);
+    assertEquals(0, commits);
+    assertNull(config.getThreadLocalConnection());
+  }
 }

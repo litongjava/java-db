@@ -244,7 +244,7 @@ public void testFind() {
 ## 📖 Documentation & Links
 
 - GitHub: https://github.com/litongjava/java-db  
-- Document : https://www.tio-boot.com/zh/09_java-db/01.html
+- Document : https://tio-boot.cn/zh/java-db/01.html
 ---
 
 ## 📝 License

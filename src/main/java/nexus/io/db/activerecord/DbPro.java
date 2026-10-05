@@ -66,51 +66,29 @@ public class DbPro {
   }
 
   public List<byte[]> queryListBytes(Config config, Connection conn, String sql, Object... paras) {
-    List<byte[]> result = new ArrayList();
-    PreparedStatement pst = null;
-    try {
-      pst = conn.prepareStatement(sql);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras, e);
-    }
-    try {
+    List<byte[]> result = new ArrayList<>();
+    try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras, e);
-    }
-    long start = System.currentTimeMillis();
-
-    ResultSet rs = null;
-    try {
-      rs = pst.executeQuery();
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras, e);
-    }
-    int colAmount = 0;
-    try {
-      colAmount = rs.getMetaData().getColumnCount();
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras, e);
-    }
-    if (colAmount > 1) {
-      throw new ActiveRecordException("please use queryListMultiBytes");
-    } else if (colAmount == 1) {
-      try {
-        while (rs.next()) {
-          result.add(rs.getBytes(1));
+      long start = System.currentTimeMillis();
+      try (ResultSet rs = pst.executeQuery()) {
+        int colAmount = rs.getMetaData().getColumnCount();
+        if (colAmount > 1) {
+          throw new ActiveRecordException("please use queryListMultiBytes");
+        } else if (colAmount == 1) {
+          while (rs.next()) {
+            result.add(rs.getBytes(1));
+          }
         }
-      } catch (SQLException e) {
-        throw new ActiveRecordException(e.getMessage(), sql, paras, e);
       }
+      ISqlStatementStat stat = config.getSqlStatementStat();
+      if (stat != null) {
+        long elapsed = System.currentTimeMillis() - start;
+        stat.save(config.name, "query", sql, paras, result.size(), start, elapsed, config.writeSync);
+      }
+      return result;
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage(), sql, paras, e);
     }
-
-    ISqlStatementStat stat = config.getSqlStatementStat();
-    if (stat != null) {
-      long end = System.currentTimeMillis();
-      long elapsed = end - start;
-      stat.save(config.name, "query", sql, paras, result.size(), start, elapsed, config.writeSync);
-    }
-    return result;
   }
 
   public <T> List<T> query(Config config, Connection conn, String sql, Object... paras) {
@@ -513,110 +491,45 @@ public class DbPro {
   }
 
   public List<Row> find(Config config, Connection conn, String sql, Object... paras) {
-    PreparedStatement pst;
-    try {
-      pst = conn.prepareStatement(sql);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras, e);
-    }
-    try {
+    try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras, e);
-    }
-
-    List<Row> result = null;
-    ResultSet rs;
-    long start = System.currentTimeMillis();
-    try {
-      rs = pst.executeQuery();
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras, e);
-    }
-    try {
-      result = config.dialect.buildRecordList(config, rs);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras, e);
-    } finally {
-      if (rs != null) {
-        try {
-          rs.close();
-        } catch (SQLException e) {
-          throw new ActiveRecordException(e.getMessage(), sql, paras, e);
-        }
+      long start = System.currentTimeMillis();
+      List<Row> result;
+      try (ResultSet rs = pst.executeQuery()) {
+        result = config.dialect.buildRecordList(config, rs);
       }
-      if (pst != null) {
-        try {
-          pst.close();
-        } catch (SQLException e) {
-          throw new ActiveRecordException(e.getMessage(), sql, paras, e);
-        }
+      ISqlStatementStat stat = config.getSqlStatementStat();
+      if (stat != null) {
+        long elapsed = System.currentTimeMillis() - start;
+        stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
       }
+      return result;
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage(), sql, paras, e);
     }
-
-    ISqlStatementStat stat = config.getSqlStatementStat();
-    if (stat != null) {
-      long end = System.currentTimeMillis();
-      long elapsed = end - start;
-      stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
-    }
-    return result;
-
   }
 
   public List<Row> find(Config config, Connection conn, String tableName, String columns, Row record) {
     List<Object> paras = new ArrayList<>();
 
     StringBuffer sqlBuffer = config.dialect.forDbFind(tableName, columns, record, paras);
-    PreparedStatement pst;
     String sql = sqlBuffer.toString();
-    try {
-      pst = conn.prepareStatement(sql);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-    }
-    try {
+    try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-    }
-
-    List<Row> result = null;
-    ResultSet rs;
-    long start = System.currentTimeMillis();
-    try {
-      rs = pst.executeQuery();
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-    }
-    try {
-      result = config.dialect.buildRecordList(config, rs);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-    } finally {
-      if (rs != null) {
-        try {
-          rs.close();
-        } catch (SQLException e) {
-          throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-        }
+      long start = System.currentTimeMillis();
+      List<Row> result;
+      try (ResultSet rs = pst.executeQuery()) {
+        result = config.dialect.buildRecordList(config, rs);
       }
-      if (pst != null) {
-        try {
-          pst.close();
-        } catch (SQLException e) {
-          throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-        }
+      ISqlStatementStat stat = config.getSqlStatementStat();
+      if (stat != null) {
+        long elapsed = System.currentTimeMillis() - start;
+        stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
       }
+      return result;
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
     }
-
-    ISqlStatementStat stat = config.getSqlStatementStat();
-    if (stat != null) {
-      long end = System.currentTimeMillis();
-      long elapsed = end - start;
-      stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
-    }
-    return result;
   }
 
   public List<Row> findByField(Config config, Connection conn, String tableName, String columns, String field,
@@ -625,55 +538,23 @@ public class DbPro {
     List<Object> paras = new ArrayList<>();
 
     StringBuffer sqlBuffer = config.dialect.forDbFindByField(tableName, columns, field, fieldValue, paras);
-    PreparedStatement pst;
     String sql = sqlBuffer.toString();
-    try {
-      pst = conn.prepareStatement(sql);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-    }
-    try {
+    try (PreparedStatement pst = conn.prepareStatement(sql)) {
       config.dialect.fillStatement(pst, paras);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-    }
-
-    List<Row> result = null;
-    ResultSet rs;
-    long start = System.currentTimeMillis();
-    try {
-      rs = pst.executeQuery();
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-    }
-    try {
-      result = config.dialect.buildRecordList(config, rs);
-    } catch (SQLException e) {
-      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-    } finally {
-      if (rs != null) {
-        try {
-          rs.close();
-        } catch (SQLException e) {
-          throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-        }
+      long start = System.currentTimeMillis();
+      List<Row> result;
+      try (ResultSet rs = pst.executeQuery()) {
+        result = config.dialect.buildRecordList(config, rs);
       }
-      if (pst != null) {
-        try {
-          pst.close();
-        } catch (SQLException e) {
-          throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
-        }
+      ISqlStatementStat stat = config.getSqlStatementStat();
+      if (stat != null) {
+        long elapsed = System.currentTimeMillis() - start;
+        stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
       }
+      return result;
+    } catch (SQLException e) {
+      throw new ActiveRecordException(e.getMessage(), sql, paras.toArray(), e);
     }
-
-    ISqlStatementStat stat = config.getSqlStatementStat();
-    if (stat != null) {
-      long end = System.currentTimeMillis();
-      long elapsed = end - start;
-      stat.save(config.name, "find", sql, paras, result.size(), start, elapsed, config.writeSync);
-    }
-    return result;
   }
 
   public List<Row> find(Config config, Connection conn, String sql, List paras) {
@@ -1835,26 +1716,26 @@ public class DbPro {
    */
   public boolean tx(Config config, int transactionLevel, IAtom atom) {
     Connection conn = config.getThreadLocalConnection();
-    if (conn != null) { // Nested transaction support
+    if (conn != null) {
       try {
-        if (conn.getTransactionIsolation() < transactionLevel)
+        if (conn.getTransactionIsolation() < transactionLevel) {
           conn.setTransactionIsolation(transactionLevel);
-        boolean result = atom.run();
-        if (result) {
+        }
+        if (atom.run()) {
           return true;
         }
-        throw new NestedTransactionHelpException(
-            "Notice the outer transaction that the nested transaction return false"); // important:can
-                                                                                      // not return
-                                                                                      // false
+        throw new NestedTransactionHelpException("Nested transaction returned false");
       } catch (SQLException e) {
         throw new ActiveRecordException(e);
       }
     }
     Boolean autoCommit = null;
+    Integer isolation = null;
+    boolean completed = false;
     try {
       conn = config.getConnection();
       autoCommit = conn.getAutoCommit();
+      isolation = conn.getTransactionIsolation();
       config.setThreadLocalConnection(conn);
       conn.setTransactionIsolation(transactionLevel);
       conn.setAutoCommit(false);
@@ -1864,36 +1745,57 @@ public class DbPro {
       } else {
         conn.rollback();
       }
+      completed = true;
       return result;
     } catch (NestedTransactionHelpException e) {
-      if (conn != null)
-        try {
-          conn.rollback();
-        } catch (Exception e1) {
-          log.error(e1.getMessage(), e1);
-        }
+      completed = rollbackAfterFailure(conn, e);
       return false;
     } catch (Throwable t) {
-      if (conn != null)
-        try {
-          conn.rollback();
-        } catch (Exception e1) {
-          log.error(e1.getMessage(), e1);
-        }
-      throw t instanceof ActiveRecordException ? (ActiveRecordException) t : new ActiveRecordException(t);
+      completed = rollbackAfterFailure(conn, t);
+      if (t instanceof RuntimeException) {
+        throw (RuntimeException) t;
+      }
+      if (t instanceof Error) {
+        throw (Error) t;
+      }
+      throw new ActiveRecordException(t);
     } finally {
       try {
         if (conn != null) {
-          if (autoCommit != null)
-            conn.setAutoCommit(autoCommit);
-          conn.close();
+          // Restoring auto-commit can commit outstanding work, so only restore
+          // after commit/rollback succeeded. Closing must run even if restoration fails.
+          try {
+            if (completed && autoCommit != null) {
+              conn.setAutoCommit(autoCommit);
+            }
+            if (completed && isolation != null && conn.getTransactionIsolation() != isolation) {
+              conn.setTransactionIsolation(isolation);
+            }
+          } finally {
+            conn.close();
+          }
         }
       } catch (Throwable t) {
-        log.error(t.getMessage(), t); // can not throw exception here, otherwise the more important exception in
-                                      // previous catch block can not be thrown
+        log.error(t.getMessage(), t);
       } finally {
-        config.removeThreadLocalConnection(); // prevent memory leak
+        config.removeThreadLocalConnection();
       }
+    }
+  }
+
+  private boolean rollbackAfterFailure(Connection connection, Throwable failure) {
+    if (connection == null) {
+      return false;
+    }
+    try {
+      connection.rollback();
+      return true;
+    } catch (Throwable rollbackFailure) {
+      if (failure != rollbackFailure) {
+        failure.addSuppressed(rollbackFailure);
+      }
+      log.error(rollbackFailure.getMessage(), rollbackFailure);
+      return false;
     }
   }
 
@@ -2289,6 +2191,68 @@ public class DbPro {
     }
   }
 
+  @FunctionalInterface
+  private interface BatchOperation {
+    int[] run(Connection connection) throws Exception;
+  }
+
+  private int[] executeBatch(String sql, BatchOperation operation) {
+    Connection connection = null;
+    Boolean autoCommit = null;
+    boolean owned = !config.isInTransaction();
+    boolean restore = true;
+    Throwable failure = null;
+    try {
+      connection = config.getConnection();
+      if (owned) {
+        autoCommit = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+      }
+      return operation.run(connection);
+    } catch (Throwable t) {
+      failure = t;
+      if (owned && autoCommit != null) {
+        restore = rollbackAfterFailure(connection, t);
+      }
+      if (t instanceof Error) {
+        throw (Error) t;
+      }
+      if (t instanceof RuntimeException) {
+        throw (RuntimeException) t;
+      }
+      throw new ActiveRecordException(t.getMessage(), sql, t);
+    } finally {
+      if (owned && connection != null) {
+        Throwable cleanupFailure = null;
+        try {
+          if (restore && autoCommit != null) {
+            connection.setAutoCommit(autoCommit);
+          }
+        } catch (Throwable t) {
+          cleanupFailure = t;
+        }
+        try {
+          connection.close();
+        } catch (Throwable t) {
+          if (cleanupFailure == null) {
+            cleanupFailure = t;
+          } else if (cleanupFailure != t) {
+            cleanupFailure.addSuppressed(t);
+          }
+        }
+        if (cleanupFailure != null) {
+          if (failure != null) {
+            if (failure != cleanupFailure) {
+              failure.addSuppressed(cleanupFailure);
+            }
+          } else {
+            throw new ActiveRecordException(cleanupFailure);
+          }
+        }
+      }
+    }
+  }
+
   /**
    * Execute a batch of SQL INSERT, UPDATE, or DELETE queries.
    * 
@@ -2304,25 +2268,7 @@ public class DbPro {
    * @return The number of rows updated per statement
    */
   public int[] batch(String sql, Object[][] paras, int batchSize) {
-    Connection conn = null;
-    Boolean autoCommit = null;
-    try {
-      conn = config.getConnection();
-      autoCommit = conn.getAutoCommit();
-      conn.setAutoCommit(false);
-      return batch(config, conn, sql, paras, batchSize);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e.getMessage(), sql, e);
-    } finally {
-      if (autoCommit != null) {
-        try {
-          conn.setAutoCommit(autoCommit);
-        } catch (Exception e) {
-          throw new ActiveRecordException(e.getMessage(), sql, e);
-        }
-      }
-      config.close(conn);
-    }
+    return executeBatch(sql, conn -> batch(config, conn, sql, paras, batchSize));
   }
 
   public int[] batch(Config config, Connection conn, String sql, String columns, List list, int batchSize) {
@@ -2477,52 +2423,14 @@ public class DbPro {
    * @return The number of rows updated per statement
    */
   public int[] batch(String sql, String columns, List modelOrRecordList, int batchSize) {
-    Connection conn = null;
-    Boolean autoCommit = null;
-    try {
-      conn = config.getConnection();
-      try {
-        autoCommit = conn.getAutoCommit();
-        conn.setAutoCommit(false);
-      } catch (SQLException e) {
-        throw new ActiveRecordException(e.getMessage(), sql, e);
-      }
-
-      return batch(config, conn, sql, columns, modelOrRecordList, batchSize);
-    } finally {
-      if (autoCommit != null) {
-        try {
-          conn.setAutoCommit(autoCommit);
-        } catch (Exception e) {
-          throw new ActiveRecordException(e.getMessage(), sql, e);
-        }
-      }
-      config.close(conn);
-    }
+    return executeBatch(sql, conn -> batch(config, conn, sql, columns, modelOrRecordList, batchSize));
   }
 
   public int[] batch(String sql, String columns, String[] jsonFields, List<Row> modelOrRecordList, int batchSize) {
-    Connection conn = null;
-    Boolean autoCommit = null;
-    try {
-      conn = config.getConnection();
-      try {
-        autoCommit = conn.getAutoCommit();
-        conn.setAutoCommit(false);
-      } catch (SQLException e) {
-        throw new ActiveRecordException(e.getMessage(), sql, e);
-      }
+    return executeBatch(sql, conn -> {
       config.dialect.transformJsonFields(modelOrRecordList, jsonFields);
       return batch(config, conn, sql, columns, modelOrRecordList, batchSize);
-    } finally {
-      if (autoCommit != null)
-        try {
-          conn.setAutoCommit(autoCommit);
-        } catch (Exception e) {
-          log.error(e.getMessage(), e);
-        }
-      config.close(conn);
-    }
+    });
   }
 
   public int[] batch(Config config, Connection conn, List<String> sqlList, int batchSize) throws SQLException {
@@ -2575,24 +2483,7 @@ public class DbPro {
    * @return The number of rows updated per statement
    */
   public int[] batch(List<String> sqlList, int batchSize) {
-    Connection conn = null;
-    Boolean autoCommit = null;
-    try {
-      conn = config.getConnection();
-      autoCommit = conn.getAutoCommit();
-      conn.setAutoCommit(false);
-      return batch(config, conn, sqlList, batchSize);
-    } catch (Exception e) {
-      throw new ActiveRecordException(e.getMessage(), e);
-    } finally {
-      if (autoCommit != null)
-        try {
-          conn.setAutoCommit(autoCommit);
-        } catch (Exception e) {
-          log.error(e.getMessage(), e);
-        }
-      config.close(conn);
-    }
+    return executeBatch(null, conn -> batch(config, conn, sqlList, batchSize));
   }
 
   /**
