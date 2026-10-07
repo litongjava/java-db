@@ -1830,7 +1830,9 @@ public class DbPro {
         throw new ActiveRecordException(e);
       }
     });
-    if (!committed) throw new ActiveRecordException("Transaction rolled back without a result");
+    if (!committed) {
+      throw new ActiveRecordException("Transaction rolled back without a result");
+    }
     return result.get();
   }
 
@@ -2895,6 +2897,11 @@ public class DbPro {
     return Db.findFirst(sql);
   }
 
+
+  /** Query raw JDBC values as Kv rows on this data source. */
+  public List<Kv> findMaps(String sql, Object... paras) {
+    return findMaps(sql, new String[0], paras);
+  }
 
   /** Query Kv rows on this data source; explicitly decode the named JSON columns. */
   public List<Kv> findMaps(String sql, String[] jsonFields, Object... paras) {

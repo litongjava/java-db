@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -604,6 +605,9 @@ public class PostgreSqlDialect extends Dialect {
       pst.setBoolean(i + 1, (Boolean) value);
     }
 
+    else if (value instanceof Instant) {
+      pst.setTimestamp(i + 1, Timestamp.from((Instant) value));
+    }
     // OffsetDateTime
     else if (value instanceof OffsetDateTime) {
       OffsetDateTime offsetDateTime = (OffsetDateTime) value;

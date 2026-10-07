@@ -1,6 +1,7 @@
 package nexus.io.db.activerecord;
 
 import java.lang.reflect.Proxy;
+import java.time.Instant;
 import java.sql.*;
 import java.util.*;
 import org.junit.Test;
@@ -35,5 +36,19 @@ public class PostgreSqlParametersTest {
     new PostgreSqlDialect().fillStatement(statement, new Object[] {Collections.emptyList()});
     assertEquals("jsonb", ((PGobject) bound[0]).getType());
     assertEquals("[]", ((PGobject) bound[0]).getValue());
+  }
+  @Test public void instantBindsAsTimestampWithNanoseconds() throws Exception {
+    Instant instant = Instant.parse("2026-10-07T00:00:00.123456789Z");
+    Object[] bound = {null};
+    PreparedStatement statement = (PreparedStatement) Proxy.newProxyInstance(getClass().getClassLoader(),
+        new Class<?>[] {PreparedStatement.class}, (proxy, method, args) -> {
+          assertEquals("setTimestamp", method.getName());
+          bound[0] = args[1];
+          return null;
+        });
+    new PostgreSqlDialect().fillStatement(statement, instant);
+    assertEquals(instant, ((Timestamp) bound[0]).toInstant());
+    new PostgreSqlDialect().fillStatement(statement, Collections.singletonList(instant));
+    assertEquals(instant, ((Timestamp) bound[0]).toInstant());
   }
 }

@@ -2280,6 +2280,11 @@ public class Db {
   }
 
 
+  /** Query raw JDBC values as Kv rows on this data source. */
+  public static List<Kv> findMaps(String sql, Object... paras) {
+    return MAIN.findMaps(sql, new String[0], paras);
+  }
+
   /** Map reads use the primary connection, preserving write-returning and locking semantics. */
   public static List<Kv> findMaps(String sql, String[] jsonFields, Object... paras) {
     return MAIN.findMaps(sql, jsonFields, paras);

@@ -1,5 +1,8 @@
 package nexus.io.db.activerecord.dialect;
 
+import java.time.Instant;
+import java.sql.Timestamp;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Array;
@@ -320,6 +323,8 @@ public abstract class Dialect {
       pst.setBigDecimal(i + 1, (BigDecimal) value);
     } else if (value instanceof Boolean) {
       pst.setBoolean(i + 1, (Boolean) value);
+    } else if (value instanceof Instant) {
+      pst.setTimestamp(i + 1, Timestamp.from((Instant) value));
     } else if (value instanceof java.time.LocalDate) {
       pst.setDate(i + 1, java.sql.Date.valueOf((java.time.LocalDate) value));
     } else if (value instanceof java.time.LocalDateTime) {
