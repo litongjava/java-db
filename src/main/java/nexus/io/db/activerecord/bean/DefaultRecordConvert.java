@@ -58,7 +58,7 @@ public class DefaultRecordConvert implements RecordConvert {
             } else if (javaFieldType.equals(Long.class)) {
               fieldValue = convertLongObject(fieldValue);
 
-            } else if (javaFieldType.equals(Boolean.class)) {
+            } else if (javaFieldType.equals(Boolean.class) || javaFieldType.equals(boolean.class)) {
               fieldValue = convertBooleanObject(fieldValue);
 
             } else if (javaFieldType.equals(Timestamp.class)) {
@@ -106,12 +106,12 @@ public class DefaultRecordConvert implements RecordConvert {
   }
 
   private Boolean convertBooleanObject(Object fieldValue) {
-    if (fieldValue != null && fieldValue instanceof Number) {
-      if (fieldValue.equals(0)) {
-        return Boolean.FALSE;
-      } else {
-        return Boolean.TRUE;
-      }
+    // Preserve native JDBC booleans and compare numeric values across wrapper types.
+    if (fieldValue instanceof Boolean) {
+      return (Boolean) fieldValue;
+    }
+    if (fieldValue instanceof Number) {
+      return ((Number) fieldValue).doubleValue() != 0;
     }
     return Boolean.FALSE;
   }
